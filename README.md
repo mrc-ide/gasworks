@@ -7,9 +7,7 @@
 [![codecov](https://codecov.io/gh/mrc-ide/gasworks/branch/main/graph/badge.svg?token=XpGjm3l0ru)](https://codecov.io/gh/mrc-ide/gasworks)
 <!-- badges: end -->
 
-This package implements a compartmental model of gonorrhoea infection with vaccination.
-
-<img src="man/figures/vax_diagram.png" align="center" style = "border: none; float: center;" width = "800px">
+This package implements models of Group A Streptococcal (GAS) transmission.
 
 
 ## Installation
