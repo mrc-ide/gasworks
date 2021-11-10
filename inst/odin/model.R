@@ -51,7 +51,7 @@ n_xU <- rpois(alpha * dt)
 ## Draws from binomial distributions for numbers leaving each compartments
 n_U  <- rbinom(U,  1 - exp(-r_U  * dt))
 n_A  <- rbinom(A,  1 - exp(-r_A  * dt))
-n_E  <- rbinom(U,  1 - exp(-r_E  * dt))
+n_E  <- rbinom(E,  1 - exp(-r_E  * dt))
 n_I  <- rbinom(I,  1 - exp(-r_I  * dt))
 n_S1 <- rbinom(S1, 1 - exp(-r_S1 * dt))
 n_S2 <- rbinom(S2, 1 - exp(-r_S2 * dt))
@@ -96,14 +96,14 @@ initial(N)  <- U0 + A0 + E0 + I0 + S10 + S20 + F0 + R0
 ## User defined parameters - default in parentheses:
 
 ## Initial number in each state
-U0  <- user()
-A0  <- user()
-E0  <- user()
-I0  <- user()
-S10 <- user()
-S20 <- user()
-F0  <- user()
-R0  <- user()
+U0  <- user(0)
+A0  <- user(0)
+E0  <- user(0)
+I0  <- user(0)
+S10 <- user(0)
+S20 <- user(0)
+F0  <- user(0)
+R0  <- user(0)
 
 beta <- user() # rate of transmission
 sigma <- user() # amplitude of seasonal effect
