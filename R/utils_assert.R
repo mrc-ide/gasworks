@@ -83,6 +83,16 @@ assert_scalar_positive <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
+assert_scalar_nonnegative <- function(x, name = deparse(substitute(x))) {
+  force(name)
+  assert_scalar(x, name)
+  if (x < 0) {
+    stop(sprintf("'%s' must be greater than or equal to 0", name),
+         call. = FALSE)
+  }
+  invisible(x)
+}
+
 assert_scalar_unit_interval <- function(x, name = deparse(substitute(x))) {
   force(name)
   assert_scalar(x, name)
