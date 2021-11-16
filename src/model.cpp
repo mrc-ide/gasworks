@@ -142,7 +142,10 @@ public:
     real_type initial_S1;
     real_type initial_S2;
     real_type initial_U;
+    real_type initial_entrants_inc;
     real_type initial_igas_inc;
+    real_type initial_infections_inc;
+    real_type initial_leavers_inc;
     real_type initial_pharyngitis_inc;
     real_type initial_scarlet_fever_inc;
     real_type initial_time;
@@ -180,10 +183,10 @@ public:
     shared(pars.shared), internal(pars.internal) {
   }
   size_t size() {
-    return 13;
+    return 16;
   }
   std::vector<real_type> initial(size_t step) {
-    std::vector<real_type> state(13);
+    std::vector<real_type> state(16);
     state[0] = shared->initial_time;
     state[1] = shared->initial_U;
     state[2] = shared->initial_A;
@@ -194,9 +197,12 @@ public:
     state[7] = shared->initial_F;
     state[8] = shared->initial_R;
     state[9] = shared->initial_N;
-    state[10] = shared->initial_pharyngitis_inc;
-    state[11] = shared->initial_scarlet_fever_inc;
-    state[12] = shared->initial_igas_inc;
+    state[10] = shared->initial_infections_inc;
+    state[11] = shared->initial_pharyngitis_inc;
+    state[12] = shared->initial_scarlet_fever_inc;
+    state[13] = shared->initial_igas_inc;
+    state[14] = shared->initial_entrants_inc;
+    state[15] = shared->initial_leavers_inc;
     return state;
   }
   HOST void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
@@ -210,9 +216,12 @@ public:
     const real_type I = state[4];
     const real_type R = state[8];
     const real_type N = state[9];
-    const real_type pharyngitis_inc = state[10];
-    const real_type scarlet_fever_inc = state[11];
-    const real_type igas_inc = state[12];
+    const real_type infections_inc = state[10];
+    const real_type pharyngitis_inc = state[11];
+    const real_type scarlet_fever_inc = state[12];
+    const real_type igas_inc = state[13];
+    const real_type entrants_inc = state[14];
+    const real_type leavers_inc = state[15];
     real_type seasonality = 1 + shared->sigma * std::cos(2 * shared->pi * (shared->t0 + time - shared->t_s) / (real_type) 365.25);
     real_type lambda = shared->beta * seasonality * (A + S1 + S2) / (real_type) N;
     real_type n_xU = dust::random::poisson<real_type>(rng_state, shared->alpha * shared->dt);
@@ -226,6 +235,7 @@ public:
     real_type n_S2 = dust::random::binomial<real_type>(rng_state, S2, 1 - std::exp(- shared->r_S2 * shared->dt));
     real_type r_UA = (1 - shared->p_S) * lambda;
     real_type r_UE = shared->p_S * lambda;
+    state_next[14] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_xU : entrants_inc + n_xU));
     real_type n_Ax = dust::random::binomial<real_type>(rng_state, n_A, shared->omega / (real_type) shared->r_A);
     real_type n_Ex = dust::random::binomial<real_type>(rng_state, n_E, shared->omega / (real_type) shared->r_E);
     real_type n_Fx = dust::random::binomial<real_type>(rng_state, n_F, shared->omega / (real_type) shared->r_F);
@@ -249,18 +259,20 @@ public:
     state_next[7] = F + n_SF - n_FR - n_Fx;
     state_next[4] = I + n_EI - n_IR - n_Ix;
     state_next[8] = R + n_AR + n_SR + n_FR + n_IR - n_RU - n_Rx;
-    state_next[12] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_EI : igas_inc + n_EI));
-    state_next[11] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_SF : scarlet_fever_inc + n_SF));
+    state_next[13] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_EI : igas_inc + n_EI));
+    state_next[12] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_SF : scarlet_fever_inc + n_SF));
     real_type n_Nx = n_Ux + n_Ex + n_Ax + n_S1x + n_S2x + n_Fx + n_Ix + n_Rx;
     real_type n_UE = dust::random::binomial<real_type>(rng_state, n_U - n_Ux, shared->p_S);
     state_next[5] = S1 + n_ES - n_SF - n_SS - n_S1x;
     state_next[6] = S2 + n_SS - n_SR - n_S2x;
-    state_next[10] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_SS + n_SF : pharyngitis_inc + n_SS + n_SF));
+    state_next[11] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_SS + n_SF : pharyngitis_inc + n_SS + n_SF));
     real_type n_UA = n_U - n_Ux - n_UE;
     state_next[3] = E + n_UE - n_ES - n_EI - n_Ex;
     state_next[9] = N + n_xU - n_Nx;
+    state_next[15] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_Nx : leavers_inc + n_Nx));
     state_next[2] = A + n_UA - n_AU - n_AR - n_Ax;
     state_next[1] = U + n_xU - n_UE - n_UA + n_AU + n_RU - n_Ux;
+    state_next[10] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_UE + n_UA : infections_inc + n_UE + n_UA));
   }
 private:
   std::shared_ptr<const shared_type> shared;
@@ -485,7 +497,10 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   typedef typename model::real_type real_type;
   auto shared = std::make_shared<model::shared_type>();
   model::internal_type internal;
+  shared->initial_entrants_inc = 0;
   shared->initial_igas_inc = 0;
+  shared->initial_infections_inc = 0;
+  shared->initial_leavers_inc = 0;
   shared->initial_pharyngitis_inc = 0;
   shared->initial_scarlet_fever_inc = 0;
   shared->initial_time = 0;
@@ -572,8 +587,8 @@ template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const model::internal_type internal = pars.internal;
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "U", "A", "E", "I", "S1", "S2", "F", "R", "N", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc"});
-  cpp11::writable::list dim(13);
+  cpp11::writable::strings nms({"time", "U", "A", "E", "I", "S1", "S2", "F", "R", "N", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "entrants_inc", "leavers_inc"});
+  cpp11::writable::list dim(16);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});
   dim[2] = cpp11::writable::integers({1});
@@ -587,8 +602,11 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   dim[10] = cpp11::writable::integers({1});
   dim[11] = cpp11::writable::integers({1});
   dim[12] = cpp11::writable::integers({1});
+  dim[13] = cpp11::writable::integers({1});
+  dim[14] = cpp11::writable::integers({1});
+  dim[15] = cpp11::writable::integers({1});
   dim.names() = nms;
-  cpp11::writable::list index(13);
+  cpp11::writable::list index(16);
   index[0] = cpp11::writable::integers({1});
   index[1] = cpp11::writable::integers({2});
   index[2] = cpp11::writable::integers({3});
@@ -602,8 +620,11 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   index[10] = cpp11::writable::integers({11});
   index[11] = cpp11::writable::integers({12});
   index[12] = cpp11::writable::integers({13});
+  index[13] = cpp11::writable::integers({14});
+  index[14] = cpp11::writable::integers({15});
+  index[15] = cpp11::writable::integers({16});
   index.names() = nms;
-  size_t len = 13;
+  size_t len = 16;
   using namespace cpp11::literals;
   return cpp11::writable::list({
            "dim"_nm = dim,

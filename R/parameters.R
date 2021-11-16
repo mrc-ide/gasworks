@@ -26,7 +26,8 @@ check_gas_parameters <- function(pars) {
     assert_scalar_nonnegative_integer(A0)
     assert_scalar_nonnegative_integer(E0)
     assert_scalar_nonnegative_integer(I0)
-    assert_scalar_nonnegative_integer(S0)
+    assert_scalar_nonnegative_integer(S10)
+    assert_scalar_nonnegative_integer(S20)
     assert_scalar_nonnegative_integer(F0)
     assert_scalar_nonnegative_integer(R0)
   })
@@ -118,7 +119,6 @@ transform <- function(pars) {
   pars$delta_I <- 14 # mean days iGAS
   pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
   pars$delta_F <- 7 # mean days with scarlet fever
-  pars$dt <- 1 / 7 # fit to weekly data
 
   # add initial conditions and demographic parameters
   model_parameters(pars)

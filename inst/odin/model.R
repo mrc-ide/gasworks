@@ -19,12 +19,18 @@ n_Nx <- n_Ux + n_Ex + n_Ax + n_S1x + n_S2x + n_Fx + n_Ix + n_Rx
 
 
 ## Output incidence flows:
+update(infections_inc) <- (if (step %% steps_per_week == 0) n_UE + n_UA
+                           else infections_inc + n_UE + n_UA)
 update(pharyngitis_inc) <- (if (step %% steps_per_week == 0) n_SS + n_SF
                             else pharyngitis_inc + n_SS + n_SF)
 update(scarlet_fever_inc) <- (if (step %% steps_per_week == 0) n_SF
                               else scarlet_fever_inc + n_SF)
 update(igas_inc) <- (if (step %% steps_per_week == 0) n_EI
-                              else igas_inc + n_EI)
+                     else igas_inc + n_EI)
+update(entrants_inc) <- (if (step %% steps_per_week == 0) n_xU
+                         else entrants_inc + n_xU)
+update(leavers_inc) <- (if (step %% steps_per_week == 0) n_Nx
+                        else leavers_inc + n_Nx)
 
 ## Force of infection
 pi <- 3.14159265358979
@@ -102,9 +108,12 @@ initial(S2) <- S20
 initial(F)  <- F0
 initial(R)  <- R0
 initial(N)  <- U0 + A0 + E0 + I0 + S10 + S20 + F0 + R0
+initial(infections_inc) <- 0
 initial(pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
+initial(entrants_inc) <- 0
+initial(leavers_inc) <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
