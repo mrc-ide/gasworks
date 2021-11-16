@@ -93,6 +93,14 @@ assert_scalar_nonnegative <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
+assert_scalar_nonnegative_integer <- function(x,
+                                              name = deparse(substitute(x))) {
+  force(name)
+  assert_scalar_nonnegative(x, name)
+  assert_integer(x, name)
+  invisible(x)
+}
+
 assert_scalar_unit_interval <- function(x, name = deparse(substitute(x))) {
   force(name)
   assert_scalar(x, name)

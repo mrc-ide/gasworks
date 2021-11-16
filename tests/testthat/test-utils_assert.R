@@ -33,10 +33,26 @@ test_that("assert_scalar", {
 test_that("assert_scalar_nonnegative", {
   value <- NULL
   expect_silent(assert_scalar_nonnegative(0))
-  expect_silent(assert_scalar_nonnegative(1))
-  expect_error(assert_scalar_nonnegative(value), "'value' must be a scalar")
-  expect_error(assert_scalar_nonnegative(1:2), "must be a scalar")
+  expect_silent(assert_scalar_nonnegative(0.1))
+  expect_error(assert_scalar_nonnegative(value),
+               "'value' must be a scalar")
+  expect_error(assert_scalar_nonnegative(1:2),
+               "must be a scalar")
   expect_error(assert_scalar_nonnegative(-1),
+               "'-1' must be greater than or equal to 0")
+})
+
+test_that("assert_scalar_nonnegative_integer", {
+  value <- NULL
+  expect_silent(assert_scalar_nonnegative_integer(0))
+  expect_silent(assert_scalar_nonnegative_integer(1))
+  expect_error(assert_scalar_nonnegative_integer(0.1),
+               "'0.1' must be an integer")
+  expect_error(assert_scalar_nonnegative_integer(value),
+               "'value' must be a scalar")
+  expect_error(assert_scalar_nonnegative_integer(1:2),
+               "must be a scalar")
+  expect_error(assert_scalar_nonnegative_integer(-1),
                "'-1' must be greater than or equal to 0")
 })
 
