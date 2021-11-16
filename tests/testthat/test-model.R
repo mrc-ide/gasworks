@@ -180,4 +180,3 @@ test_that("the foi is calculated correctly", {
 test_that("incidence time series output correctly", {
 
 })
-

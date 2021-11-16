@@ -23,5 +23,3 @@ test_that("initial_parameters works as expected", {
 test_that("model_parameters works as expected", {
   gas_pars <- transform(example_gas_parameters())
 })
-
-
