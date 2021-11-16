@@ -37,7 +37,6 @@ model <- R6::R6Class(
      S10 = list(has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
      S20 = list(has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
      U0 = list(has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
-     dt = list(has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
      t0 = list(has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE))
   ),
 
