@@ -3,10 +3,10 @@ pars <- transform(example_gas_parameters())
 test_that("model runs", {
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
-  idx <- unlist(mod$info()$index)
+  idx <- names(mod$info()$index) %in% model_compartments()
 
   # check that states sum to N
-  expect_equal(colSums(y[seq(2, 9), , ]), y[idx["N"], , ])
+  expect_equal(colSums(y[idx, , ]), y[idx["N"], , ])
   expect_true(all(y >= 0))
 
   tmp <- c(1, 25700346, 5359260, 12089, 0, 2345, 229, 0, 24929013, 56003282,
@@ -29,6 +29,7 @@ test_that("there are no infections when beta is 0", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -45,6 +46,7 @@ test_that("there are no infections when A0 = 0", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -61,6 +63,7 @@ test_that("there are no symptomatic infections when p_S = 0", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -78,6 +81,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -94,6 +98,7 @@ test_that("there is no iGAS when p_I = 0", {
   expect_true(any(y$F > 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -110,6 +115,7 @@ test_that("there is no pharyngitis when p_I = 1", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -126,6 +132,7 @@ test_that("there is no scarlet fever when p_F = 0", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -142,6 +149,7 @@ test_that("there is no pharyngitis when p_F = 1", {
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -159,6 +167,7 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
   expect_true(all(unlist(y) >= 0))
 })
 

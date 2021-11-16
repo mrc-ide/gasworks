@@ -10,7 +10,7 @@ test_that("initial_parameters works as expected", {
   pars <- c(example_gas_parameters(), demographic_parameters())
   init_pars <- initial_parameters(pars)
   expect_equal(names(init_pars),
-               sprintf("%s0", c("U", "A", "E", "I", "S", "F", "R")))
+               sprintf("%s0", model_compartments()))
   expect_equal(pars$N0, sum(unlist(init_pars)))
   expect_equal(init_pars$A0, pars$N0 * pars$prev_A)
   expect_equal(init_pars$R0, (pars$N0 - init_pars$A0) * pars$prev_R)

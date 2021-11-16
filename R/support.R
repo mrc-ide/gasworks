@@ -55,3 +55,11 @@ model_week <- function(date) {
 model_week_date <- function(week) {
   model_date(week * 7)
 }
+
+##'@name gasworks_compartments
+##'@title Names of model compartments
+##'@description Names of model compartments
+##'@return Names of model compartments
+model_compartments <- function() {
+  c("U", "A", "E", "I", "S1", "S2", "F", "R")
+}

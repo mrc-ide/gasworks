@@ -100,7 +100,7 @@ initial_parameters <- function(pars) {
   # set initial uninfecteds
   U0 <- pars$N0 - A0 - R0
 
-  list(U0 = U0, A0 = A0, E0 = 0, I0 = 0, S0 = 0, F0 = 0, R0 = R0)
+  list(U0 = U0, A0 = A0, E0 = 0, I0 = 0, S10 = 0, S20 = 0, F0 = 0, R0 = R0)
 }
 
 ##' Transform fitted parameters into gas params
