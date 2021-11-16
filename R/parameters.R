@@ -66,6 +66,13 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
                              demographic_pars = NULL) {
   demographic_pars <- demographic_pars %||% demographic_parameters()
   pars <- c(demographic_pars, gas_pars)
+
+  # add fixed model parameters (i.e. not fitted)
+  pars$delta_E <- 2 # mean days in incubation period
+  pars$delta_I <- 14 # mean days iGAS
+  pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
+  pars$delta_F <- 7 # mean days with scarlet fever
+
   initial_pars <- initial_pars %||% initial_parameters(pars)
   pars <- c(pars, initial_pars)
   check_gas_parameters(pars)
@@ -113,12 +120,6 @@ initial_parameters <- function(pars) {
 ##' @export
 transform <- function(pars) {
   pars <- as.list(pars)
-
-  # add fixed model parameters (i.e. not fitted)
-  pars$delta_E <- 2 # mean days in incubation period
-  pars$delta_I <- 14 # mean days iGAS
-  pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
-  pars$delta_F <- 7 # mean days with scarlet fever
 
   # add initial conditions and demographic parameters
   model_parameters(pars)
