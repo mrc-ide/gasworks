@@ -3,6 +3,7 @@
 export(check_gas_parameters)
 export(demographic_parameters)
 export(initial_parameters)
+export(model)
 export(model_date)
 export(model_day)
 export(model_parameters)

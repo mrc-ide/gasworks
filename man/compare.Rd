@@ -4,7 +4,7 @@
 \alias{compare}
 \title{Calculate the log likelihood of the data given the parameters}
 \usage{
-compare(state, observed, pars = NULL)
+compare(state, observed, pars)
 }
 \arguments{
 \item{state}{State vector for the end of the current day. This is
