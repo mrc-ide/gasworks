@@ -66,12 +66,17 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
                              demographic_pars = NULL) {
   demographic_pars <- demographic_pars %||% demographic_parameters()
   pars <- c(demographic_pars, gas_pars)
-
+  pars$dt <- 1 / 7 # Data is weekly, model steps are daily
   # add fixed model parameters (i.e. not fitted)
-  pars$delta_E <- 2 # mean days in incubation period
-  pars$delta_I <- 14 # mean days iGAS
+  pars$delta_E <- 2   # mean days in incubation period
+  pars$delta_I <- 14  # mean days iGAS
   pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
-  pars$delta_F <- 7 # mean days with scarlet fever
+  pars$delta_F <- 7   # mean days with scarlet fever
+
+  # convert duration in days to duration in weeks
+  for (i in grep("^delta_", names(pars))) {
+    pars[[i]] <- pars[[i]] * pars$dt
+  }
 
   initial_pars <- initial_pars %||% initial_parameters(pars)
   pars <- c(pars, initial_pars)
