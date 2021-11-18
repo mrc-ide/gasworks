@@ -16,7 +16,8 @@ test_that("initial_parameters works as expected", {
   expect_equal(init_pars$R0, (pars$N0 - init_pars$A0) * pars$prev_R)
   expect_equal(init_pars$E0, 0)
   expect_equal(init_pars$I0, 0)
-  expect_equal(init_pars$S0, 0)
+  expect_equal(init_pars$S10, 0)
+  expect_equal(init_pars$S20, 0)
   expect_equal(init_pars$F0, 0)
 })
 
