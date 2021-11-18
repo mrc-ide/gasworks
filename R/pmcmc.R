@@ -9,7 +9,6 @@
 ##' @return a single log likelihood
 ##' @export
 compare <- function(state, observed, pars) {
-  exp_noise <- 1e6
   idx <- model_index()
 
   pharyngitis <- calculate_pharyngitis_incidence(state, idx, pars)
@@ -19,11 +18,12 @@ compare <- function(state, observed, pars) {
   ## continuous dist - need to use a normal, relate variance to mean
   ll_pharyngitis <- ll_norm(observed$pharyngitis ,
                             model_mean = pharyngitis,
-                            model_sd = sqrt(pharyngitis) * pars[["k_gp"]])
+                            model_sd = sqrt(pharyngitis) * pars$k_gp,
+                            pars$exp_noise)
   ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever, model = scarlet_fever,
-                                kappa = 1 / pars[["k_gp"]], exp_noise)
-  ll_igas <- ll_nbinom(observed$igas, model = igas, kappa = 1 / pars[["k_hpr"]],
-                       exp_noise)
+                                kappa = 1 / pars$k_gp, pars$exp_noise)
+  ll_igas <- ll_nbinom(observed$igas, model = igas, kappa = 1 / pars$k_hpr,
+                       pars$exp_noise)
 
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
@@ -31,5 +31,5 @@ compare <- function(state, observed, pars) {
 calculate_pharyngitis_incidence <- function(state, idx, pars) {
   # GP surveillance data are per 100,000 population allowing for misattribution
   # with prob phi_S
-  state[idx$pharyngitis_inc, ] * 1e5 / state[idx$N, ] / pars[["phi_S"]]
+  state[idx$pharyngitis_inc, ] * 1e5 / state[idx$N, ] / pars$phi_S
 }

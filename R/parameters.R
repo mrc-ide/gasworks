@@ -76,6 +76,9 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
   pars$delta_F <- 7   # mean days with scarlet fever
 
+  # exponential noise parameter for observation dist
+  pars$exp_noise <- 1e6
+
   # convert duration in days to duration in weeks
   for (i in grep("^delta_", names(pars))) {
     pars[[i]] <- pars[[i]] * pars$dt
