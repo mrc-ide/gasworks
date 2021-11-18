@@ -85,9 +85,10 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
 
 
 ##' @importFrom stats dnorm
-ll_norm <- function(data, model_mean, model_sd) {
+ll_norm <- function(data, model_mean, model_sd, exp_noise) {
   if (is.na(data)) {
     return(numeric(length(model_mean)))
   }
-  dnorm(data, model_mean, model_sd, log = TRUE)
+  sd <- model_sd +  rexp(length(model_sd), rate = exp_noise)
+  dnorm(data, model_mean, sd, log = TRUE)
 }

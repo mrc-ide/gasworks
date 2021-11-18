@@ -18,4 +18,14 @@ test_that("compare function works", {
 
   ll_max <- compare(state, as.list(observed[, 1]), pars)
   expect_true(mean(ll_max) > mean(ll))
+
+  observed <- list(igas = NA, scarlet_fever = 53, pharyngitis = 50)
+  ll <- compare(state, observed, pars)
+  observed <- list(igas = 25, scarlet_fever = NA, pharyngitis = 50)
+  ll <- compare(state, observed, pars)
+  observed <- list(igas = 25, scarlet_fever = 53, pharyngitis = NA)
+  ll <- compare(state, observed, pars)
+  observed <- list(igas = NA, scarlet_fever = NA, pharyngitis = NA)
+  ll <- compare(state, observed, pars)
+
 })
