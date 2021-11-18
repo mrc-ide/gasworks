@@ -73,3 +73,21 @@ model_index <- function() {
   mod <- model$new(pars, 1, 1)
   mod$info()$index
 }
+
+##' @importFrom stats dnbinom rexp
+ll_nbinom <- function(data, model, kappa, exp_noise) {
+  if (is.na(data)) {
+    return(numeric(length(model)))
+  }
+  mu <- model + rexp(length(model), rate = exp_noise)
+  dnbinom(data, kappa, mu = mu, log = TRUE)
+}
+
+
+##' @importFrom stats dnorm
+ll_norm <- function(data, model_mean, model_sd) {
+  if (is.na(data)) {
+    return(numeric(length(model_mean)))
+  }
+  dnorm(data, model_mean, model_sd, log = TRUE)
+}

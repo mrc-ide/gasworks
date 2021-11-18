@@ -8,21 +8,27 @@
 ##' @param pars A list of parameters, as created by [model_parameters()]
 ##' @return a single log likelihood
 compare <- function(state, observed, pars) {
+  exp_noise <- 1e6
   idx <- model_index()
 
-  # GP surveillance data are per 100,000 population
-  pharyngitis <- state[idx$pharyngitis, ] * 1e5 / state[idx$N, ]
-  scarlet_fever <- state[idx$scarlet_fever, ]
-  igas <- state[idx$igas, ]
+  pharyngitis <- calculate_pharyngitis_incidence(state, idx, pars)
+  scarlet_fever <- state[idx$scarlet_fever_inc, , ]
+  igas <- state[idx$igas_inc, , ]
 
-  ## TODO: incorporate % of pharyngitis attributable to GAS
-  ll_pharyngitis <- dnbinom(observed$pharyngitis * pars[["phi_gas"]],
-                            size = 1 / pars[["k_gp"]],
-                            mu = pharyngitis, log = TRUE)
-  ll_scarlet_fever <- dnbinom(observed$scarlet_fever, size = 1 / pars[["k_gp"]],
-                              mu = scarlet_fever, log = TRUE)
-  ll_igas <- dnbinom(observed$igas, size = 1 / pars[["k_hpr"]],
-                     mu = igas, log = TRUE)
+  ## continuous dist - need to use a normal, relate variance to mean
+  ll_pharyngitis <- ll_norm(observed$pharyngitis ,
+                            model_mean = pharyngitis,
+                            model_sd = sqrt(pharyngitis) * pars[["k_gp"]])
+  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever, model = scarlet_fever,
+                                kappa = 1 / pars[["k_gp"]], exp_noise)
+  ll_igas <- ll_nbinom(observed$igas, model = igas, kappa = 1 / pars[["k_hpr"]],
+                       exp_noise)
 
   ll_pharyngitis + ll_scarlet_fever + ll_igas
+}
+
+calculate_pharyngitis_incidence <- function(state, idx, pars) {
+  # GP surveillance data are per 100,000 population allowing for misattribution
+  # with prob phi_S
+  state[idx$pharyngitis_inc, , ] * 1e5 / state[idx$N, , ] / pars[["phi_S"]]
 }

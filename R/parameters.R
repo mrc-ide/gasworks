@@ -49,7 +49,10 @@ example_gas_parameters <- function() {
        p_I = 0.0001,
        p_F = 0.001,
        delta_A = 30,
-       delta_R = 365 * 5)
+       delta_R = 365 * 5,
+       k_gp = 50,
+       k_hpr = 50,
+       phi_S = 0.25)
 }
 
 
