@@ -7,6 +7,7 @@
 ##' @param observed Observed data.
 ##' @param pars A list of parameters, as created by [model_parameters()]
 ##' @return a single log likelihood
+##' @export
 compare <- function(state, observed, pars) {
   exp_noise <- 1e6
   idx <- model_index()
