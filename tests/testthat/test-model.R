@@ -3,10 +3,10 @@ pars <- transform(example_gas_parameters())
 test_that("model runs", {
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
-  idx <- names(mod$info()$index) %in% model_compartments()
+  rownames(y) <- names(mod$info()$index)
 
   # check that states sum to N
-  expect_equal(colSums(y[idx, , ]), y[idx["N"], , ])
+  expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
   tmp <- c(1, 25700346, 5359260, 12089, 0, 2345, 229, 0, 24929013, 56003282,
