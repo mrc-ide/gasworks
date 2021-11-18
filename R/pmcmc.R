@@ -12,8 +12,8 @@ compare <- function(state, observed, pars) {
   idx <- model_index()
 
   pharyngitis <- calculate_pharyngitis_incidence(state, idx, pars)
-  scarlet_fever <- state[idx$scarlet_fever_inc, , ]
-  igas <- state[idx$igas_inc, , ]
+  scarlet_fever <- state[idx$scarlet_fever_inc, ]
+  igas <- state[idx$igas_inc, ]
 
   ## continuous dist - need to use a normal, relate variance to mean
   ll_pharyngitis <- ll_norm(observed$pharyngitis ,
@@ -30,5 +30,5 @@ compare <- function(state, observed, pars) {
 calculate_pharyngitis_incidence <- function(state, idx, pars) {
   # GP surveillance data are per 100,000 population allowing for misattribution
   # with prob phi_S
-  state[idx$pharyngitis_inc, , ] * 1e5 / state[idx$N, , ] / pars[["phi_S"]]
+  state[idx$pharyngitis_inc, ] * 1e5 / state[idx$N, ] / pars[["phi_S"]]
 }
