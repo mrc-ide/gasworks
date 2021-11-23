@@ -16,13 +16,17 @@ NULL
 ##' followed by the U compartment, R compartment, entrants_inc and leavers_inc
 ##' @export
 index <- function(info) {
-  list(run = c(pharyngitis_inc = info$index$pharyngitis_inc,
-               scarlet_fever_inc = info$index$scarlet_fever_inc,
-               igas_inc = info$index$igas_inc,
-               N = info$index$N),
-       state = c(U = info$index$U,
-                 R = info$index$R,
-                 infections_inc = info$index$infections_inc,
-                 entrants_inc = info$index$entrants_inc,
-                 leavers_inc = info$index$leavers_inc))
+  index_run <- c(pharyngitis_inc = info$index$pharyngitis_inc,
+                 scarlet_fever_inc = info$index$scarlet_fever_inc,
+                 igas_inc = info$index$igas_inc,
+                 N = info$index$N)
+
+  index_save <- c(U = info$index$U,
+                  R = info$index$R,
+                  infections_inc = info$index$infections_inc,
+                  entrants_inc = info$index$entrants_inc,
+                  leavers_inc = info$index$leavers_inc)
+
+  list(run = index_run,
+       state = c(index_run, index_save))
 }
