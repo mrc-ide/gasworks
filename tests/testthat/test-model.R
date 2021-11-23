@@ -247,8 +247,8 @@ test_that("incidence time series output correctly", {
   expect_equal(y["F", , 2], y["scarlet_fever_inc", , 2])
   expect_equal(y["I", , 5], rowSums(y["igas_inc", , ]))
   expect_equal(y["I", , 2], y["igas_inc", , 2])
-  expect_true(all(y["entrants_inc", ,] == 0))
-  expect_true(all(y["leavers_inc", ,] == 0))
+  expect_true(all(y["entrants_inc", , ] == 0))
+  expect_true(all(y["leavers_inc", , ] == 0))
 
   pars$delta_S <- 1e6
   mod <- model$new(pars, 0, 5, seed = 1L)

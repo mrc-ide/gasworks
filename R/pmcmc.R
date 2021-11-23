@@ -16,7 +16,7 @@ compare <- function(state, observed, pars) {
   igas <- state[idx$igas_inc, ]
 
   ## continuous dist - need to use a normal, relate variance to mean
-  ll_pharyngitis <- ll_norm(observed$pharyngitis ,
+  ll_pharyngitis <- ll_norm(observed$pharyngitis,
                             model_mean = pharyngitis,
                             model_sd = sqrt(pharyngitis) * pars$k_gp,
                             pars$exp_noise)

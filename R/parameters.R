@@ -105,7 +105,7 @@ demographic_parameters <- function() {
 ##' @name initial_parameters
 ##' @title Initial conditions for the model
 ##' @description Initial conditions for the model
-##' @param pars A parameter list containing `N0`, `prev_A` and `prev_R` elements.
+##' @param pars A parameter list containing `N0`, `prev_A` and `prev_R`.
 ##' @return A named list of initial model states
 ##' @export
 initial_parameters <- function(pars) {
