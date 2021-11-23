@@ -7,14 +7,15 @@ Authors@R:
            role = c("aut", "cre"),
            email = "l.whittles@imperial.ac.uk",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Models of GAS transmission
+Description: Models of Group A Streptococcus (GAS) Transmission.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Language: en-GB
 Imports: 
     dust (>= 0.10.0),
-    gonovax
+    gonovax,
+    abind
 LinkingTo:
     cpp11,
     dust (>= 0.10.0)
