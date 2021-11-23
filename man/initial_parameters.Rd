@@ -7,7 +7,7 @@
 initial_parameters(pars)
 }
 \arguments{
-\item{pars}{A parameter list containing \code{N0}, \code{prev_A} and \code{prev_R} elements.}
+\item{pars}{A parameter list containing \code{N0}, \code{prev_A} and \code{prev_R}.}
 }
 \value{
 A named list of initial model states
