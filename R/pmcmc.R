@@ -18,10 +18,10 @@ compare <- function(state, observed, pars) {
   ## continuous dist - need to use a normal, relate variance to mean
   ll_pharyngitis <- ll_norm(observed$pharyngitis,
                             model_mean = pharyngitis,
-                            model_sd = sqrt(pharyngitis) * pars$k_gp,
+                            model_sd = sqrt(pharyngitis) / pars$k_gp,
                             pars$exp_noise)
   ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever, model = scarlet_fever,
-                                kappa = 1 / pars$k_gp, pars$exp_noise)
+                                kappa = 1 / pars$k_hpr, pars$exp_noise)
   ll_igas <- ll_nbinom(observed$igas, model = igas, kappa = 1 / pars$k_hpr,
                        pars$exp_noise)
 
