@@ -7,7 +7,7 @@
 model_date(day)
 }
 \arguments{
-\item{date}{A vector of model_days (i.e. integers),
+\item{day}{A vector of model_days (i.e. integers),
 where model_day 1 = 1 Jan 2014}
 }
 \value{

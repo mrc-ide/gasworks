@@ -17,7 +17,7 @@ model_day <- function(date) {
 ##' @name model_date
 ##' @title Convert model_day to date
 ##' @description Convert model_day to date
-##' @param date A vector of model_days (i.e. integers),
+##' @param day A vector of model_days (i.e. integers),
 ##'  where model_day 1 = 1 Jan 2014
 ##' @return A vector of dates
 ##' @examples
@@ -45,7 +45,7 @@ model_week <- function(date) {
 ##' @name model_week_date
 ##' @title Convert model_week to date on which the week ends
 ##' @description Convert model_week to date on which the week ends
-##' @param date A vector of model_weeks (i.e. integers),
+##' @param week A vector of model_weeks (i.e. integers),
 ##'  where model_week 1 ends on 7 Jan 2014
 ##' @return A vector of dates giving the date on which the week ends
 ##' @examples

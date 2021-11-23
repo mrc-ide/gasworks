@@ -7,7 +7,7 @@
 model_week_date(week)
 }
 \arguments{
-\item{date}{A vector of model_weeks (i.e. integers),
+\item{week}{A vector of model_weeks (i.e. integers),
 where model_week 1 ends on 7 Jan 2014}
 }
 \value{
