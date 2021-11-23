@@ -41,8 +41,8 @@ check_gas_parameters <- function(pars) {
 example_gas_parameters <- function() {
   list(prev_A = 0.1,
        prev_R = 0.5,
-       beta = 0.01,
-       sigma = 0.1,
+       beta = 2,
+       sigma = 0.6,
        t_s = 100,
        p_S = 0.6,
        p_R = 0.3,
@@ -50,8 +50,8 @@ example_gas_parameters <- function() {
        p_F = 0.001,
        delta_A = 30,
        delta_R = 365 * 5,
-       k_gp = 50,
-       k_hpr = 50,
+       k_gp = 1,
+       k_hpr = 1,
        phi_S = 0.25)
 }
 
