@@ -39,20 +39,21 @@ check_gas_parameters <- function(pars) {
 ##' @description Example of fitted gas parameters for use in testing
 ##' @return A list of named model parameters
 example_gas_parameters <- function() {
-  list(prev_A = 0.1,
-       prev_R = 0.5,
-       beta = 2,
-       sigma = 0.6,
-       t_s = 100,
-       p_S = 0.6,
-       p_R = 0.3,
-       p_I = 0.0001,
-       p_F = 0.001,
-       delta_A = 30,
-       delta_R = 365 * 5,
-       k_gp = 1,
-       k_hpr = 1,
-       phi_S = 0.25)
+  pars <- list(prev_A = 0.1,
+               prev_R = 0.5,
+               beta = 2,
+               sigma = 0.6,
+               t_s = 100,
+               p_S = 0.6,
+               p_R = 0.3,
+               p_I = 0.0001,
+               p_F = 0.001,
+               delta_A = 30,
+               delta_R = 365 * 5,
+               k_gp = 1,
+               k_hpr = 1,
+               phi_S = 0.25)
+  transform(pars)
 }
 
 
