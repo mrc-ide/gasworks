@@ -7,8 +7,8 @@ test_that("compare function works", {
   rownames(state) <- names(model_index())
   observed <- list(igas = 25, scarlet_fever = 53, pharyngitis = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-2617.78823378976, -2616.89570687162, -2619.31700105772,
-                     -2618.21700339307, -2618.68782085051))
+  expect_equal(ll, c(-3171.93571046504, -3170.30435640871, -3175.45068548497,
+                     -3171.95306655775, -3173.38611775021))
 
   nms <- c("igas_inc", "scarlet_fever_inc", "pharyngitis_inc")
   observed2 <- state[nms, ]
