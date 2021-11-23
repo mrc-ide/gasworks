@@ -143,6 +143,7 @@ public:
     real_type initial_S2;
     real_type initial_U;
     real_type initial_entrants_inc;
+    real_type initial_foi;
     real_type initial_igas_inc;
     real_type initial_infections_inc;
     real_type initial_leavers_inc;
@@ -183,10 +184,10 @@ public:
     shared(pars.shared), internal(pars.internal) {
   }
   size_t size() {
-    return 16;
+    return 17;
   }
   std::vector<real_type> initial(size_t step) {
-    std::vector<real_type> state(16);
+    std::vector<real_type> state(17);
     state[0] = shared->initial_time;
     state[1] = shared->initial_U;
     state[2] = shared->initial_A;
@@ -203,10 +204,10 @@ public:
     state[13] = shared->initial_igas_inc;
     state[14] = shared->initial_entrants_inc;
     state[15] = shared->initial_leavers_inc;
+    state[16] = shared->initial_foi;
     return state;
   }
   HOST void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
-    const real_type time = state[0];
     const real_type U = state[1];
     const real_type E = state[3];
     const real_type A = state[2];
@@ -222,7 +223,7 @@ public:
     const real_type igas_inc = state[13];
     const real_type entrants_inc = state[14];
     const real_type leavers_inc = state[15];
-    real_type seasonality = 1 + shared->sigma * std::cos(2 * shared->pi * (shared->t0 + time - shared->t_s) / (real_type) 365.25);
+    real_type seasonality = 1 + shared->sigma * std::cos(2 * shared->pi * (shared->t0 + step - shared->t_s) / (real_type) 365.25);
     real_type lambda = shared->beta * seasonality * (A + S1 + S2) / (real_type) N;
     real_type n_xU = dust::random::poisson<real_type>(rng_state, shared->alpha * shared->dt);
     state_next[0] = (step + 1) * shared->dt;
@@ -236,6 +237,7 @@ public:
     real_type r_UA = (1 - shared->p_S) * lambda;
     real_type r_UE = shared->p_S * lambda;
     state_next[14] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? n_xU : entrants_inc + n_xU));
+    state_next[16] = lambda;
     real_type n_Ax = dust::random::binomial<real_type>(rng_state, n_A, shared->omega / (real_type) shared->r_A);
     real_type n_Ex = dust::random::binomial<real_type>(rng_state, n_E, shared->omega / (real_type) shared->r_E);
     real_type n_Fx = dust::random::binomial<real_type>(rng_state, n_F, shared->omega / (real_type) shared->r_F);
@@ -498,6 +500,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   auto shared = std::make_shared<model::shared_type>();
   model::internal_type internal;
   shared->initial_entrants_inc = 0;
+  shared->initial_foi = 0;
   shared->initial_igas_inc = 0;
   shared->initial_infections_inc = 0;
   shared->initial_leavers_inc = 0;
@@ -587,8 +590,8 @@ template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const model::internal_type internal = pars.internal;
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "U", "A", "E", "I", "S1", "S2", "F", "R", "N", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "entrants_inc", "leavers_inc"});
-  cpp11::writable::list dim(16);
+  cpp11::writable::strings nms({"time", "U", "A", "E", "I", "S1", "S2", "F", "R", "N", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "entrants_inc", "leavers_inc", "foi"});
+  cpp11::writable::list dim(17);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});
   dim[2] = cpp11::writable::integers({1});
@@ -605,8 +608,9 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   dim[13] = cpp11::writable::integers({1});
   dim[14] = cpp11::writable::integers({1});
   dim[15] = cpp11::writable::integers({1});
+  dim[16] = cpp11::writable::integers({1});
   dim.names() = nms;
-  cpp11::writable::list index(16);
+  cpp11::writable::list index(17);
   index[0] = cpp11::writable::integers({1});
   index[1] = cpp11::writable::integers({2});
   index[2] = cpp11::writable::integers({3});
@@ -623,8 +627,9 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   index[13] = cpp11::writable::integers({14});
   index[14] = cpp11::writable::integers({15});
   index[15] = cpp11::writable::integers({16});
+  index[16] = cpp11::writable::integers({17});
   index.names() = nms;
-  size_t len = 16;
+  size_t len = 17;
   using namespace cpp11::literals;
   return cpp11::writable::list({
            "dim"_nm = dim,

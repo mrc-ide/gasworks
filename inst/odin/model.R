@@ -34,8 +34,9 @@ update(leavers_inc) <- (if (step %% steps_per_week == 0) n_Nx
 
 ## Force of infection
 pi <- 3.14159265358979
-seasonality <-  1 + sigma * cos(2 * pi * (t0 + time - t_s) / 365.25)
+seasonality <-  1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25)
 lambda <- beta * seasonality * (A + S1 + S2) / N
+update(foi) <- lambda
 
 ## Rates of transition between compartments
 r_UE <- p_S * lambda
@@ -114,6 +115,7 @@ initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
 initial(entrants_inc) <- 0
 initial(leavers_inc) <- 0
+initial(foi) <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
