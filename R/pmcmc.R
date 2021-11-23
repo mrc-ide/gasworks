@@ -9,11 +9,10 @@
 ##' @return a single log likelihood
 ##' @export
 compare <- function(state, observed, pars) {
-  idx <- model_index()
 
-  pharyngitis <- calculate_pharyngitis_incidence(state, idx, pars)
-  scarlet_fever <- state[idx$scarlet_fever_inc, ]
-  igas <- state[idx$igas_inc, ]
+  pharyngitis <- calculate_pharyngitis_incidence(state, pars)
+  scarlet_fever <- state["scarlet_fever_inc", ]
+  igas <- state["igas_inc", ]
 
   ## continuous dist - need to use a normal, relate variance to mean
   ll_pharyngitis <- ll_norm(observed$pharyngitis,
@@ -28,8 +27,8 @@ compare <- function(state, observed, pars) {
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
 
-calculate_pharyngitis_incidence <- function(state, idx, pars) {
+calculate_pharyngitis_incidence <- function(state, pars) {
   # GP surveillance data are per 100,000 population allowing for misattribution
   # with prob phi_S
-  state[idx$pharyngitis_inc, ] * 1e5 / state[idx$N, ] / pars$phi_S
+  state["pharyngitis_inc", ] * 1e5 / state["N", ] / pars$phi_S
 }
