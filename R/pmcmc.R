@@ -1,0 +1,34 @@
+
+##' @title Calculate the log likelihood of the data given the parameters
+##' @description Calculate the log likelihood of the data given the parameters
+##' @param state State vector for the end of the current day. This is
+##'   assumed to be filtered following [model_index()] so contains
+##'   3 rows corresponding to pharyngitis, scarlet_fever and igas flows
+##' @param observed Observed data.
+##' @param pars A list of parameters, as created by [model_parameters()]
+##' @return a single log likelihood
+##' @export
+compare <- function(state, observed, pars) {
+
+  pharyngitis <- calculate_pharyngitis_incidence(state, pars)
+  scarlet_fever <- state["scarlet_fever_inc", ]
+  igas <- state["igas_inc", ]
+
+  ## continuous dist - need to use a normal, relate variance to mean
+  ll_pharyngitis <- ll_norm(observed$pharyngitis,
+                            model_mean = pharyngitis,
+                            model_sd = sqrt(pharyngitis) / pars$k_gp,
+                            pars$exp_noise)
+  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever, model = scarlet_fever,
+                                kappa = 1 / pars$k_hpr, pars$exp_noise)
+  ll_igas <- ll_nbinom(observed$igas, model = igas, kappa = 1 / pars$k_hpr,
+                       pars$exp_noise)
+
+  ll_pharyngitis + ll_scarlet_fever + ll_igas
+}
+
+calculate_pharyngitis_incidence <- function(state, pars) {
+  # GP surveillance data are per 100,000 population allowing for misattribution
+  # with prob phi_S
+  state["pharyngitis_inc", ] * 1e5 / state["N", ] / pars$phi_S
+}

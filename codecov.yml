@@ -2,3 +2,4 @@ codecov:
   token: 1386104f-b27c-45d1-917f-806e95cf37a6
 
 ignore:
+-   R/dust.R
