@@ -69,7 +69,7 @@ model_compartments <- function() {
 ##'@description Named list of model output indices
 ##'@return Named list of model output indices
 model_index <- function() {
-  pars <- transform(example_gas_parameters())
+  pars <- example_gas_parameters()
   mod <- model$new(pars, 1, 1)
   mod$info()$index
 }

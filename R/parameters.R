@@ -132,7 +132,9 @@ initial_parameters <- function(pars) {
 ##' @export
 transform <- function(pars) {
   pars <- as.list(pars)
-
+  if (!is.null(pars$dt)) {
+    stop("Parameters have already been transformed")
+  }
   # add initial conditions and demographic parameters
   model_parameters(pars)
 }
