@@ -7,14 +7,13 @@ test_that("compare function works", {
   rownames(state) <- names(model_index())
   observed <- list(igas = 25, scarlet_fever = 53, pharyngitis = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-3171.93571046504, -3170.30435640871, -3175.45068548497,
-                     -3171.95306655775, -3173.38611775021))
+  expect_equal(ll, c(-3171.93562883551, -3170.30435592758, -3175.45070886055,
+                     -3171.95326030647, -3173.38598648839))
 
   nms <- c("igas_inc", "scarlet_fever_inc", "pharyngitis_inc")
   observed2 <- state[nms, ]
   rownames(observed2) <- gsub("_inc", "", nms)
-  observed2["pharyngitis", ] <-
-    calculate_pharyngitis_incidence(state, model_index(), pars)
+  observed2["pharyngitis", ] <- calculate_pharyngitis_incidence(state, pars)
 
   ll_max <- compare(state, as.list(observed2[, 1]), pars)
   expect_true(mean(ll_max) > mean(ll))
