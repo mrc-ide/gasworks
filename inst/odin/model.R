@@ -3,132 +3,145 @@ steps_per_week <- 7
 dt <- 1 / steps_per_week
 initial(time) <- 0
 update(time) <- (step + 1) * dt
+# i: number of age groups
+n_group <- user(1)
 
 ## Core equations for transitions between compartments:
-update(U)  <- U  + n_xU - n_UE - n_UA + n_AU + n_RU - n_Ux
-update(E)  <- E  + n_UE - n_ES - n_EI - n_Ex
-update(A)  <- A  + n_UA - n_AU - n_AR - n_Ax
-update(S1) <- S1 + n_ES - n_SF - n_SS - n_S1x
-update(S2) <- S2 + n_SS - n_SR - n_S2x
-update(F)  <- F  + n_SF - n_FR - n_Fx
-update(I)  <- I  + n_EI - n_IR - n_Ix
-update(R)  <- R  + n_AR + n_SR + n_FR + n_IR - n_RU - n_Rx
-update(N)  <- N  + n_xU - n_Nx
+update(U[])  <- U[i]  + n_xU[i] - n_UE[i] - n_UA[i] + n_AU[i] + n_RU[i] -
+  n_Ux[i]
+update(E[])  <- E[i]  + n_UE[i] - n_ES[i] - n_EI[i] - n_Ex[i]
+update(A[])  <- A[i]  + n_UA[i] - n_AU[i] - n_AR[i] - n_Ax[i]
+update(S1[]) <- S1[i] + n_ES[i] - n_SF[i] - n_SS[i] - n_S1x[i]
+update(S2[]) <- S2[i] + n_SS[i] - n_SR[i] - n_S2x[i]
+update(F[])  <- F[i]  + n_SF[i] - n_FR[i] - n_Fx[i]
+update(I[])  <- I[i]  + n_EI[i] - n_IR[i] - n_Ix[i]
+update(R[])  <- R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] - n_RU[i] -
+  n_Rx[i]
+update(N[])  <- N[i]  + n_xU[i] - n_Nx[i]
 
-n_Nx <- n_Ux + n_Ex + n_Ax + n_S1x + n_S2x + n_Fx + n_Ix + n_Rx
+n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Fx[i] +
+  n_Ix[i] + n_Rx[i]
 
 
 ## Output incidence flows:
-update(infections_inc) <- (if (step %% steps_per_week == 0) n_UE + n_UA
-                           else infections_inc + n_UE + n_UA)
-update(pharyngitis_inc) <- (if (step %% steps_per_week == 0) n_SS + n_SF
-                            else pharyngitis_inc + n_SS + n_SF)
-update(scarlet_fever_inc) <- (if (step %% steps_per_week == 0) n_SF
-                              else scarlet_fever_inc + n_SF)
-update(igas_inc) <- (if (step %% steps_per_week == 0) n_EI
-                     else igas_inc + n_EI)
-update(entrants_inc) <- (if (step %% steps_per_week == 0) n_xU
-                         else entrants_inc + n_xU)
-update(leavers_inc) <- (if (step %% steps_per_week == 0) n_Nx
-                        else leavers_inc + n_Nx)
+update(infections_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_UE[]) + sum(n_UA[])
+  else infections_inc + sum(n_UE[]) + sum(n_UA[]))
+update(pharyngitis_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_SS[]) + sum(n_SF[])
+  else pharyngitis_inc +sum(n_SS[]) + sum(n_SF[]))
+update(scarlet_fever_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_SF[])
+  else scarlet_fever_inc + sum(n_SF[]))
+update(igas_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_EI[])
+  else igas_inc + sum(n_EI[]))
+update(entrants_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_xU[])
+  else entrants_inc + sum(n_xU[]))
+update(leavers_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_Nx[])
+  else leavers_inc + sum(n_Nx[]))
 
 ## Force of infection
 pi <- 3.14159265358979
-seasonality <-  1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25)
-lambda <- beta * seasonality * (A + S1 + S2) / N
-update(foi) <- lambda
+update(beta_t) <- beta * (1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25))
+lambda[, ] <- beta_t * m[i, j] *  (A[j] + S1[j] + S2[j]) / N[j]
+foi[] <- sum(lambda[i, ])
+
 
 ## Rates of transition between compartments
-r_UE <- p_S * lambda
-r_UA <- (1 - p_S) * lambda
-r_AR <- p_R / delta_A
-r_AU <- (1 - p_R) / delta_A
-r_EI <- p_I / delta_E
-r_ES <- (1 - p_I) / delta_E
-r_IR <- 1 / delta_I
-r_SF <- p_F / delta_S
-r_SS <- (1 - p_F) / delta_S
-r_SR <- 1 / delta_S
-r_FR <- 1 / delta_F
-r_RU <- 1 / delta_R
+r_UE[] <- p_S * foi[i]
+r_UA[] <- (1 - p_S) * foi[i]
+r_AR[] <- p_R / delta_A
+r_AU[] <- (1 - p_R) / delta_A
+r_EI[] <- p_I / delta_E
+r_ES[] <- (1 - p_I) / delta_E
+r_IR[] <- 1 / delta_I
+r_SF[] <- p_F / delta_S
+r_SS[] <- (1 - p_F) / delta_S
+r_SR[] <- 1 / delta_S
+r_FR[] <- 1 / delta_F
+r_RU[] <- 1 / delta_R
 
 ## Total rates of transmission out of each compartment
-r_U  <- r_UE + r_UA + omega
-r_A  <- r_AU + r_AR + omega
-r_E  <- r_EI + r_ES + omega
-r_I  <- r_IR + omega
-r_S1 <- r_SF + r_SS + omega
-r_S2 <- r_SR + omega
-r_F  <- r_FR + omega
-r_R  <- r_RU + omega
+r_U[]  <- r_UE[i] + r_UA[i] + omega[i]
+r_A[]  <- r_AU[i] + r_AR[i] + omega[i]
+r_E[]  <- r_EI[i] + r_ES[i] + omega[i]
+r_I[]  <- r_IR[i] + omega[i]
+r_S1[] <- r_SF[i] + r_SS[i] + omega[i]
+r_S2[] <- r_SR[i] + omega[i]
+r_F[]  <- r_FR[i] + omega[i]
+r_R[]  <- r_RU[i] + omega[i]
 
 ##Draw number of entrants
-n_xU <- rpois(alpha * dt)
+n_xU[] <- rpois(alpha[i] * dt)
 
 ## Draws from binomial distributions for numbers leaving each compartments
-n_U  <- rbinom(U,  1 - exp(-r_U  * dt))
-n_A  <- rbinom(A,  1 - exp(-r_A  * dt))
-n_E  <- rbinom(E,  1 - exp(-r_E  * dt))
-n_I  <- rbinom(I,  1 - exp(-r_I  * dt))
-n_S1 <- rbinom(S1, 1 - exp(-r_S1 * dt))
-n_S2 <- rbinom(S2, 1 - exp(-r_S2 * dt))
-n_F  <- rbinom(F,  1 - exp(-r_F  * dt))
-n_R  <- rbinom(R,  1 - exp(-r_R  * dt))
+n_U[]  <- rbinom(U[i],  1 - exp(-r_U[i]  * dt))
+n_A[]  <- rbinom(A[i],  1 - exp(-r_A[i]  * dt))
+n_E[]  <- rbinom(E[i],  1 - exp(-r_E[i]  * dt))
+n_I[]  <- rbinom(I[i],  1 - exp(-r_I[i]  * dt))
+n_S1[] <- rbinom(S1[i], 1 - exp(-r_S1[i] * dt))
+n_S2[] <- rbinom(S2[i], 1 - exp(-r_S2[i] * dt))
+n_F[]  <- rbinom(F[i],  1 - exp(-r_F[i]  * dt))
+n_R[]  <- rbinom(R[i],  1 - exp(-r_R[i]  * dt))
 
 # Draw the number of leavers from each compartment
-n_Ux  <- rbinom(n_U,  omega / r_U)
-n_Ax  <- rbinom(n_A,  omega / r_A)
-n_Ex  <- rbinom(n_E,  omega / r_E)
-n_Ix  <- rbinom(n_I,  omega / r_I)
-n_S1x <- rbinom(n_S1, omega / r_S1)
-n_S2x <- rbinom(n_S2, omega / r_S2)
-n_Fx  <- rbinom(n_F,  omega / r_F)
-n_Rx  <- rbinom(n_R,  omega / r_R)
+n_Ux[]  <- rbinom(n_U[i],  omega[i] / r_U[i])
+n_Ax[]  <- rbinom(n_A[i],  omega[i] / r_A[i])
+n_Ex[]  <- rbinom(n_E[i],  omega[i] / r_E[i])
+n_Ix[]  <- rbinom(n_I[i],  omega[i] / r_I[i])
+n_S1x[] <- rbinom(n_S1[i], omega[i] / r_S1[i])
+n_S2x[] <- rbinom(n_S2[i], omega[i] / r_S2[i])
+n_Fx[]  <- rbinom(n_F[i],  omega[i] / r_F[i])
+n_Rx[]  <- rbinom(n_R[i],  omega[i] / r_R[i])
 
 ## Draw the numbers of transitions between compartments
-n_UE <- rbinom(n_U - n_Ux, p_S)
-n_UA <- n_U - n_Ux - n_UE
-n_AR <- rbinom(n_A - n_Ax, p_R)
-n_AU <- n_A - n_Ax - n_AR
-n_EI <- rbinom(n_E - n_Ex, p_I)
-n_ES <- n_E - n_Ex - n_EI
-n_IR <- n_I - n_Ix
-n_SF <- rbinom(n_S1 - n_S1x, p_F)
-n_SS <- n_S1 - n_S1x - n_SF
-n_SR <- n_S2 - n_S2x
-n_FR <- n_F - n_Fx
-n_RU <- n_R - n_Rx
+n_UE[] <- rbinom(n_U[i] - n_Ux[i], p_S)
+n_UA[] <- n_U[i] - n_Ux[i] - n_UE[i]
+n_AR[] <- rbinom(n_A[i] - n_Ax[i], p_R)
+n_AU[] <- n_A[i] - n_Ax[i] - n_AR[i]
+n_EI[] <- rbinom(n_E[i] - n_Ex[i], p_I)
+n_ES[] <- n_E[i] - n_Ex[i] - n_EI[i]
+n_IR[] <- n_I[i] - n_Ix[i]
+n_SF[] <- rbinom(n_S1[i] - n_S1x[i], p_F)
+n_SS[] <- n_S1[i] - n_S1x[i] - n_SF[i]
+n_SR[] <- n_S2[i] - n_S2x[i]
+n_FR[] <- n_F[i] - n_Fx[i]
+n_RU[] <- n_R[i] - n_Rx[i]
 
 ## Initial states:
-initial(U)  <- U0
-initial(A)  <- A0
-initial(E)  <- E0
-initial(I)  <- I0
-initial(S1) <- S10
-initial(S2) <- S20
-initial(F)  <- F0
-initial(R)  <- R0
-initial(N)  <- U0 + A0 + E0 + I0 + S10 + S20 + F0 + R0
+initial(U[])  <- U0[i]
+initial(A[])  <- A0[i]
+initial(E[])  <- E0[i]
+initial(I[])  <- I0[i]
+initial(S1[]) <- S10[i]
+initial(S2[]) <- S20[i]
+initial(F[])  <- F0[i]
+initial(R[])  <- R0[i]
+initial(N[])  <- U0[i] + A0[i] + E0[i] + I0[i] + S10[i] + S20[i] + F0[i] + R0[i]
 initial(infections_inc) <- 0
 initial(pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
 initial(entrants_inc) <- 0
 initial(leavers_inc) <- 0
-initial(foi) <- 0
+initial(beta_t) <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
-U0  <- user(0)
-A0  <- user(0)
-E0  <- user(0)
-I0  <- user(0)
-S10 <- user(0)
-S20 <- user(0)
-F0  <- user(0)
-R0  <- user(0)
+U0[] <- user()
+A0[] <- user()
+E0[] <- user()
+I0[] <- user()
+S10[] <- user()
+S20[] <- user()
+F0[] <- user()
+R0[] <- user()
 
 beta <- user() # rate of transmission
+m[, ] <- user()
 sigma <- user() # amplitude of seasonal effect
 t0 <- user(0)  # day of model initialisation
 t_s <- user() # day of peak seasonal transmission
@@ -143,5 +156,88 @@ delta_S <- user() # mean duration of pharyngitis symptoms (x 2)
 delta_F <- user() # mean duration of scarlet fever
 delta_R <- user() # mean duration of natural immunity
 
-alpha <- user() # number of population entrants
-omega <- user() # rate of population exit
+alpha[] <- user() # number of population entrants
+omega[] <- user() # rate of population exit
+
+## Object dimensions
+
+dim(m)      <- c(n_group, n_group)
+dim(lambda) <- c(n_group, n_group)
+dim(foi)   <- n_group
+dim(alpha) <- n_group
+dim(omega) <- n_group
+
+dim(U)  <- n_group
+dim(A)  <- n_group
+dim(E)  <- n_group
+dim(I)  <- n_group
+dim(S1) <- n_group
+dim(S2) <- n_group
+dim(F)  <- n_group
+dim(R)  <- n_group
+dim(N)  <- n_group
+
+dim(U0)  <- n_group
+dim(A0)  <- n_group
+dim(E0)  <- n_group
+dim(I0)  <- n_group
+dim(S10) <- n_group
+dim(S20) <- n_group
+dim(F0)  <- n_group
+dim(R0)  <- n_group
+
+dim(r_UE) <- n_group
+dim(r_UA) <- n_group
+dim(r_AR) <- n_group
+dim(r_AU) <- n_group
+dim(r_EI) <- n_group
+dim(r_ES) <- n_group
+dim(r_IR) <- n_group
+dim(r_SF) <- n_group
+dim(r_SS) <- n_group
+dim(r_SR) <- n_group
+dim(r_FR) <- n_group
+dim(r_RU) <- n_group
+
+dim(r_U) <- n_group
+dim(r_A) <- n_group
+dim(r_E) <- n_group
+dim(r_I) <- n_group
+dim(r_S1) <- n_group
+dim(r_S2) <- n_group
+dim(r_F) <- n_group
+dim(r_R) <- n_group
+
+dim(n_xU) <- n_group
+
+dim(n_U) <- n_group
+dim(n_A) <- n_group
+dim(n_E) <- n_group
+dim(n_I) <- n_group
+dim(n_S1) <- n_group
+dim(n_S2) <- n_group
+dim(n_F) <- n_group
+dim(n_R) <- n_group
+
+dim(n_Ux) <- n_group
+dim(n_Ax) <- n_group
+dim(n_Ex) <- n_group
+dim(n_Ix) <- n_group
+dim(n_S1x) <- n_group
+dim(n_S2x) <- n_group
+dim(n_Fx) <- n_group
+dim(n_Rx) <- n_group
+dim(n_Nx) <- n_group
+
+dim(n_UE) <- n_group
+dim(n_UA) <- n_group
+dim(n_AR) <- n_group
+dim(n_AU) <- n_group
+dim(n_EI) <- n_group
+dim(n_ES) <- n_group
+dim(n_IR) <- n_group
+dim(n_SF) <- n_group
+dim(n_SS) <- n_group
+dim(n_SR) <- n_group
+dim(n_FR) <- n_group
+dim(n_RU) <- n_group
