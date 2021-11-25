@@ -2,6 +2,7 @@
 ##' @title Check model parameters are within permitted ranges
 ##' @description Check model parameters are within permitted ranges
 ##' @param pars a named list of model parameters
+##' @param n_group the number of model age-groups, defaults to 1
 ##' @return NULL
 ##' @export
 
