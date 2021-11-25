@@ -11,8 +11,7 @@
 ##' @export
 compare <- function(state, observed, pars) {
 
-  nms <- c("pharyngitis_rate", "scarlet_fever_inc", "igas_inc")
-  if (!all(nms %in% names(observed))) {
+  if (!all(rownames(state) %in% names(observed))) {
     stop("missing or misnamed data")
   }
 
