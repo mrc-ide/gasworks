@@ -57,6 +57,7 @@ test_that("assert_unit_interval", {
 
 test_that("assert_positive", {
   expect_identical(assert_positive(pi), pi)
+  expect_identical(assert_positive(0.1), 0.1)
   expect_error(assert_positive(0), "'0' must be greater than 0")
   expect_error(assert_positive(pi, 2), "'pi' must be of length 2")
 })

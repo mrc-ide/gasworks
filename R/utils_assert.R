@@ -69,7 +69,7 @@ assert_unit_interval <- function(x, len = length(x),
 assert_positive <- function(x, len = length(x),
                                     name = deparse(substitute(x))) {
   force(name)
-  if (any(x < 1L)) {
+  if (any(x <= 0)) {
     stop(sprintf("'%s' must be greater than 0", name), call. = FALSE)
   }
   assert_length(x, len, name)
