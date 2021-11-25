@@ -33,6 +33,3 @@ compare <- function(state, observed, pars) {
 
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
-
-
-
