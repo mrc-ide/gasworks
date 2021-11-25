@@ -22,26 +22,37 @@ update(N[])  <- N[i]  + n_xU[i] - n_Nx[i]
 n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Fx[i] +
   n_Ix[i] + n_Rx[i]
 
-
 ## Output incidence flows:
-update(infections_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_UE[]) + sum(n_UA[])
-  else infections_inc + sum(n_UE[]) + sum(n_UA[]))
-update(pharyngitis_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_SS[]) + sum(n_SF[])
-  else pharyngitis_inc +sum(n_SS[]) + sum(n_SF[]))
-update(scarlet_fever_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_SF[])
-  else scarlet_fever_inc + sum(n_SF[]))
-update(igas_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_EI[])
-  else igas_inc + sum(n_EI[]))
 update(entrants_inc) <- (
   if (step %% steps_per_week == 0) sum(n_xU[])
   else entrants_inc + sum(n_xU[]))
+
 update(leavers_inc) <- (
   if (step %% steps_per_week == 0) sum(n_Nx[])
   else leavers_inc + sum(n_Nx[]))
+
+update(infections_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_UE[]) + sum(n_UA[])
+  else infections_inc + sum(n_UE[]) + sum(n_UA[]))
+
+pharyngitis_inc_by_group[] <- (
+  if (step %% steps_per_week == 0) n_SS[i] + n_SF[i]
+  else pharyngitis_inc_by_group[i] + n_SS[i] + n_SF[i])
+update(pharyngitis_inc) <- sum(pharyngitis_inc_by_group[])
+
+scarlet_fever_inc_by_group[] <- (
+  if (step %% steps_per_week == 0) sum(n_SF[i])
+  else scarlet_fever_inc_by_group[i] + n_SF[i])
+update(scarlet_fever_inc) <- sum(scarlet_fever_inc_by_group[])
+
+update(igas_inc) <- (
+  if (step %% steps_per_week == 0) sum(n_EI[])
+  else igas_inc + sum(n_EI[]))
+
+## Output incidence rates per 100,000 population
+all_pharyngitis[] <- pharyngitis_inc_by_group[i] / phi_S[i]
+update(pharyngitis_rate) <- sum(all_pharyngitis[]) / sum(N[]) * 1e5
+update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(N[]) * 1e5
 
 ## Force of infection
 pi <- 3.14159265358979
@@ -128,6 +139,8 @@ initial(igas_inc) <- 0
 initial(entrants_inc) <- 0
 initial(leavers_inc) <- 0
 initial(beta_t) <- 0
+initial(pharyngitis_rate) <- 0
+initial(scarlet_fever_rate) <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
@@ -155,6 +168,7 @@ delta_I <- user() # mean duration of invasive disease
 delta_S <- user() # mean duration of pharyngitis symptoms (x 2)
 delta_F <- user() # mean duration of scarlet fever
 delta_R <- user() # mean duration of natural immunity
+phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
 alpha[] <- user() # number of population entrants
 omega[] <- user() # rate of population exit
@@ -166,6 +180,7 @@ dim(lambda) <- c(n_group, n_group)
 dim(foi)   <- n_group
 dim(alpha) <- n_group
 dim(omega) <- n_group
+dim(phi_S) <- n_group
 
 dim(U)  <- n_group
 dim(A)  <- n_group
@@ -241,3 +256,7 @@ dim(n_SS) <- n_group
 dim(n_SR) <- n_group
 dim(n_FR) <- n_group
 dim(n_RU) <- n_group
+
+dim(pharyngitis_inc_by_group) <- n_group
+dim(scarlet_fever_inc_by_group) <- n_group
+dim(all_pharyngitis) <- n_group
