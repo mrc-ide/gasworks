@@ -80,15 +80,19 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
     return(numeric(length(model)))
   }
   mu <- model + rexp(length(model), rate = exp_noise)
-  dnbinom(data, kappa, mu = mu, log = TRUE)
+  # var(x) =  mu + mu ^ 2 * kappa, so kappa = 0 is Poisson,
+  # large kappa is over-dispersed
+  dnbinom(data, size = 1 / kappa, mu = mu, log = TRUE)
 }
 
 
 ##' @importFrom stats dnorm
-ll_norm <- function(data, model_mean, model_sd, exp_noise) {
+ll_norm <- function(data, model, kappa, exp_noise) {
   if (is.na(data)) {
-    return(numeric(length(model_mean)))
+    return(numeric(length(model)))
   }
-  sd <- model_sd +  rexp(length(model_sd), rate = exp_noise)
-  dnorm(data, model_mean, sd, log = TRUE)
+  sd <- sqrt(model * (1 + kappa)) + rexp(length(model), exp_noise)
+  # var(x) =  mu * (1 + kappa), so kappa = 0 is Poisson,
+  # large kappa is over-dispersed
+  dnorm(data, model, sd, log = TRUE)
 }
