@@ -9,9 +9,10 @@ compare(state, observed, pars)
 \arguments{
 \item{state}{State vector for the end of the current day. This is
 assumed to be filtered following \code{\link[=model_index]{model_index()}} so contains
-3 rows corresponding to pharyngitis, scarlet_fever and igas flows}
+3 rows corresponding to pharyngitis_rate, scarlet_fever and igas flows}
 
-\item{observed}{Observed data.}
+\item{observed}{Observed data containing entries \code{pharyngitis_rate},
+\code{scarlet_fever_inc} and \code{igas_inc},}
 
 \item{pars}{A list of parameters, as created by \code{\link[=model_parameters]{model_parameters()}}}
 }
