@@ -189,47 +189,33 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
 })
 
 
-test_that("the foi is calculated correctly", {
+test_that("the transmission rate is calculated correctly", {
   pars <- example_gas_parameters()
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, 365 * 5, 7), mod$simulate)
-  y <- abind::abind(y, along = 3L)
+  y <- mcstate::array_bind(arrays = y)
   rownames(y) <- names(model_index())
-  t <- y["time", 1, ]
-  par(mfrow = c(2, 2), mar = c(3, 3, 1, 1), mgp = c(1.5, 0.5, 0), bty = "n")
-  N <- y["N", , ]
-  infectious <- y["A", , ] + y["S1", , ] + y["S2", , ]
-  I <- y["E", , ] + infectious + y["F", , ] + y["I", , ]
-  matplot(t, t(y["U", , ] / N), type = "l", ylim = c(0, 1),
-          col = 2, ylab = "%")
-  matlines(t, t(I / N), type = "l", col = 3)
-  matlines(t, t(y["R", , ] / N), type = "l", col = 4)
-  legend("topright", legend = c("S", "I", "R"), fill = 2:4, bty = "n")
+  time <- y["time", 1, -1]
+  beta <- y["beta_t", , -1]
 
-  foi <- t(y["foi", , ] / infectious * N)
-  max_date <- model_week_date(t[apply(foi, 2, which.max)])
+  max_date <- model_week_date(time[apply(beta, 1, which.max)])
   # when there is a seasonal effect all max foi dates should be the same and
   # in the same week as the input t_s
   expect_true(all(max_date == max_date[1]))
   expect_true(as.numeric(max_date[1] - model_date(pars$t_s)) %% 365 <= 7)
-
-  matplot(t, foi, type = "l", col = 1)
-  matplot(t, t(y["igas_inc", , ]), type = "l", col = 1, ylab = "iGAS / 100k")
-  matplot(t, t(y["scarlet_fever_inc", , ]), type = "l", col = 1,
-          ylab = "SF / 100k")
+  # beta does not vary by particle
+  expect_equal(colMeans(beta), beta[1, ])
+  expect_equal(max(beta), pars$beta * (1 + pars$sigma), tol = 1e-4)
+  expect_equal(min(beta), pars$beta * (1 - pars$sigma), tol = 1e-4)
 
   pars$sigma <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, 365 * 5, 7), mod$simulate)
-  y <- abind::abind(y, along = 3L)
+  y <- mcstate::array_bind(arrays = y)
   rownames(y) <- names(model_index())
-  infectious <- y["A", , ] + y["S1", , ] + y["S2", , ]
-  foi <- t(y["foi", , ] / infectious * y["N", , ])
-  max_date <- model_week_date(t[apply(foi, 2, which.max)])
 
-  # when there is no seasonal effect, date of max foi should differ by particle
-  expect_true(any(max_date != max_date[1]))
-  expect_true(as.numeric(max_date[1] - model_date(pars$t_s)) %% 365 > 7)
+  # when there is no seasonal effect, all beta should be the same
+  expect_true(all(y["beta_t", , -1] == pars$beta))
 })
 
 
@@ -241,7 +227,7 @@ test_that("incidence time series output correctly", {
   pars$delta_F <- 1e6
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
-  y <- abind::abind(y, along = 3L)
+  y <- mcstate::array_bind(arrays = y)
   rownames(y) <- names(model_index())
   expect_equal(y["F", , 5], rowSums(y["scarlet_fever_inc", , ]))
   expect_equal(y["F", , 2], y["scarlet_fever_inc", , 2])
@@ -253,7 +239,7 @@ test_that("incidence time series output correctly", {
   pars$delta_S <- 1e6
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
-  y <- abind::abind(y, along = 3L)
+  y <- mcstate::array_bind(arrays = y, along = 3L)
   rownames(y) <- names(model_index())
   expect_equal(y["S2", , 5],
                rowSums(y["pharyngitis_inc", , ] - y["scarlet_fever_inc", , ]))

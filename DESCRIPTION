@@ -20,7 +20,7 @@ LinkingTo:
     dust (>= 0.11.18)
 Suggests:
     testthat,
-    abind,
+    mcstate,
     odin (>= 1.1.12),
     odin.dust (>= 0.2.11),
 Remotes:
