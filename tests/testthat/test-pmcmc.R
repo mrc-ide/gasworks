@@ -3,12 +3,13 @@ test_that("compare function works", {
   pars <- example_gas_parameters()
   set.seed(1L)
   mod <- model$new(pars, 0, 5, seed = 1L)
-  state <- drop(mod$simulate(7))
-  rownames(state) <- names(model_index())
+  idx <- index(mod$info())$run
+  state <- drop(mod$simulate(7))[idx, ]
+  rownames(state) <- names(idx)
   observed <- list(igas_inc = 25, scarlet_fever_inc = 53, pharyngitis_rate = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-1045.82877080168, -1043.67265912834, -1043.36126286318,
-                     -1045.77521389557, -1045.71150508569))
+  expect_equal(ll, c(-1045.82878036054, -1043.67263594512, -1043.36126271083,
+                     -1045.77522055165, -1045.71156016202))
 
   nms <- c("igas_inc", "scarlet_fever_inc", "pharyngitis_rate")
   observed2 <- as.list(state[nms, 1])
