@@ -23,6 +23,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_positive(delta_R, 1)
     assert_nonnegative_integer(alpha, n_group)
     assert_unit_interval(omega, n_group)
+    assert_unit_interval(phi_S, n_group)
     assert_nonnegative_integer(U0, n_group)
     assert_nonnegative_integer(A0, n_group)
     assert_nonnegative_integer(E0, n_group)
