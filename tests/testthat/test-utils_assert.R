@@ -6,67 +6,6 @@ test_that("assert_is", {
 })
 
 
-test_that("assert_integer", {
-  expect_error(assert_integer(pi), "'pi' must be an integer")
-  expect_identical(assert_integer(1L), 1L)
-  expect_identical(assert_integer(1.0), 1L)
-  expect_identical(assert_integer(1 + 1e-15), 1L)
-})
-
-
-test_that("assert_strictly_increasing", {
-  expect_silent(assert_strictly_increasing(c(0, 1, 2)))
-  expect_error(assert_strictly_increasing(c(0, 0, 1)),
-               "must be strictly increasing")
-  expect_error(assert_strictly_increasing(c(0, -1, -2)),
-               "must be strictly increasing")
-})
-
-
-test_that("assert_scalar", {
-  value <- NULL
-  expect_silent(assert_scalar(1))
-  expect_error(assert_scalar(value), "'value' must be a scalar")
-  expect_error(assert_scalar(1:2), "must be a scalar")
-})
-
-test_that("assert_scalar_nonnegative", {
-  value <- NULL
-  expect_silent(assert_scalar_nonnegative(0))
-  expect_silent(assert_scalar_nonnegative(0.1))
-  expect_error(assert_scalar_nonnegative(value),
-               "'value' must be a scalar")
-  expect_error(assert_scalar_nonnegative(1:2),
-               "must be a scalar")
-  expect_error(assert_scalar_nonnegative(-1),
-               "'-1' must be greater than or equal to 0")
-})
-
-test_that("assert_scalar_nonnegative_integer", {
-  value <- NULL
-  expect_silent(assert_scalar_nonnegative_integer(0))
-  expect_silent(assert_scalar_nonnegative_integer(1))
-  expect_error(assert_scalar_nonnegative_integer(0.1),
-               "'0.1' must be an integer")
-  expect_error(assert_scalar_nonnegative_integer(value),
-               "'value' must be a scalar")
-  expect_error(assert_scalar_nonnegative_integer(1:2),
-               "must be a scalar")
-  expect_error(assert_scalar_nonnegative_integer(-1),
-               "'-1' must be greater than or equal to 0")
-})
-
-
-test_that("assert_scalar_positive_integer", {
-  expect_equal(assert_scalar_positive_integer(1L), 1L)
-  expect_equal(assert_scalar_positive_integer(1000000L), 1000000L)
-
-  value <- 0L
-  expect_error(assert_scalar_positive_integer(value),
-               "'value' must be at least 1")
-})
-
-
 test_that("assert_named", {
   expect_error(assert_named(1), "must be named")
   expect_error(assert_named(setNames(1:2, c("a", "a")), TRUE),
@@ -82,7 +21,67 @@ test_that("assert_character", {
 })
 
 
+test_that("assert_integer", {
+  expect_error(assert_integer(pi), "'pi' must be an integer")
+  expect_error(assert_integer(1L, 2), "'1L' must be of length 2")
+  expect_identical(assert_integer(1L), 1L)
+  expect_identical(assert_integer(1.0), 1L)
+  expect_identical(assert_integer(1 + 1e-15), 1L)
+})
+
+test_that("assert_length", {
+  x <- c(1, 1)
+  expect_error(assert_length(x, 1), "'x' must be of length 1")
+  expect_identical(assert_length(x), x)
+  expect_identical(assert_length(x, 2), x)
+})
+
+test_that("assert_strictly_increasing", {
+  x <- c(0, 1, 2)
+  expect_silent(assert_strictly_increasing(x))
+  expect_error(assert_strictly_increasing(x, 2), "'x' must be of length 2")
+  expect_error(assert_strictly_increasing(c(0, 0, 1)),
+               "must be strictly increasing")
+  expect_error(assert_strictly_increasing(c(0, -1, -2)),
+               "must be strictly increasing")
+})
+
+test_that("assert_unit_interval", {
+  expect_identical(assert_unit_interval(0), 0)
+  expect_identical(assert_unit_interval(0.5), 0.5)
+  expect_identical(assert_unit_interval(1), 1)
+  expect_error(assert_unit_interval(-0.1), "'-0.1' must be between 0 and 1")
+  expect_error(assert_unit_interval(1.1), "'1.1' must be between 0 and 1")
+  expect_error(assert_unit_interval(1L, 2), "'1L' must be of length 2")
+})
+
+test_that("assert_positive", {
+  expect_identical(assert_positive(pi), pi)
+  expect_identical(assert_positive(0.1), 0.1)
+  expect_error(assert_positive(0), "'0' must be greater than 0")
+  expect_error(assert_positive(pi, 2), "'pi' must be of length 2")
+})
+
+test_that("assert_nonnegative", {
+  expect_identical(assert_nonnegative(pi), pi)
+  expect_identical(assert_nonnegative(0), 0)
+  expect_error(assert_nonnegative(-1),
+               "'-1' must be greater than or equal to 0")
+  expect_error(assert_nonnegative(pi, 2), "'pi' must be of length 2")
+})
+
 test_that("assert_positive_integer", {
+  expect_identical(assert_positive_integer(1L), 1L)
   expect_error(assert_positive_integer(pi), "'pi' must be an integer")
-  expect_error(assert_positive_integer(-1L), "'-1L' must be at least 1")
+  expect_error(assert_positive_integer(0L), "'0L' must be greater than 0")
+  expect_error(assert_positive_integer(1L, 2), "'1L' must be of length 2")
+})
+
+test_that("assert_nonnegative_integer", {
+  expect_identical(assert_nonnegative_integer(1L), 1L)
+  expect_identical(assert_nonnegative_integer(0L), 0L)
+  expect_error(assert_nonnegative_integer(pi), "'pi' must be an integer")
+  expect_error(assert_nonnegative_integer(-1L),
+               "'-1L' must be greater than or equal to 0")
+  expect_error(assert_nonnegative_integer(1L, 2), "'1L' must be of length 2")
 })

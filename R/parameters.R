@@ -2,34 +2,37 @@
 ##' @title Check model parameters are within permitted ranges
 ##' @description Check model parameters are within permitted ranges
 ##' @param pars a named list of model parameters
+##' @param n_group the number of model age-groups, defaults to 1
 ##' @return NULL
 ##' @export
 
-check_gas_parameters <- function(pars) {
+check_gas_parameters <- function(pars, n_group = 1) {
   with(pars, {
-    assert_scalar_positive(beta)
-    assert_scalar_nonnegative(sigma)
-    assert_scalar_positive(t_s)
-    assert_scalar_unit_interval(p_S)
-    assert_scalar_unit_interval(p_R)
-    assert_scalar_unit_interval(p_I)
-    assert_scalar_unit_interval(p_F)
-    assert_scalar_positive(delta_A)
-    assert_scalar_positive(delta_E)
-    assert_scalar_positive(delta_I)
-    assert_scalar_positive(delta_S)
-    assert_scalar_positive(delta_F)
-    assert_scalar_positive(delta_R)
-    assert_scalar_nonnegative_integer(alpha)
-    assert_scalar_unit_interval(omega)
-    assert_scalar_nonnegative_integer(U0)
-    assert_scalar_nonnegative_integer(A0)
-    assert_scalar_nonnegative_integer(E0)
-    assert_scalar_nonnegative_integer(I0)
-    assert_scalar_nonnegative_integer(S10)
-    assert_scalar_nonnegative_integer(S20)
-    assert_scalar_nonnegative_integer(F0)
-    assert_scalar_nonnegative_integer(R0)
+    assert_positive(beta, 1)
+    assert_nonnegative(sigma, 1)
+    assert_positive(t_s, 1)
+    assert_unit_interval(p_S, 1)
+    assert_unit_interval(p_R, 1)
+    assert_unit_interval(p_I, 1)
+    assert_unit_interval(p_F, 1)
+    assert_positive(delta_A, 1)
+    assert_positive(delta_E, 1)
+    assert_positive(delta_I, 1)
+    assert_positive(delta_S, 1)
+    assert_positive(delta_F, 1)
+    assert_positive(delta_R, 1)
+    assert_unit_interval(theta_A, 1)
+    assert_nonnegative_integer(alpha, n_group)
+    assert_unit_interval(omega, n_group)
+    assert_unit_interval(phi_S, n_group)
+    assert_nonnegative_integer(U0, n_group)
+    assert_nonnegative_integer(A0, n_group)
+    assert_nonnegative_integer(E0, n_group)
+    assert_nonnegative_integer(I0, n_group)
+    assert_nonnegative_integer(S10, n_group)
+    assert_nonnegative_integer(S20, n_group)
+    assert_nonnegative_integer(F0, n_group)
+    assert_nonnegative_integer(R0, n_group)
   })
 }
 
@@ -52,6 +55,7 @@ example_gas_parameters <- function() {
                delta_R = 365 * 5,
                k_gp = 1,
                k_hpr = 1,
+               theta_A = 1,
                phi_S = 0.25)
   transform(pars)
 }
@@ -70,15 +74,15 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
                              demographic_pars = NULL) {
   demographic_pars <- demographic_pars %||% demographic_parameters()
   pars <- c(demographic_pars, gas_pars)
+
   pars$dt <- 1 / 7 # Data is weekly, model steps are daily
+  pars$exp_noise <- 1e6 # exponential noise parameter for observation dist
+
   # add fixed model parameters (i.e. not fitted)
   pars$delta_E <- 2   # mean days in incubation period
   pars$delta_I <- 14  # mean days iGAS
   pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
   pars$delta_F <- 7   # mean days with scarlet fever
-
-  # exponential noise parameter for observation dist
-  pars$exp_noise <- 1e6
 
   # convert duration in days to duration in weeks
   for (i in grep("^delta_", names(pars))) {
@@ -99,7 +103,8 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
 demographic_parameters <- function() {
   list(N0 = 56e6,
        alpha = 7e5,
-       omega = 0.0125)
+       omega = 0.0125,
+       m = matrix(1, 1, 1)) # mixing matrix
 }
 
 ##' @name initial_parameters
@@ -109,18 +114,22 @@ demographic_parameters <- function() {
 ##' @return A named list of initial model states
 ##' @export
 initial_parameters <- function(pars) {
-  assert_scalar_unit_interval(pars$prev_A)
-  assert_scalar_unit_interval(pars$prev_R)
-  assert_scalar_nonnegative_integer(pars$N0)
 
+  # check parameters
+  assert_nonnegative_integer(pars$N0)
+  n_group <- length(pars$N0)
+  assert_unit_interval(pars$prev_A, n_group)
+  assert_unit_interval(pars$prev_R, n_group)
+  nms <- paste0(model_compartments(), "0")
+  ret <- named_list(nms, list(rep(0, n_group)))
   # set initial asymptomatic prevalence and prevalence of immunity
-  A0 <- round(pars$N0 * pars$prev_A)
-  R0 <- round((pars$N0 - A0) * pars$prev_R)
+  ret$A0 <- round(pars$N0 * pars$prev_A)
+  ret$R0 <- round((pars$N0 - ret$A0) * pars$prev_R)
 
   # set initial uninfecteds
-  U0 <- pars$N0 - A0 - R0
+  ret$U0 <- pars$N0 - ret$A0 - ret$R0
 
-  list(U0 = U0, A0 = A0, E0 = 0, I0 = 0, S10 = 0, S20 = 0, F0 = 0, R0 = R0)
+  ret
 }
 
 ##' Transform fitted parameters into gas params

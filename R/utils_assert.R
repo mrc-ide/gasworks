@@ -6,7 +6,6 @@ assert_is <- function(x, what, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-
 assert_named <- function(x, unique = FALSE, name = deparse(substitute(x))) {
   if (is.null(names(x))) {
     stop(sprintf("'%s' must be named", name), call. = FALSE)
@@ -16,8 +15,15 @@ assert_named <- function(x, unique = FALSE, name = deparse(substitute(x))) {
   }
 }
 
+assert_character <- function(x, name = deparse(substitute(x))) {
+  if (!(is.character(x))) {
+    stop(sprintf("'%s' must be a character", name), call. = FALSE)
+  }
+  invisible(x)
+}
 
-assert_integer <- function(x, name = deparse(substitute(x)),
+
+assert_integer <- function(x, len = length(x), name = deparse(substitute(x)),
                            what = "integer") {
   if (!(is.integer(x))) {
     eps <- sqrt(.Machine$double.eps)
@@ -27,85 +33,72 @@ assert_integer <- function(x, name = deparse(substitute(x)),
     }
     x <- as.integer(round(x))
   }
+  assert_length(x, len, name)
   invisible(x)
 }
 
-assert_positive_integer <- function(x, name = deparse(substitute(x))) {
+
+assert_length <- function(x, len = length(x), name = deparse(substitute(x))) {
+  if (length(x) != len) {
+    stop(sprintf("'%s' must be of length %s", name, len), call. = FALSE)
+  }
+  invisible(x)
+}
+
+
+assert_strictly_increasing <- function(x, len = length(x),
+                                       name = deparse(substitute(x))) {
   force(name)
-  x <- assert_integer(x, name)
-  if (any(x < 1L)) {
-    stop(sprintf("'%s' must be at least 1", name), call. = FALSE)
-  }
-  invisible(x)
-}
-
-
-assert_character <- function(x, name = deparse(substitute(x))) {
-  if (!(is.character(x))) {
-    stop(sprintf("'%s' must be a character", name), call. = FALSE)
-  }
-  invisible(x)
-}
-
-
-assert_strictly_increasing <- function(x, name = deparse(substitute(x))) {
   if (any(diff(x) <= 0)) {
     stop(sprintf("'%s' must be strictly increasing", name), call. = FALSE)
   }
+  assert_length(x, len, name)
   invisible(x)
 }
 
-
-assert_scalar <- function(x, name = deparse(substitute(x))) {
-  if (length(x) != 1L) {
-    stop(sprintf("'%s' must be a scalar", name), call. = FALSE)
-  }
-  invisible(x)
-}
-
-
-assert_scalar_positive_integer <- function(x, name = deparse(substitute(x))) {
+assert_unit_interval <- function(x, len = length(x),
+                                 name = deparse(substitute(x))) {
   force(name)
-  assert_scalar(x, name)
-  x <- assert_integer(x, name)
-  if (x < 1L) {
-    stop(sprintf("'%s' must be at least 1", name), call. = FALSE)
+  if (any(x < 0) | any(x > 1)) {
+    stop(sprintf("'%s' must be between 0 and 1", name), call. = FALSE)
   }
+  assert_length(x, len, name)
   invisible(x)
 }
 
-assert_scalar_positive <- function(x, name = deparse(substitute(x))) {
+assert_positive <- function(x, len = length(x),
+                                    name = deparse(substitute(x))) {
   force(name)
-  assert_scalar(x, name)
-  if (x <= 0) {
+  if (any(x <= 0)) {
     stop(sprintf("'%s' must be greater than 0", name), call. = FALSE)
   }
+  assert_length(x, len, name)
   invisible(x)
 }
 
-assert_scalar_nonnegative <- function(x, name = deparse(substitute(x))) {
+assert_nonnegative <- function(x, len = length(x),
+                            name = deparse(substitute(x))) {
   force(name)
-  assert_scalar(x, name)
-  if (x < 0) {
+  if (any(x < 0L)) {
     stop(sprintf("'%s' must be greater than or equal to 0", name),
          call. = FALSE)
   }
+  assert_length(x, len, name)
   invisible(x)
 }
 
-assert_scalar_nonnegative_integer <- function(x,
-                                              name = deparse(substitute(x))) {
+assert_positive_integer <- function(x, len = length(x),
+                                    name = deparse(substitute(x))) {
   force(name)
-  assert_scalar_nonnegative(x, name)
-  assert_integer(x, name)
+  x <- assert_integer(x, len, name)
+  x <- assert_positive(x, len, name)
   invisible(x)
 }
 
-assert_scalar_unit_interval <- function(x, name = deparse(substitute(x))) {
+assert_nonnegative_integer <- function(x, len = length(x),
+                                       name = deparse(substitute(x))) {
   force(name)
-  assert_scalar(x, name)
-  if (x < 0 | x > 1) {
-    stop(sprintf("'%s' must be between 0 and 1", name), call. = FALSE)
-  }
+  x <- assert_integer(x, len, name)
+  x <- assert_nonnegative(x, len, name)
   invisible(x)
 }

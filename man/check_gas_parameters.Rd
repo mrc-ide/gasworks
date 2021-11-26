@@ -4,10 +4,12 @@
 \alias{check_gas_parameters}
 \title{Check model parameters are within permitted ranges}
 \usage{
-check_gas_parameters(pars)
+check_gas_parameters(pars, n_group = 1)
 }
 \arguments{
 \item{pars}{a named list of model parameters}
+
+\item{n_group}{the number of model age-groups, defaults to 1}
 }
 \description{
 Check model parameters are within permitted ranges
