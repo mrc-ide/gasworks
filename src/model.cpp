@@ -112,6 +112,7 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(phi_S, has_default = FALSE, default_value = NULL, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(sigma, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(t_s, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(theta_A, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(n_group, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(t0, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 class model {
@@ -274,6 +275,7 @@ public:
     real_type steps_per_week;
     real_type t0;
     real_type t_s;
+    real_type theta_A;
   };
   struct internal_type {
     std::vector<real_type> all_pharyngitis;
@@ -366,7 +368,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_lambda_1; ++i) {
       for (int j = 1; j <= shared->dim_lambda_2; ++j) {
-        internal.lambda[i - 1 + shared->dim_lambda_1 * (j - 1)] = beta_t * shared->m[shared->dim_m_1 * (j - 1) + i - 1] * (A[j - 1] + S1[j - 1] + S2[j - 1]) / (real_type) N[j - 1];
+        internal.lambda[i - 1 + shared->dim_lambda_1 * (j - 1)] = beta_t * shared->m[shared->dim_m_1 * (j - 1) + i - 1] * (A[j - 1] * shared->theta_A + S1[j - 1] + S2[j - 1]) / (real_type) N[j - 1];
       }
     }
     state_next[5] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_xU.data(), 0, shared->dim_n_xU) : entrants_inc + odin_sum1<real_type>(internal.n_xU.data(), 0, shared->dim_n_xU)));
@@ -774,6 +776,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->p_S = NA_REAL;
   shared->sigma = NA_REAL;
   shared->t_s = NA_REAL;
+  shared->theta_A = NA_REAL;
   shared->n_group = 1;
   shared->t0 = 0;
   shared->beta = user_get_scalar<real_type>(user, "beta", shared->beta, NA_REAL, NA_REAL);
@@ -791,6 +794,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->sigma = user_get_scalar<real_type>(user, "sigma", shared->sigma, NA_REAL, NA_REAL);
   shared->t0 = user_get_scalar<real_type>(user, "t0", shared->t0, NA_REAL, NA_REAL);
   shared->t_s = user_get_scalar<real_type>(user, "t_s", shared->t_s, NA_REAL, NA_REAL);
+  shared->theta_A = user_get_scalar<real_type>(user, "theta_A", shared->theta_A, NA_REAL, NA_REAL);
   shared->dim_A = shared->n_group;
   shared->dim_A0 = shared->n_group;
   shared->dim_E = shared->n_group;

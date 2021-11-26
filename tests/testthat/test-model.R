@@ -45,6 +45,24 @@ test_that("there are no infections when beta is 0", {
   expect_true(all(unlist(y) >= 0))
 })
 
+
+test_that("there are no infections when theta_A is 0", {
+  pars <- example_gas_parameters()
+  pars$theta_A <- 0
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- mod$transform_variables(mod$simulate(7))
+
+  expect_true(all(y$E == 0))
+  expect_true(all(y$S1 == 0))
+  expect_true(all(y$S2 == 0))
+  expect_true(all(y$I == 0))
+  expect_true(all(y$F == 0))
+  expect_true(all(y$R > 0))
+
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
+  expect_true(all(unlist(y) >= 0))
+})
+
 test_that("there are no infections when A0 = 0", {
   pars <- example_gas_parameters()
   pars$A0 <- 0

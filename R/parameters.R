@@ -21,6 +21,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_positive(delta_S, 1)
     assert_positive(delta_F, 1)
     assert_positive(delta_R, 1)
+    assert_unit_interval(theta_A, 1)
     assert_nonnegative_integer(alpha, n_group)
     assert_unit_interval(omega, n_group)
     assert_unit_interval(phi_S, n_group)
@@ -54,6 +55,7 @@ example_gas_parameters <- function() {
                delta_R = 365 * 5,
                k_gp = 1,
                k_hpr = 1,
+               theta_A = 1,
                phi_S = 0.25)
   transform(pars)
 }

@@ -57,7 +57,7 @@ update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(N[]) * 1e5
 ## Force of infection
 pi <- 3.14159265358979
 update(beta_t) <- beta * (1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25))
-lambda[, ] <- beta_t * m[i, j] *  (A[j] + S1[j] + S2[j]) / N[j]
+lambda[, ] <- beta_t * m[i, j] *  (A[j] * theta_A + S1[j] + S2[j]) / N[j]
 foi[] <- sum(lambda[i, ])
 
 
@@ -168,6 +168,7 @@ delta_I <- user() # mean duration of invasive disease
 delta_S <- user() # mean duration of pharyngitis symptoms (x 2)
 delta_F <- user() # mean duration of scarlet fever
 delta_R <- user() # mean duration of natural immunity
+theta_A <- user() # infectiousness of carriers relative to symptomatics
 phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
 alpha[] <- user() # number of population entrants
