@@ -99,6 +99,7 @@ public:
     int dim_dem_E;
     int dim_dem_F;
     int dim_dem_I;
+    int dim_dem_N;
     int dim_dem_R;
     int dim_dem_S1;
     int dim_dem_S2;
@@ -240,6 +241,7 @@ public:
     std::vector<real_type> dem_E;
     std::vector<real_type> dem_F;
     std::vector<real_type> dem_I;
+    std::vector<real_type> dem_N;
     std::vector<real_type> dem_R;
     std::vector<real_type> dem_S1;
     std::vector<real_type> dem_S2;
@@ -320,12 +322,12 @@ public:
   }
   void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
     const real_type * U = state + 10;
-    const real_type * E = state + shared->offset_variable_E;
     const real_type * A = state + shared->offset_variable_A;
+    const real_type * E = state + shared->offset_variable_E;
+    const real_type * I = state + shared->offset_variable_I;
     const real_type * S1 = state + shared->offset_variable_S1;
     const real_type * S2 = state + shared->offset_variable_S2;
     const real_type * F = state + shared->offset_variable_F;
-    const real_type * I = state + shared->offset_variable_I;
     const real_type * R = state + shared->offset_variable_R;
     const real_type * N = state + shared->offset_variable_N;
     const real_type entrants_inc = state[5];
@@ -423,6 +425,9 @@ public:
       internal.n_Nx[i - 1] = internal.n_Ux[i - 1] + internal.n_Ex[i - 1] + internal.n_Ax[i - 1] + internal.n_S1x[i - 1] + internal.n_S2x[i - 1] + internal.n_Fx[i - 1] + internal.n_Ix[i - 1] + internal.n_Rx[i - 1];
     }
     state_next[5] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(shared->n_xU.data(), 0, shared->dim_n_xU) : entrants_inc + odin_sum1<real_type>(shared->n_xU.data(), 0, shared->dim_n_xU)));
+    for (int i = 1; i <= shared->dim_dem_N; ++i) {
+      internal.dem_N[i - 1] = internal.dem_U[i - 1] + internal.dem_E[i - 1] + internal.dem_A[i - 1] + internal.dem_S1[i - 1] + internal.dem_S2[i - 1] + internal.dem_F[i - 1] + internal.dem_I[i - 1] + internal.dem_R[i - 1];
+    }
     for (int i = 1; i <= shared->dim_foi; ++i) {
       internal.foi[i - 1] = odin_sum2<real_type>(internal.lambda.data(), i - 1, i, 0, shared->dim_lambda_2, shared->dim_lambda_1);
     }
@@ -446,9 +451,6 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_S2; ++i) {
       internal.n_S2[i - 1] = dust::random::binomial<real_type>(rng_state, S2[i - 1] + internal.dem_S2[i - 1], 1 - std::exp(- shared->r_S2[i - 1] * shared->dt));
-    }
-    for (int i = 1; i <= shared->dim_N; ++i) {
-      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + shared->n_xU[i - 1] - internal.n_Nx[i - 1];
     }
     state_next[6] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx) : leavers_inc + odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx)));
     for (int i = 1; i <= shared->dim_n_AR; ++i) {
@@ -477,6 +479,9 @@ public:
     }
     for (int i = 1; i <= shared->dim_r_UE; ++i) {
       internal.r_UE[i - 1] = shared->p_S * internal.foi[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_N; ++i) {
+      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + shared->n_xU[i - 1] - internal.n_Nx[i - 1] + internal.dem_N[i - 1];
     }
     for (int i = 1; i <= shared->dim_n_AU; ++i) {
       internal.n_AU[i - 1] = internal.n_A[i - 1] - internal.n_AR[i - 1];
@@ -844,6 +849,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_dem_E = shared->n_group;
   shared->dim_dem_F = shared->n_group;
   shared->dim_dem_I = shared->n_group;
+  shared->dim_dem_N = shared->n_group;
   shared->dim_dem_R = shared->n_group;
   shared->dim_dem_S1 = shared->n_group;
   shared->dim_dem_S2 = shared->n_group;
@@ -928,6 +934,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   internal.dem_E = std::vector<real_type>(shared->dim_dem_E);
   internal.dem_F = std::vector<real_type>(shared->dim_dem_F);
   internal.dem_I = std::vector<real_type>(shared->dim_dem_I);
+  internal.dem_N = std::vector<real_type>(shared->dim_dem_N);
   internal.dem_R = std::vector<real_type>(shared->dim_dem_R);
   internal.dem_S1 = std::vector<real_type>(shared->dim_dem_S1);
   internal.dem_S2 = std::vector<real_type>(shared->dim_dem_S2);

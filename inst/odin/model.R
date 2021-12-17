@@ -15,10 +15,13 @@ update(S1[]) <- S1[i] + dem_S1[i] + n_ES[i] - n_SF[i] - n_SS[i]
 update(S2[]) <- S2[i] + dem_S2[i] + n_SS[i] - n_SR[i]
 update(F[])  <- F[i]  + dem_F[i]  + n_SF[i] - n_FR[i]
 update(R[])  <- R[i]  + dem_R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] - n_RU[i]
-update(N[])  <- N[i]  + n_xU[i]   - n_Nx[i]
+update(N[])  <- N[i]  + n_xU[i]   - n_Nx[i] + dem_N[i]
 
 n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Fx[i] +
   n_Ix[i] + n_Rx[i]
+
+dem_N[] <- dem_U[i] + dem_E[i] + dem_A[i] + dem_S1[i] + dem_S2[i] + dem_F[i] +
+  dem_I[i] + dem_R[i]
 
 ## Output incidence flows:
 update(entrants_inc) <- (
@@ -282,6 +285,7 @@ dim(dem_S1) <- n_group
 dim(dem_S2) <- n_group
 dim(dem_F) <- n_group
 dim(dem_R) <- n_group
+dim(dem_N) <- n_group
 
 dim(n_UE) <- n_group
 dim(n_UA) <- n_group
