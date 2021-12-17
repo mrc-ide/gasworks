@@ -7,7 +7,7 @@
 example_gas_parameters(n_group = 1)
 }
 \arguments{
-\item{n_group}{number of age groups}
+\item{n_group}{the number of model age-groups, defaults to 1}
 }
 \value{
 A list of named model parameters

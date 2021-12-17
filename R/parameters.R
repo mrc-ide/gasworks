@@ -40,7 +40,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
 ##' @name example_gas_parameters
 ##' @title Example of fitted gas parameters for use in testing
 ##' @description Example of fitted gas parameters for use in testing
-##' @param n_group number of age groups
+##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
 example_gas_parameters <- function(n_group = 1) {
   pars <- list(prev_A = rep(0.1, n_group),
@@ -70,6 +70,7 @@ example_gas_parameters <- function(n_group = 1) {
 ##' @param initial_pars default NULL uses `N0`, `prev_A` and `prev_R` to
 ##' calculate the starting position
 ##' @param demographic_pars default NULL uses `demographic_parameters()`)
+##' ##' @inheritParams check_gas_parameters
 ##' @return A list of all model parameters
 ##' @export
 model_parameters <- function(gas_pars, initial_pars = NULL,
@@ -101,7 +102,7 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
 ##' @name demographic_parameters
 ##' @title Demographic model parameters
 ##' @description Demographic model parameters
-##' @param n_group integer giving number of age groups to divide pop
+##' @inheritParams check_gas_parameters
 ##' @return A list of demographic parameters
 ##' @export
 demographic_parameters <- function(n_group = 1) {

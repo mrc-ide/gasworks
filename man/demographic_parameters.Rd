@@ -7,7 +7,7 @@
 demographic_parameters(n_group = 1)
 }
 \arguments{
-\item{n_group}{integer giving number of age groups to divide pop}
+\item{n_group}{the number of model age-groups, defaults to 1}
 }
 \value{
 A list of demographic parameters

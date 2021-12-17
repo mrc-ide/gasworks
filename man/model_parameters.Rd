@@ -17,7 +17,8 @@ model_parameters(
 \item{initial_pars}{default NULL uses \code{N0}, \code{prev_A} and \code{prev_R} to
 calculate the starting position}
 
-\item{demographic_pars}{default NULL uses \code{demographic_parameters()})}
+\item{demographic_pars}{default NULL uses \code{demographic_parameters()})
+##' @inheritParams check_gas_parameters}
 }
 \value{
 A list of all model parameters
