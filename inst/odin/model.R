@@ -14,7 +14,8 @@ update(I[])  <- I[i]  + dem_I[i]  + n_EI[i] - n_IR[i]
 update(S1[]) <- S1[i] + dem_S1[i] + n_ES[i] - n_SF[i] - n_SS[i]
 update(S2[]) <- S2[i] + dem_S2[i] + n_SS[i] - n_SR[i]
 update(F[])  <- F[i]  + dem_F[i]  + n_SF[i] - n_FR[i]
-update(R[])  <- R[i]  + dem_R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] - n_RU[i]
+update(R[])  <- R[i]  + dem_R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] -
+  n_RU[i]
 update(N[])  <- N[i]  + dem_N[i]
 
 n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Fx[i] +
