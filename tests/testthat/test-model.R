@@ -306,3 +306,43 @@ test_that("aging works", {
     check_compartment_aging(i, pars)
   }
 })
+
+test_that("aging does not affect model dynamics", {
+  pars <- example_gas_parameters()
+  pars_a <- example_gas_parameters(2)
+  pars$alpha[] <- pars_a$alpha[] <- 0
+  pars$omega[] <- pars_a$omega[] <- 0
+
+  f <- function(pars) {
+    mod <- model$new(pars, 0, 5, seed = 1L)
+    y <- lapply(seq(0, 9), mod$simulate)
+    y <- mcstate::array_bind(arrays = y, along = 3L)
+    mod$transform_variables(y)
+  }
+
+  y <- f(pars)
+  y_a <- f(pars_a)
+
+  absdiff <- function(state) {
+    x <- drop(y[[state]])
+    y <- colSums(y_a[[state]])
+    max(abs(x - y) / x, na.rm = TRUE)
+  }
+
+  # check larger compartments are withing 1% (others too stochastic)
+  expect_true(absdiff("U") < 0.01)
+  expect_true(absdiff("A") < 0.01)
+  expect_true(absdiff("R") < 0.01)
+  expect_true(absdiff("infections_inc") < 0.01)
+  expect_true(absdiff("pharyngitis_inc") < 0.01)
+
+  expect_equal(Reduce("+", y[model_compartments()]), y$N)
+  expect_equal(Reduce("+", y_a[model_compartments()]), y_a$N)
+  expect_equal(y$beta_t, y_a$beta_t)
+
+  # check all compartments equal
+  expect_equal(sum(y$leavers_inc), 0)
+  expect_equal(sum(y$entrants_inc), 0)
+  expect_equal(sum(y_a$leavers_inc), 0)
+  expect_equal(sum(y_a$entrants_inc), 0)
+})
