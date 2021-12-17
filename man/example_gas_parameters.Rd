@@ -4,7 +4,10 @@
 \alias{example_gas_parameters}
 \title{Example of fitted gas parameters for use in testing}
 \usage{
-example_gas_parameters()
+example_gas_parameters(n_group = 1)
+}
+\arguments{
+\item{n_group}{number of age groups}
 }
 \value{
 A list of named model parameters

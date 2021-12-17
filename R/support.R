@@ -67,11 +67,22 @@ model_compartments <- function() {
 ##'@name model_index
 ##'@title Named list of model output indices
 ##'@description Named list of model output indices
+##'@param n_group Integer number of age groups
 ##'@return Named list of model output indices
-model_index <- function() {
-  pars <- example_gas_parameters()
+model_index <- function(n_group = 1) {
+  pars <- example_gas_parameters(n_group)
   mod <- model$new(pars, 1, 1)
-  mod$info()$index
+  idx <- mod$info()$index
+  ret <- unlist(idx)
+
+  if (n_group > 1) {
+    suffix <- sprintf("_%02d", unlist(lapply(idx, seq_along)))
+    suffix[which(lengths(idx) == 1)] <- ""
+    nms <- paste0(rep(names(idx), lengths(idx)), suffix)
+    names(ret) <- nms
+  }
+
+  ret
 }
 
 ##' @importFrom stats dnbinom rexp

@@ -4,7 +4,10 @@
 \alias{demographic_parameters}
 \title{Demographic model parameters}
 \usage{
-demographic_parameters()
+demographic_parameters(n_group = 1)
+}
+\arguments{
+\item{n_group}{integer giving number of age groups to divide pop}
 }
 \value{
 A list of demographic parameters
