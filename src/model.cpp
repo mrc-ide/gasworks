@@ -399,51 +399,44 @@ public:
     const real_type beta_t = state[7];
     state_next[7] = shared->beta * (1 + shared->sigma * std::cos(2 * shared->pi * (shared->t0 + step - shared->t_s) / (real_type) 365.25));
     state_next[0] = (step + 1) * shared->dt;
-    {
-       int i = 1;
-       internal.n_Ai[i - 1] = ((i > 1 ? A[i - 1 - 1] : 0)) - ((i < shared->n_group ? A[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_Ai; ++i) {
+      internal.n_Ai[i - 1] = ((i > 1 ? A[i - 1 - 1] : 0)) - ((i < shared->n_group ? A[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_Ax; ++i) {
       internal.n_Ax[i - 1] = std::round(A[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_Ei[i - 1] = ((i > 1 ? E[i - 1 - 1] : 0)) - ((i < shared->n_group ? E[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_Ei; ++i) {
+      internal.n_Ei[i - 1] = ((i > 1 ? E[i - 1 - 1] : 0)) - ((i < shared->n_group ? E[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_Ex; ++i) {
       internal.n_Ex[i - 1] = std::round(E[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_Fi[i - 1] = ((i > 1 ? F[i - 1 - 1] : 0)) - ((i < shared->n_group ? F[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_Fi; ++i) {
+      internal.n_Fi[i - 1] = ((i > 1 ? F[i - 1 - 1] : 0)) - ((i < shared->n_group ? F[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_Fx; ++i) {
       internal.n_Fx[i - 1] = std::round(F[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_Ii[i - 1] = ((i > 1 ? I[i - 1 - 1] : 0)) - ((i < shared->n_group ? I[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_Ii; ++i) {
+      internal.n_Ii[i - 1] = ((i > 1 ? I[i - 1 - 1] : 0)) - ((i < shared->n_group ? I[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_Ix; ++i) {
       internal.n_Ix[i - 1] = std::round(I[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_Ri[i - 1] = ((i > 1 ? R[i - 1 - 1] : 0)) - ((i < shared->n_group ? R[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_Ri; ++i) {
+      internal.n_Ri[i - 1] = ((i > 1 ? R[i - 1 - 1] : 0)) - ((i < shared->n_group ? R[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_Rx; ++i) {
       internal.n_Rx[i - 1] = std::round(R[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_S1i[i - 1] = ((i > 1 ? S1[i - 1 - 1] : 0)) - ((i < shared->n_group ? S1[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_S1i; ++i) {
+      internal.n_S1i[i - 1] = ((i > 1 ? S1[i - 1 - 1] : 0)) - ((i < shared->n_group ? S1[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_S1x; ++i) {
       internal.n_S1x[i - 1] = std::round(S1[i - 1] * shared->omega[i - 1] * shared->dt);
     }
-    {
-       int i = 1;
-       internal.n_S2i[i - 1] = ((i > 1 ? S2[i - 1 - 1] : 0)) - ((i < shared->n_group ? S2[i - 1] : 0));
+    for (int i = 1; i <= shared->dim_n_S2i; ++i) {
+      internal.n_S2i[i - 1] = ((i > 1 ? S2[i - 1 - 1] : 0)) - ((i < shared->n_group ? S2[i - 1] : 0));
     }
     for (int i = 1; i <= shared->dim_n_S2x; ++i) {
       internal.n_S2x[i - 1] = std::round(S2[i - 1] * shared->omega[i - 1] * shared->dt);

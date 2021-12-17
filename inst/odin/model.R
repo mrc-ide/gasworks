@@ -101,13 +101,13 @@ n_Rx[]  <- round(R[i]  * omega[i] * dt)
 
 ## calculate net aging
 n_Ui[]   <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
-n_Ai[1]  <- (if (i > 1) A[i - 1] else 0) - (if (i < n_group) A[i] else 0)
-n_Ei[1]  <- (if (i > 1) E[i - 1] else 0) - (if (i < n_group) E[i] else 0)
-n_Ii[1]  <- (if (i > 1) I[i - 1] else 0) - (if (i < n_group) I[i] else 0)
-n_S1i[1] <- (if (i > 1) S1[i - 1] else 0) - (if (i < n_group) S1[i] else 0)
-n_S2i[1] <- (if (i > 1) S2[i - 1] else 0) - (if (i < n_group) S2[i] else 0)
-n_Fi[1]  <- (if (i > 1) F[i - 1] else 0) - (if (i < n_group) F[i] else 0)
-n_Ri[1]  <- (if (i > 1) R[i - 1] else 0) - (if (i < n_group) R[i] else 0)
+n_Ai[]  <- (if (i > 1) A[i - 1] else 0) - (if (i < n_group) A[i] else 0)
+n_Ei[]  <- (if (i > 1) E[i - 1] else 0) - (if (i < n_group) E[i] else 0)
+n_Ii[]  <- (if (i > 1) I[i - 1] else 0) - (if (i < n_group) I[i] else 0)
+n_S1i[] <- (if (i > 1) S1[i - 1] else 0) - (if (i < n_group) S1[i] else 0)
+n_S2i[] <- (if (i > 1) S2[i - 1] else 0) - (if (i < n_group) S2[i] else 0)
+n_Fi[]  <- (if (i > 1) F[i - 1] else 0) - (if (i < n_group) F[i] else 0)
+n_Ri[]  <- (if (i > 1) R[i - 1] else 0) - (if (i < n_group) R[i] else 0)
 
 ## Calculate all demographic changes
 dem_U[]  <- n_xU[i] + round(n_Ui[i] * r_age * dt) - n_Ux[i]
