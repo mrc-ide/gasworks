@@ -105,11 +105,13 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
 ##' @return A list of demographic parameters
 ##' @export
 demographic_parameters <- function(n_group = 1) {
+  N0 <- 56e6 # England population
+  x <- 11000 # births and deaths per week - i.e. 572000 per year
   # convert annual mortality to weekly
-  list(N0 = round(rep(56e6 / n_group, n_group)),
-       alpha = c(round(6e5 / 52), rep(0, n_group - 1)),
-       omega = rep(960 / 1e5 / 52, n_group),
-       m = matrix(1, n_group, n_group)) # mixing matrix
+  list(N0 = round(rep(N0 / n_group, n_group)),
+       alpha = c(round(x), rep(0, n_group - 1)),
+       omega = rep(x / N0, n_group),
+       m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }
 
 ##' @name initial_parameters
