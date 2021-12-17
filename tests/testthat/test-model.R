@@ -273,5 +273,37 @@ test_that("incidence time series output correctly", {
 })
 
 test_that("aging works", {
+  pars <- example_gas_parameters(10)
+
+  check_compartment_aging <- function(nm, pars) {
+    pars$alpha[] <- pars$omega[] <- 0 # no entrants or leavers
+    pars$r_age <- 1 / pars$dt # everyone ages a group per week
+    pars$beta <- 0 # no transmission
+    pars[grep("delta", names(pars))] <- Inf # no movement between compartments
+    pars$A0[] <- pars$U0[] <- pars$R0[] <- 0 # clear population
+    pars[[paste0(nm, 0)]][1] <- N0 <- 1e4  # everyone initially in group 1
+
+    # run model
+    mod <- model$new(pars, 0, 2, seed = 1L)
+    y <- lapply(seq(0, 9), mod$simulate)
+    y <- mcstate::array_bind(arrays = y, along = 3L)
+    rownames(y) <- nms <- names(model_index(10))
+
+    # check no-one moves compartments
+    expect_equivalent(y[grep(nm, nms), , ], y[grep("N_", nms), , ])
+    # check all demographic changes are deterministic
+    expect_equal(y[, 1, ], y[, 2, ])
+    ## check pop size is constant
+    expect_true(all(apply(y[grep("N_", nms), , ], c(2, 3), sum) == N0))
+    ## check everyone advances one group per day
+    expect_equivalent(y[grep(nm, nms), 1, ], diag(pars$n_group) * N0)
+    ## nothing going on in other compartments
+    expect_equal(sum(y[grep(paste0("N_|time|", nm), nms, invert = TRUE), , ]),
+                 0)
+  }
+
+  for (i in model_compartments()) {
+    check_compartment_aging(i, pars)
+  }
 
 })
