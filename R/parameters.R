@@ -70,7 +70,7 @@ example_gas_parameters <- function(n_group = 1) {
 ##' @param initial_pars default NULL uses `N0`, `prev_A` and `prev_R` to
 ##' calculate the starting position
 ##' @param demographic_pars default NULL uses `demographic_parameters()`)
-##' ##' @inheritParams check_gas_parameters
+##' @inheritParams check_gas_parameters
 ##' @return A list of all model parameters
 ##' @export
 model_parameters <- function(gas_pars, initial_pars = NULL,
