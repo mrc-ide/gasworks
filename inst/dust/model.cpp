@@ -481,7 +481,7 @@ public:
       internal.r_UE[i - 1] = shared->p_S * internal.foi[i - 1];
     }
     for (int i = 1; i <= shared->dim_N; ++i) {
-      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + shared->n_xU[i - 1] - internal.n_Nx[i - 1] + internal.dem_N[i - 1];
+      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + internal.dem_N[i - 1];
     }
     for (int i = 1; i <= shared->dim_n_AU; ++i) {
       internal.n_AU[i - 1] = internal.n_A[i - 1] - internal.n_AR[i - 1];
