@@ -4,7 +4,12 @@
 \alias{model_parameters}
 \title{Demographic model parameters}
 \usage{
-model_parameters(gas_pars, initial_pars = NULL, demographic_pars = NULL)
+model_parameters(
+  gas_pars,
+  initial_pars = NULL,
+  demographic_pars = NULL,
+  n_group = NULL
+)
 }
 \arguments{
 \item{gas_pars}{A list of named fitted model parameters}
@@ -13,6 +18,8 @@ model_parameters(gas_pars, initial_pars = NULL, demographic_pars = NULL)
 calculate the starting position}
 
 \item{demographic_pars}{default NULL uses \code{demographic_parameters()})}
+
+\item{n_group}{the number of model age-groups, defaults to 1}
 }
 \value{
 A list of all model parameters

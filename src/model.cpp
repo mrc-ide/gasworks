@@ -114,6 +114,7 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(t_s, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(theta_A, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(n_group, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(r_age, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(t0, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 class model {
 public:
@@ -156,6 +157,15 @@ public:
     int dim_U0;
     int dim_all_pharyngitis;
     int dim_alpha;
+    int dim_dem_A;
+    int dim_dem_E;
+    int dim_dem_F;
+    int dim_dem_I;
+    int dim_dem_N;
+    int dim_dem_R;
+    int dim_dem_S1;
+    int dim_dem_S2;
+    int dim_dem_U;
     int dim_foi;
     int dim_lambda;
     int dim_lambda_1;
@@ -166,24 +176,31 @@ public:
     int dim_n_A;
     int dim_n_AR;
     int dim_n_AU;
+    int dim_n_Ai;
     int dim_n_Ax;
     int dim_n_E;
     int dim_n_EI;
     int dim_n_ES;
+    int dim_n_Ei;
     int dim_n_Ex;
     int dim_n_F;
     int dim_n_FR;
+    int dim_n_Fi;
     int dim_n_Fx;
     int dim_n_I;
     int dim_n_IR;
+    int dim_n_Ii;
     int dim_n_Ix;
     int dim_n_Nx;
     int dim_n_R;
     int dim_n_RU;
+    int dim_n_Ri;
     int dim_n_Rx;
     int dim_n_S1;
+    int dim_n_S1i;
     int dim_n_S1x;
     int dim_n_S2;
+    int dim_n_S2i;
     int dim_n_S2x;
     int dim_n_SF;
     int dim_n_SR;
@@ -191,6 +208,7 @@ public:
     int dim_n_U;
     int dim_n_UA;
     int dim_n_UE;
+    int dim_n_Ui;
     int dim_n_Ux;
     int dim_n_xU;
     int dim_omega;
@@ -239,6 +257,7 @@ public:
     real_type initial_time;
     std::vector<real_type> m;
     int n_group;
+    std::vector<real_type> n_xU;
     int offset_variable_A;
     int offset_variable_E;
     int offset_variable_F;
@@ -271,6 +290,7 @@ public:
     std::vector<real_type> r_SF;
     std::vector<real_type> r_SR;
     std::vector<real_type> r_SS;
+    real_type r_age;
     real_type sigma;
     real_type steps_per_week;
     real_type t0;
@@ -279,29 +299,45 @@ public:
   };
   struct internal_type {
     std::vector<real_type> all_pharyngitis;
+    std::vector<real_type> dem_A;
+    std::vector<real_type> dem_E;
+    std::vector<real_type> dem_F;
+    std::vector<real_type> dem_I;
+    std::vector<real_type> dem_N;
+    std::vector<real_type> dem_R;
+    std::vector<real_type> dem_S1;
+    std::vector<real_type> dem_S2;
+    std::vector<real_type> dem_U;
     std::vector<real_type> foi;
     std::vector<real_type> lambda;
     std::vector<real_type> n_A;
     std::vector<real_type> n_AR;
     std::vector<real_type> n_AU;
+    std::vector<real_type> n_Ai;
     std::vector<real_type> n_Ax;
     std::vector<real_type> n_E;
     std::vector<real_type> n_EI;
     std::vector<real_type> n_ES;
+    std::vector<real_type> n_Ei;
     std::vector<real_type> n_Ex;
     std::vector<real_type> n_F;
     std::vector<real_type> n_FR;
+    std::vector<real_type> n_Fi;
     std::vector<real_type> n_Fx;
     std::vector<real_type> n_I;
     std::vector<real_type> n_IR;
+    std::vector<real_type> n_Ii;
     std::vector<real_type> n_Ix;
     std::vector<real_type> n_Nx;
     std::vector<real_type> n_R;
     std::vector<real_type> n_RU;
+    std::vector<real_type> n_Ri;
     std::vector<real_type> n_Rx;
     std::vector<real_type> n_S1;
+    std::vector<real_type> n_S1i;
     std::vector<real_type> n_S1x;
     std::vector<real_type> n_S2;
+    std::vector<real_type> n_S2i;
     std::vector<real_type> n_S2x;
     std::vector<real_type> n_SF;
     std::vector<real_type> n_SR;
@@ -309,8 +345,8 @@ public:
     std::vector<real_type> n_U;
     std::vector<real_type> n_UA;
     std::vector<real_type> n_UE;
+    std::vector<real_type> n_Ui;
     std::vector<real_type> n_Ux;
-    std::vector<real_type> n_xU;
     std::vector<real_type> pharyngitis_inc_by_group;
     std::vector<real_type> r_U;
     std::vector<real_type> r_UA;
@@ -348,12 +384,12 @@ public:
   }
   void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
     const real_type * U = state + 10;
-    const real_type * E = state + shared->offset_variable_E;
     const real_type * A = state + shared->offset_variable_A;
+    const real_type * E = state + shared->offset_variable_E;
+    const real_type * I = state + shared->offset_variable_I;
     const real_type * S1 = state + shared->offset_variable_S1;
     const real_type * S2 = state + shared->offset_variable_S2;
     const real_type * F = state + shared->offset_variable_F;
-    const real_type * I = state + shared->offset_variable_I;
     const real_type * R = state + shared->offset_variable_R;
     const real_type * N = state + shared->offset_variable_N;
     const real_type entrants_inc = state[5];
@@ -363,59 +399,135 @@ public:
     const real_type beta_t = state[7];
     state_next[7] = shared->beta * (1 + shared->sigma * std::cos(2 * shared->pi * (shared->t0 + step - shared->t_s) / (real_type) 365.25));
     state_next[0] = (step + 1) * shared->dt;
-    for (int i = 1; i <= shared->dim_n_xU; ++i) {
-      internal.n_xU[i - 1] = dust::random::poisson<real_type>(rng_state, shared->alpha[i - 1] * shared->dt);
+    for (int i = 1; i <= shared->dim_n_Ai; ++i) {
+      internal.n_Ai[i - 1] = ((i > 1 ? A[i - 1 - 1] : 0)) - ((i < shared->n_group ? A[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Ax; ++i) {
+      internal.n_Ax[i - 1] = std::round(A[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_Ei; ++i) {
+      internal.n_Ei[i - 1] = ((i > 1 ? E[i - 1 - 1] : 0)) - ((i < shared->n_group ? E[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Ex; ++i) {
+      internal.n_Ex[i - 1] = std::round(E[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_Fi; ++i) {
+      internal.n_Fi[i - 1] = ((i > 1 ? F[i - 1 - 1] : 0)) - ((i < shared->n_group ? F[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Fx; ++i) {
+      internal.n_Fx[i - 1] = std::round(F[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_Ii; ++i) {
+      internal.n_Ii[i - 1] = ((i > 1 ? I[i - 1 - 1] : 0)) - ((i < shared->n_group ? I[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Ix; ++i) {
+      internal.n_Ix[i - 1] = std::round(I[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_Ri; ++i) {
+      internal.n_Ri[i - 1] = ((i > 1 ? R[i - 1 - 1] : 0)) - ((i < shared->n_group ? R[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Rx; ++i) {
+      internal.n_Rx[i - 1] = std::round(R[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_S1i; ++i) {
+      internal.n_S1i[i - 1] = ((i > 1 ? S1[i - 1 - 1] : 0)) - ((i < shared->n_group ? S1[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_S1x; ++i) {
+      internal.n_S1x[i - 1] = std::round(S1[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_S2i; ++i) {
+      internal.n_S2i[i - 1] = ((i > 1 ? S2[i - 1 - 1] : 0)) - ((i < shared->n_group ? S2[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_S2x; ++i) {
+      internal.n_S2x[i - 1] = std::round(S2[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_n_Ui; ++i) {
+      internal.n_Ui[i - 1] = ((i > 1 ? U[i - 1 - 1] : 0)) - ((i < shared->n_group ? U[i - 1] : 0));
+    }
+    for (int i = 1; i <= shared->dim_n_Ux; ++i) {
+      internal.n_Ux[i - 1] = std::round(U[i - 1] * shared->omega[i - 1] * shared->dt);
+    }
+    for (int i = 1; i <= shared->dim_dem_A; ++i) {
+      internal.dem_A[i - 1] = std::round(internal.n_Ai[i - 1] * shared->r_age * shared->dt) - internal.n_Ax[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_E; ++i) {
+      internal.dem_E[i - 1] = std::round(internal.n_Ei[i - 1] * shared->r_age * shared->dt) - internal.n_Ex[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_F; ++i) {
+      internal.dem_F[i - 1] = std::round(internal.n_Fi[i - 1] * shared->r_age * shared->dt) - internal.n_Fx[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_I; ++i) {
+      internal.dem_I[i - 1] = std::round(internal.n_Ii[i - 1] * shared->r_age * shared->dt) - internal.n_Ix[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_R; ++i) {
+      internal.dem_R[i - 1] = std::round(internal.n_Ri[i - 1] * shared->r_age * shared->dt) - internal.n_Rx[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_S1; ++i) {
+      internal.dem_S1[i - 1] = std::round(internal.n_S1i[i - 1] * shared->r_age * shared->dt) - internal.n_S1x[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_S2; ++i) {
+      internal.dem_S2[i - 1] = std::round(internal.n_S2i[i - 1] * shared->r_age * shared->dt) - internal.n_S2x[i - 1];
+    }
+    for (int i = 1; i <= shared->dim_dem_U; ++i) {
+      internal.dem_U[i - 1] = shared->n_xU[i - 1] + std::round(internal.n_Ui[i - 1] * shared->r_age * shared->dt) - internal.n_Ux[i - 1];
     }
     for (int i = 1; i <= shared->dim_lambda_1; ++i) {
       for (int j = 1; j <= shared->dim_lambda_2; ++j) {
         internal.lambda[i - 1 + shared->dim_lambda_1 * (j - 1)] = beta_t * shared->m[shared->dim_m_1 * (j - 1) + i - 1] * (A[j - 1] * shared->theta_A + S1[j - 1] + S2[j - 1]) / (real_type) N[j - 1];
       }
     }
-    state_next[5] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_xU.data(), 0, shared->dim_n_xU) : entrants_inc + odin_sum1<real_type>(internal.n_xU.data(), 0, shared->dim_n_xU)));
+    for (int i = 1; i <= shared->dim_n_Nx; ++i) {
+      internal.n_Nx[i - 1] = internal.n_Ux[i - 1] + internal.n_Ex[i - 1] + internal.n_Ax[i - 1] + internal.n_S1x[i - 1] + internal.n_S2x[i - 1] + internal.n_Fx[i - 1] + internal.n_Ix[i - 1] + internal.n_Rx[i - 1];
+    }
+    state_next[5] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(shared->n_xU.data(), 0, shared->dim_n_xU) : entrants_inc + odin_sum1<real_type>(shared->n_xU.data(), 0, shared->dim_n_xU)));
+    for (int i = 1; i <= shared->dim_dem_N; ++i) {
+      internal.dem_N[i - 1] = internal.dem_U[i - 1] + internal.dem_E[i - 1] + internal.dem_A[i - 1] + internal.dem_S1[i - 1] + internal.dem_S2[i - 1] + internal.dem_F[i - 1] + internal.dem_I[i - 1] + internal.dem_R[i - 1];
+    }
     for (int i = 1; i <= shared->dim_foi; ++i) {
       internal.foi[i - 1] = odin_sum2<real_type>(internal.lambda.data(), i - 1, i, 0, shared->dim_lambda_2, shared->dim_lambda_1);
     }
     for (int i = 1; i <= shared->dim_n_A; ++i) {
-      internal.n_A[i - 1] = dust::random::binomial<real_type>(rng_state, A[i - 1], 1 - std::exp(- shared->r_A[i - 1] * shared->dt));
+      internal.n_A[i - 1] = dust::random::binomial<real_type>(rng_state, A[i - 1] + internal.dem_A[i - 1], 1 - std::exp(- shared->r_A[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_E; ++i) {
-      internal.n_E[i - 1] = dust::random::binomial<real_type>(rng_state, E[i - 1], 1 - std::exp(- shared->r_E[i - 1] * shared->dt));
+      internal.n_E[i - 1] = dust::random::binomial<real_type>(rng_state, E[i - 1] + internal.dem_E[i - 1], 1 - std::exp(- shared->r_E[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_F; ++i) {
-      internal.n_F[i - 1] = dust::random::binomial<real_type>(rng_state, F[i - 1], 1 - std::exp(- shared->r_F[i - 1] * shared->dt));
+      internal.n_F[i - 1] = dust::random::binomial<real_type>(rng_state, F[i - 1] + internal.dem_F[i - 1], 1 - std::exp(- shared->r_F[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_I; ++i) {
-      internal.n_I[i - 1] = dust::random::binomial<real_type>(rng_state, I[i - 1], 1 - std::exp(- shared->r_I[i - 1] * shared->dt));
+      internal.n_I[i - 1] = dust::random::binomial<real_type>(rng_state, I[i - 1] + internal.dem_I[i - 1], 1 - std::exp(- shared->r_I[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_R; ++i) {
-      internal.n_R[i - 1] = dust::random::binomial<real_type>(rng_state, R[i - 1], 1 - std::exp(- shared->r_R[i - 1] * shared->dt));
+      internal.n_R[i - 1] = dust::random::binomial<real_type>(rng_state, R[i - 1] + internal.dem_R[i - 1], 1 - std::exp(- shared->r_R[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_S1; ++i) {
-      internal.n_S1[i - 1] = dust::random::binomial<real_type>(rng_state, S1[i - 1], 1 - std::exp(- shared->r_S1[i - 1] * shared->dt));
+      internal.n_S1[i - 1] = dust::random::binomial<real_type>(rng_state, S1[i - 1] + internal.dem_S1[i - 1], 1 - std::exp(- shared->r_S1[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_n_S2; ++i) {
-      internal.n_S2[i - 1] = dust::random::binomial<real_type>(rng_state, S2[i - 1], 1 - std::exp(- shared->r_S2[i - 1] * shared->dt));
+      internal.n_S2[i - 1] = dust::random::binomial<real_type>(rng_state, S2[i - 1] + internal.dem_S2[i - 1], 1 - std::exp(- shared->r_S2[i - 1] * shared->dt));
     }
-    for (int i = 1; i <= shared->dim_n_Ax; ++i) {
-      internal.n_Ax[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_A[i - 1], shared->omega[i - 1] / (real_type) shared->r_A[i - 1]);
+    state_next[6] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx) : leavers_inc + odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx)));
+    for (int i = 1; i <= shared->dim_n_AR; ++i) {
+      internal.n_AR[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_A[i - 1], shared->p_R);
     }
-    for (int i = 1; i <= shared->dim_n_Ex; ++i) {
-      internal.n_Ex[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_E[i - 1], shared->omega[i - 1] / (real_type) shared->r_E[i - 1]);
+    for (int i = 1; i <= shared->dim_n_EI; ++i) {
+      internal.n_EI[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_E[i - 1], shared->p_I);
     }
-    for (int i = 1; i <= shared->dim_n_Fx; ++i) {
-      internal.n_Fx[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_F[i - 1], shared->omega[i - 1] / (real_type) shared->r_F[i - 1]);
+    for (int i = 1; i <= shared->dim_n_FR; ++i) {
+      internal.n_FR[i - 1] = internal.n_F[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_Ix; ++i) {
-      internal.n_Ix[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_I[i - 1], shared->omega[i - 1] / (real_type) shared->r_I[i - 1]);
+    for (int i = 1; i <= shared->dim_n_IR; ++i) {
+      internal.n_IR[i - 1] = internal.n_I[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_Rx; ++i) {
-      internal.n_Rx[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_R[i - 1], shared->omega[i - 1] / (real_type) shared->r_R[i - 1]);
+    for (int i = 1; i <= shared->dim_n_RU; ++i) {
+      internal.n_RU[i - 1] = internal.n_R[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_S1x; ++i) {
-      internal.n_S1x[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_S1[i - 1], shared->omega[i - 1] / (real_type) shared->r_S1[i - 1]);
+    for (int i = 1; i <= shared->dim_n_SF; ++i) {
+      internal.n_SF[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_S1[i - 1], shared->p_F);
     }
-    for (int i = 1; i <= shared->dim_n_S2x; ++i) {
-      internal.n_S2x[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_S2[i - 1], shared->omega[i - 1] / (real_type) shared->r_S2[i - 1]);
+    for (int i = 1; i <= shared->dim_n_SR; ++i) {
+      internal.n_SR[i - 1] = internal.n_S2[i - 1];
     }
     for (int i = 1; i <= shared->dim_r_UA; ++i) {
       internal.r_UA[i - 1] = (1 - shared->p_S) * internal.foi[i - 1];
@@ -423,95 +535,67 @@ public:
     for (int i = 1; i <= shared->dim_r_UE; ++i) {
       internal.r_UE[i - 1] = shared->p_S * internal.foi[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_AR; ++i) {
-      internal.n_AR[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_A[i - 1] - internal.n_Ax[i - 1], shared->p_R);
-    }
-    for (int i = 1; i <= shared->dim_n_EI; ++i) {
-      internal.n_EI[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_E[i - 1] - internal.n_Ex[i - 1], shared->p_I);
-    }
-    for (int i = 1; i <= shared->dim_n_FR; ++i) {
-      internal.n_FR[i - 1] = internal.n_F[i - 1] - internal.n_Fx[i - 1];
-    }
-    for (int i = 1; i <= shared->dim_n_IR; ++i) {
-      internal.n_IR[i - 1] = internal.n_I[i - 1] - internal.n_Ix[i - 1];
-    }
-    for (int i = 1; i <= shared->dim_n_RU; ++i) {
-      internal.n_RU[i - 1] = internal.n_R[i - 1] - internal.n_Rx[i - 1];
-    }
-    for (int i = 1; i <= shared->dim_n_SF; ++i) {
-      internal.n_SF[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_S1[i - 1] - internal.n_S1x[i - 1], shared->p_F);
-    }
-    for (int i = 1; i <= shared->dim_n_SR; ++i) {
-      internal.n_SR[i - 1] = internal.n_S2[i - 1] - internal.n_S2x[i - 1];
-    }
-    for (int i = 1; i <= shared->dim_r_U; ++i) {
-      internal.r_U[i - 1] = internal.r_UE[i - 1] + internal.r_UA[i - 1] + shared->omega[i - 1];
+    for (int i = 1; i <= shared->dim_N; ++i) {
+      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + internal.dem_N[i - 1];
     }
     for (int i = 1; i <= shared->dim_n_AU; ++i) {
-      internal.n_AU[i - 1] = internal.n_A[i - 1] - internal.n_Ax[i - 1] - internal.n_AR[i - 1];
+      internal.n_AU[i - 1] = internal.n_A[i - 1] - internal.n_AR[i - 1];
     }
     for (int i = 1; i <= shared->dim_n_ES; ++i) {
-      internal.n_ES[i - 1] = internal.n_E[i - 1] - internal.n_Ex[i - 1] - internal.n_EI[i - 1];
+      internal.n_ES[i - 1] = internal.n_E[i - 1] - internal.n_EI[i - 1];
     }
     for (int i = 1; i <= shared->dim_n_SS; ++i) {
-      internal.n_SS[i - 1] = internal.n_S1[i - 1] - internal.n_S1x[i - 1] - internal.n_SF[i - 1];
+      internal.n_SS[i - 1] = internal.n_S1[i - 1] - internal.n_SF[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_U; ++i) {
-      internal.n_U[i - 1] = dust::random::binomial<real_type>(rng_state, U[i - 1], 1 - std::exp(- internal.r_U[i - 1] * shared->dt));
+    for (int i = 1; i <= shared->dim_r_U; ++i) {
+      internal.r_U[i - 1] = internal.r_UE[i - 1] + internal.r_UA[i - 1];
     }
     for (int i = 1; i <= shared->dim_scarlet_fever_inc_by_group; ++i) {
       internal.scarlet_fever_inc_by_group[i - 1] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_SF.data(), i - 1, i) : internal.scarlet_fever_inc_by_group[i - 1] + internal.n_SF[i - 1]));
     }
     for (int i = 1; i <= shared->dim_F; ++i) {
-      state_next[shared->offset_variable_F + i - 1] = F[i - 1] + internal.n_SF[i - 1] - internal.n_FR[i - 1] - internal.n_Fx[i - 1];
+      state_next[shared->offset_variable_F + i - 1] = F[i - 1] + internal.dem_F[i - 1] + internal.n_SF[i - 1] - internal.n_FR[i - 1];
     }
     for (int i = 1; i <= shared->dim_I; ++i) {
-      state_next[shared->offset_variable_I + i - 1] = I[i - 1] + internal.n_EI[i - 1] - internal.n_IR[i - 1] - internal.n_Ix[i - 1];
+      state_next[shared->offset_variable_I + i - 1] = I[i - 1] + internal.dem_I[i - 1] + internal.n_EI[i - 1] - internal.n_IR[i - 1];
     }
     for (int i = 1; i <= shared->dim_R; ++i) {
-      state_next[shared->offset_variable_R + i - 1] = R[i - 1] + internal.n_AR[i - 1] + internal.n_SR[i - 1] + internal.n_FR[i - 1] + internal.n_IR[i - 1] - internal.n_RU[i - 1] - internal.n_Rx[i - 1];
+      state_next[shared->offset_variable_R + i - 1] = R[i - 1] + internal.dem_R[i - 1] + internal.n_AR[i - 1] + internal.n_SR[i - 1] + internal.n_FR[i - 1] + internal.n_IR[i - 1] - internal.n_RU[i - 1];
     }
     state_next[4] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_EI.data(), 0, shared->dim_n_EI) : igas_inc + odin_sum1<real_type>(internal.n_EI.data(), 0, shared->dim_n_EI)));
-    for (int i = 1; i <= shared->dim_n_Ux; ++i) {
-      internal.n_Ux[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_U[i - 1], shared->omega[i - 1] / (real_type) internal.r_U[i - 1]);
+    for (int i = 1; i <= shared->dim_n_U; ++i) {
+      internal.n_U[i - 1] = dust::random::binomial<real_type>(rng_state, U[i - 1] + internal.dem_U[i - 1], 1 - std::exp(- internal.r_U[i - 1] * shared->dt));
     }
     for (int i = 1; i <= shared->dim_pharyngitis_inc_by_group; ++i) {
       internal.pharyngitis_inc_by_group[i - 1] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? internal.n_SS[i - 1] + internal.n_SF[i - 1] : internal.pharyngitis_inc_by_group[i - 1] + internal.n_SS[i - 1] + internal.n_SF[i - 1]));
     }
     for (int i = 1; i <= shared->dim_S1; ++i) {
-      state_next[shared->offset_variable_S1 + i - 1] = S1[i - 1] + internal.n_ES[i - 1] - internal.n_SF[i - 1] - internal.n_SS[i - 1] - internal.n_S1x[i - 1];
+      state_next[shared->offset_variable_S1 + i - 1] = S1[i - 1] + internal.dem_S1[i - 1] + internal.n_ES[i - 1] - internal.n_SF[i - 1] - internal.n_SS[i - 1];
     }
     for (int i = 1; i <= shared->dim_S2; ++i) {
-      state_next[shared->offset_variable_S2 + i - 1] = S2[i - 1] + internal.n_SS[i - 1] - internal.n_SR[i - 1] - internal.n_S2x[i - 1];
+      state_next[shared->offset_variable_S2 + i - 1] = S2[i - 1] + internal.dem_S2[i - 1] + internal.n_SS[i - 1] - internal.n_SR[i - 1];
     }
     state_next[3] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group);
     state_next[9] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group) / (real_type) odin_sum1<real_type>(N, 0, shared->dim_N) * 100000;
     for (int i = 1; i <= shared->dim_all_pharyngitis; ++i) {
       internal.all_pharyngitis[i - 1] = internal.pharyngitis_inc_by_group[i - 1] / (real_type) shared->phi_S[i - 1];
     }
-    for (int i = 1; i <= shared->dim_n_Nx; ++i) {
-      internal.n_Nx[i - 1] = internal.n_Ux[i - 1] + internal.n_Ex[i - 1] + internal.n_Ax[i - 1] + internal.n_S1x[i - 1] + internal.n_S2x[i - 1] + internal.n_Fx[i - 1] + internal.n_Ix[i - 1] + internal.n_Rx[i - 1];
-    }
     for (int i = 1; i <= shared->dim_n_UE; ++i) {
-      internal.n_UE[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_U[i - 1] - internal.n_Ux[i - 1], shared->p_S);
+      internal.n_UE[i - 1] = dust::random::binomial<real_type>(rng_state, internal.n_U[i - 1], shared->p_S);
     }
     state_next[2] = odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, shared->dim_pharyngitis_inc_by_group);
     for (int i = 1; i <= shared->dim_n_UA; ++i) {
-      internal.n_UA[i - 1] = internal.n_U[i - 1] - internal.n_Ux[i - 1] - internal.n_UE[i - 1];
+      internal.n_UA[i - 1] = internal.n_U[i - 1] - internal.n_UE[i - 1];
     }
     for (int i = 1; i <= shared->dim_E; ++i) {
-      state_next[shared->offset_variable_E + i - 1] = E[i - 1] + internal.n_UE[i - 1] - internal.n_ES[i - 1] - internal.n_EI[i - 1] - internal.n_Ex[i - 1];
+      state_next[shared->offset_variable_E + i - 1] = E[i - 1] + internal.dem_E[i - 1] + internal.n_UE[i - 1] - internal.n_ES[i - 1] - internal.n_EI[i - 1];
     }
-    for (int i = 1; i <= shared->dim_N; ++i) {
-      state_next[shared->offset_variable_N + i - 1] = N[i - 1] + internal.n_xU[i - 1] - internal.n_Nx[i - 1];
-    }
-    state_next[6] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx) : leavers_inc + odin_sum1<real_type>(internal.n_Nx.data(), 0, shared->dim_n_Nx)));
     state_next[8] = odin_sum1<real_type>(internal.all_pharyngitis.data(), 0, shared->dim_all_pharyngitis) / (real_type) odin_sum1<real_type>(N, 0, shared->dim_N) * 100000;
     for (int i = 1; i <= shared->dim_A; ++i) {
-      state_next[shared->offset_variable_A + i - 1] = A[i - 1] + internal.n_UA[i - 1] - internal.n_AU[i - 1] - internal.n_AR[i - 1] - internal.n_Ax[i - 1];
+      state_next[shared->offset_variable_A + i - 1] = A[i - 1] + internal.dem_A[i - 1] + internal.n_UA[i - 1] - internal.n_AU[i - 1] - internal.n_AR[i - 1];
     }
     for (int i = 1; i <= shared->dim_U; ++i) {
-      state_next[10 + i - 1] = U[i - 1] + internal.n_xU[i - 1] - internal.n_UE[i - 1] - internal.n_UA[i - 1] + internal.n_AU[i - 1] + internal.n_RU[i - 1] - internal.n_Ux[i - 1];
+      state_next[10 + i - 1] = U[i - 1] + internal.dem_U[i - 1] - internal.n_UE[i - 1] - internal.n_UA[i - 1] + internal.n_AU[i - 1] + internal.n_RU[i - 1];
     }
     state_next[1] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA) : infections_inc + odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA)));
   }
@@ -778,6 +862,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->t_s = NA_REAL;
   shared->theta_A = NA_REAL;
   shared->n_group = 1;
+  shared->r_age = 0;
   shared->t0 = 0;
   shared->beta = user_get_scalar<real_type>(user, "beta", shared->beta, NA_REAL, NA_REAL);
   shared->delta_A = user_get_scalar<real_type>(user, "delta_A", shared->delta_A, NA_REAL, NA_REAL);
@@ -791,6 +876,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->p_I = user_get_scalar<real_type>(user, "p_I", shared->p_I, NA_REAL, NA_REAL);
   shared->p_R = user_get_scalar<real_type>(user, "p_R", shared->p_R, NA_REAL, NA_REAL);
   shared->p_S = user_get_scalar<real_type>(user, "p_S", shared->p_S, NA_REAL, NA_REAL);
+  shared->r_age = user_get_scalar<real_type>(user, "r_age", shared->r_age, NA_REAL, NA_REAL);
   shared->sigma = user_get_scalar<real_type>(user, "sigma", shared->sigma, NA_REAL, NA_REAL);
   shared->t0 = user_get_scalar<real_type>(user, "t0", shared->t0, NA_REAL, NA_REAL);
   shared->t_s = user_get_scalar<real_type>(user, "t_s", shared->t_s, NA_REAL, NA_REAL);
@@ -814,6 +900,15 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_U0 = shared->n_group;
   shared->dim_all_pharyngitis = shared->n_group;
   shared->dim_alpha = shared->n_group;
+  shared->dim_dem_A = shared->n_group;
+  shared->dim_dem_E = shared->n_group;
+  shared->dim_dem_F = shared->n_group;
+  shared->dim_dem_I = shared->n_group;
+  shared->dim_dem_N = shared->n_group;
+  shared->dim_dem_R = shared->n_group;
+  shared->dim_dem_S1 = shared->n_group;
+  shared->dim_dem_S2 = shared->n_group;
+  shared->dim_dem_U = shared->n_group;
   shared->dim_foi = shared->n_group;
   shared->dim_lambda_1 = shared->n_group;
   shared->dim_lambda_2 = shared->n_group;
@@ -822,24 +917,31 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_n_A = shared->n_group;
   shared->dim_n_AR = shared->n_group;
   shared->dim_n_AU = shared->n_group;
+  shared->dim_n_Ai = shared->n_group;
   shared->dim_n_Ax = shared->n_group;
   shared->dim_n_E = shared->n_group;
   shared->dim_n_EI = shared->n_group;
   shared->dim_n_ES = shared->n_group;
+  shared->dim_n_Ei = shared->n_group;
   shared->dim_n_Ex = shared->n_group;
   shared->dim_n_F = shared->n_group;
   shared->dim_n_FR = shared->n_group;
+  shared->dim_n_Fi = shared->n_group;
   shared->dim_n_Fx = shared->n_group;
   shared->dim_n_I = shared->n_group;
   shared->dim_n_IR = shared->n_group;
+  shared->dim_n_Ii = shared->n_group;
   shared->dim_n_Ix = shared->n_group;
   shared->dim_n_Nx = shared->n_group;
   shared->dim_n_R = shared->n_group;
   shared->dim_n_RU = shared->n_group;
+  shared->dim_n_Ri = shared->n_group;
   shared->dim_n_Rx = shared->n_group;
   shared->dim_n_S1 = shared->n_group;
+  shared->dim_n_S1i = shared->n_group;
   shared->dim_n_S1x = shared->n_group;
   shared->dim_n_S2 = shared->n_group;
+  shared->dim_n_S2i = shared->n_group;
   shared->dim_n_S2x = shared->n_group;
   shared->dim_n_SF = shared->n_group;
   shared->dim_n_SR = shared->n_group;
@@ -847,6 +949,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_n_U = shared->n_group;
   shared->dim_n_UA = shared->n_group;
   shared->dim_n_UE = shared->n_group;
+  shared->dim_n_Ui = shared->n_group;
   shared->dim_n_Ux = shared->n_group;
   shared->dim_n_xU = shared->n_group;
   shared->dim_omega = shared->n_group;
@@ -882,6 +985,15 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->S20 = user_get_array_fixed<real_type, 1>(user, "S20", shared->S20, {shared->dim_S20}, NA_REAL, NA_REAL);
   shared->U0 = user_get_array_fixed<real_type, 1>(user, "U0", shared->U0, {shared->dim_U0}, NA_REAL, NA_REAL);
   internal.all_pharyngitis = std::vector<real_type>(shared->dim_all_pharyngitis);
+  internal.dem_A = std::vector<real_type>(shared->dim_dem_A);
+  internal.dem_E = std::vector<real_type>(shared->dim_dem_E);
+  internal.dem_F = std::vector<real_type>(shared->dim_dem_F);
+  internal.dem_I = std::vector<real_type>(shared->dim_dem_I);
+  internal.dem_N = std::vector<real_type>(shared->dim_dem_N);
+  internal.dem_R = std::vector<real_type>(shared->dim_dem_R);
+  internal.dem_S1 = std::vector<real_type>(shared->dim_dem_S1);
+  internal.dem_S2 = std::vector<real_type>(shared->dim_dem_S2);
+  internal.dem_U = std::vector<real_type>(shared->dim_dem_U);
   internal.foi = std::vector<real_type>(shared->dim_foi);
   shared->initial_A = std::vector<real_type>(shared->dim_A);
   shared->initial_E = std::vector<real_type>(shared->dim_E);
@@ -895,24 +1007,31 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   internal.n_A = std::vector<real_type>(shared->dim_n_A);
   internal.n_AR = std::vector<real_type>(shared->dim_n_AR);
   internal.n_AU = std::vector<real_type>(shared->dim_n_AU);
+  internal.n_Ai = std::vector<real_type>(shared->dim_n_Ai);
   internal.n_Ax = std::vector<real_type>(shared->dim_n_Ax);
   internal.n_E = std::vector<real_type>(shared->dim_n_E);
   internal.n_EI = std::vector<real_type>(shared->dim_n_EI);
   internal.n_ES = std::vector<real_type>(shared->dim_n_ES);
+  internal.n_Ei = std::vector<real_type>(shared->dim_n_Ei);
   internal.n_Ex = std::vector<real_type>(shared->dim_n_Ex);
   internal.n_F = std::vector<real_type>(shared->dim_n_F);
   internal.n_FR = std::vector<real_type>(shared->dim_n_FR);
+  internal.n_Fi = std::vector<real_type>(shared->dim_n_Fi);
   internal.n_Fx = std::vector<real_type>(shared->dim_n_Fx);
   internal.n_I = std::vector<real_type>(shared->dim_n_I);
   internal.n_IR = std::vector<real_type>(shared->dim_n_IR);
+  internal.n_Ii = std::vector<real_type>(shared->dim_n_Ii);
   internal.n_Ix = std::vector<real_type>(shared->dim_n_Ix);
   internal.n_Nx = std::vector<real_type>(shared->dim_n_Nx);
   internal.n_R = std::vector<real_type>(shared->dim_n_R);
   internal.n_RU = std::vector<real_type>(shared->dim_n_RU);
+  internal.n_Ri = std::vector<real_type>(shared->dim_n_Ri);
   internal.n_Rx = std::vector<real_type>(shared->dim_n_Rx);
   internal.n_S1 = std::vector<real_type>(shared->dim_n_S1);
+  internal.n_S1i = std::vector<real_type>(shared->dim_n_S1i);
   internal.n_S1x = std::vector<real_type>(shared->dim_n_S1x);
   internal.n_S2 = std::vector<real_type>(shared->dim_n_S2);
+  internal.n_S2i = std::vector<real_type>(shared->dim_n_S2i);
   internal.n_S2x = std::vector<real_type>(shared->dim_n_S2x);
   internal.n_SF = std::vector<real_type>(shared->dim_n_SF);
   internal.n_SR = std::vector<real_type>(shared->dim_n_SR);
@@ -920,8 +1039,9 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   internal.n_U = std::vector<real_type>(shared->dim_n_U);
   internal.n_UA = std::vector<real_type>(shared->dim_n_UA);
   internal.n_UE = std::vector<real_type>(shared->dim_n_UE);
+  internal.n_Ui = std::vector<real_type>(shared->dim_n_Ui);
   internal.n_Ux = std::vector<real_type>(shared->dim_n_Ux);
-  internal.n_xU = std::vector<real_type>(shared->dim_n_xU);
+  shared->n_xU = std::vector<real_type>(shared->dim_n_xU);
   internal.pharyngitis_inc_by_group = std::vector<real_type>(shared->dim_pharyngitis_inc_by_group);
   shared->r_A = std::vector<real_type>(shared->dim_r_A);
   shared->r_AR = std::vector<real_type>(shared->dim_r_AR);
@@ -986,6 +1106,9 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
     shared->initial_U[i - 1] = shared->U0[i - 1];
   }
   shared->m = user_get_array_fixed<real_type, 2>(user, "m", shared->m, {shared->dim_m_1, shared->dim_m_2}, NA_REAL, NA_REAL);
+  for (int i = 1; i <= shared->dim_n_xU; ++i) {
+    shared->n_xU[i - 1] = shared->alpha[i - 1] * shared->dt;
+  }
   for (int i = 1; i <= shared->dim_r_AR; ++i) {
     shared->r_AR[i - 1] = shared->p_R / (real_type) shared->delta_A;
   }
@@ -1017,25 +1140,25 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
     shared->r_SS[i - 1] = (1 - shared->p_F) / (real_type) shared->delta_S;
   }
   for (int i = 1; i <= shared->dim_r_A; ++i) {
-    shared->r_A[i - 1] = shared->r_AU[i - 1] + shared->r_AR[i - 1] + shared->omega[i - 1];
+    shared->r_A[i - 1] = shared->r_AU[i - 1] + shared->r_AR[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_E; ++i) {
-    shared->r_E[i - 1] = shared->r_EI[i - 1] + shared->r_ES[i - 1] + shared->omega[i - 1];
+    shared->r_E[i - 1] = shared->r_EI[i - 1] + shared->r_ES[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_F; ++i) {
-    shared->r_F[i - 1] = shared->r_FR[i - 1] + shared->omega[i - 1];
+    shared->r_F[i - 1] = shared->r_FR[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_I; ++i) {
-    shared->r_I[i - 1] = shared->r_IR[i - 1] + shared->omega[i - 1];
+    shared->r_I[i - 1] = shared->r_IR[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_R; ++i) {
-    shared->r_R[i - 1] = shared->r_RU[i - 1] + shared->omega[i - 1];
+    shared->r_R[i - 1] = shared->r_RU[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_S1; ++i) {
-    shared->r_S1[i - 1] = shared->r_SF[i - 1] + shared->r_SS[i - 1] + shared->omega[i - 1];
+    shared->r_S1[i - 1] = shared->r_SF[i - 1] + shared->r_SS[i - 1];
   }
   for (int i = 1; i <= shared->dim_r_S2; ++i) {
-    shared->r_S2[i - 1] = shared->r_SR[i - 1] + shared->omega[i - 1];
+    shared->r_S2[i - 1] = shared->r_SR[i - 1];
   }
   return dust::pars_type<model>(shared, internal);
 }

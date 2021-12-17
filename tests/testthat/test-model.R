@@ -11,20 +11,20 @@ test_that("model runs", {
   expect_true(all(y >= 0))
 
 
-  tmp <- c(1, 4062942, 590078, 545, 157, 699346, 692750, 1.94454194361955,
-           4214.48297040064, 0.973131187261831, 22528663, 5876619, 1027783,
-           137, 811340, 418546, 485, 25343023, 56006596, 1, 4062266, 588965,
-           559, 133, 700735, 691600, 1.94454194361955, 4206.31448890063,
-           0.998077050119894, 22531909, 5877543, 1028307, 124, 810753, 417653,
-           491, 25342355, 56009135, 1, 4056011, 588763, 569, 132, 699745,
-           691735, 1.94454194361955, 4205.0294970503, 1.01596983158827,
-           22534874, 5875066, 1027112, 113, 809102, 417132, 488, 25344123,
-           56008010, 1, 4059007, 590042, 611, 149, 701604, 692897,
-           1.94454194361955, 4214.02818330696, 1.09092709502059, 22535163,
-           5873182, 1026397, 128, 811613, 417919, 538, 25343767, 56008707, 1,
-           4060858, 590040, 573, 137, 699034, 693393, 1.94454194361955,
-           4214.2820729541, 1.02314403591396, 22528947, 5875756, 1029255,
-           121, 809829, 418855, 500, 25342378, 56005641)
+  tmp <- c(1, 4049679, 590696, 575, 140, 11000, 10995, 1.94454194361955,
+           4219.25679842802, 1.02678563046648, 22155557, 5931631, 1026133,
+           130, 812219, 419317, 518, 25654500, 56000005, 1, 4053537, 590849,
+           613, 136, 11000, 10995, 1.94454194361955, 4220.34965548166,
+           1.09464276778426, 22151667, 5931676, 1027491, 116, 813523, 419903,
+           533, 25655096, 56000005, 1, 4052149, 591552, 615, 145, 11000,
+           10995, 1.94454194361955, 4225.37108364318, 1.09821419606415,
+           22153031, 5931007, 1026642, 131, 813632, 419878, 549, 25655135,
+           56000005, 1, 4051109, 592307, 572, 144, 11000, 10995,
+           1.94454194361955, 4230.7639403458, 1.02142848804665, 22153390,
+           5929586, 1026023, 136, 813562, 420167, 504, 25656637, 56000005,
+           1, 4052087, 591492, 574, 135, 11000, 10995, 1.94454194361955,
+           4224.94251224959, 1.02499991632654, 22152224, 5932440, 1025458,
+           122, 813470, 419949, 502, 25655840, 56000005)
   expect_equivalent(y, array(tmp, dim = c(19L, 5L, 1L)))
 })
 
@@ -270,4 +270,79 @@ test_that("incidence time series output correctly", {
                rowSums(y["pharyngitis_inc", , ] - y["scarlet_fever_inc", , ]))
   expect_equal(y["S2", , 2],
                y["pharyngitis_inc", , 2] - y["scarlet_fever_inc", , 2])
+})
+
+test_that("aging works", {
+  pars <- example_gas_parameters(10)
+
+  check_compartment_aging <- function(nm, pars) {
+    pars$alpha[] <- pars$omega[] <- 0 # no entrants or leavers
+    pars$r_age <- 1 / pars$dt # everyone ages a group per week
+    pars$beta <- 0 # no transmission
+    pars[grep("delta", names(pars))] <- Inf # no movement between compartments
+    pars$A0[] <- pars$U0[] <- pars$R0[] <- 0 # clear population
+    pars[[paste0(nm, 0)]][1] <- N0 <- 1e4  # everyone initially in group 1
+
+    # run model
+    mod <- model$new(pars, 0, 2, seed = 1L)
+    y <- lapply(seq(0, 9), mod$simulate)
+    y <- mcstate::array_bind(arrays = y, along = 3L)
+    rownames(y) <- nms <- names(model_index(10))
+
+    # check no-one moves compartments
+    expect_equivalent(y[grep(nm, nms), , ], y[grep("N_", nms), , ])
+    # check all demographic changes are deterministic
+    expect_equal(y[, 1, ], y[, 2, ])
+    ## check pop size is constant
+    expect_true(all(apply(y[grep("N_", nms), , ], c(2, 3), sum) == N0))
+    ## check everyone advances one group per day
+    expect_equivalent(y[grep(nm, nms), 1, ], diag(pars$n_group) * N0)
+    ## nothing going on in other compartments
+    expect_equal(sum(y[grep(paste0("N_|time|", nm), nms, invert = TRUE), , ]),
+                 0)
+  }
+
+  for (i in model_compartments()) {
+    check_compartment_aging(i, pars)
+  }
+})
+
+test_that("aging does not affect model dynamics", {
+  pars <- example_gas_parameters()
+  pars_a <- example_gas_parameters(2)
+  pars$alpha[] <- pars_a$alpha[] <- 0
+  pars$omega[] <- pars_a$omega[] <- 0
+
+  f <- function(pars) {
+    mod <- model$new(pars, 0, 5, seed = 1L)
+    y <- lapply(seq(0, 9), mod$simulate)
+    y <- mcstate::array_bind(arrays = y, along = 3L)
+    mod$transform_variables(y)
+  }
+
+  y <- f(pars)
+  y_a <- f(pars_a)
+
+  absdiff <- function(state) {
+    x <- drop(y[[state]])
+    y <- colSums(y_a[[state]])
+    max(abs(x - y) / x, na.rm = TRUE)
+  }
+
+  # check larger compartments are withing 1% (others too stochastic)
+  expect_true(absdiff("U") < 0.01)
+  expect_true(absdiff("A") < 0.01)
+  expect_true(absdiff("R") < 0.01)
+  expect_true(absdiff("infections_inc") < 0.01)
+  expect_true(absdiff("pharyngitis_inc") < 0.01)
+
+  expect_equal(Reduce("+", y[model_compartments()]), y$N)
+  expect_equal(Reduce("+", y_a[model_compartments()]), y_a$N)
+  expect_equal(y$beta_t, y_a$beta_t)
+
+  # check all compartments equal
+  expect_equal(sum(y$leavers_inc), 0)
+  expect_equal(sum(y$entrants_inc), 0)
+  expect_equal(sum(y_a$leavers_inc), 0)
+  expect_equal(sum(y_a$entrants_inc), 0)
 })

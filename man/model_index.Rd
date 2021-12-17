@@ -4,7 +4,10 @@
 \alias{model_index}
 \title{Named list of model output indices}
 \usage{
-model_index()
+model_index(n_group = 1)
+}
+\arguments{
+\item{n_group}{Integer number of age groups}
 }
 \value{
 Named list of model output indices

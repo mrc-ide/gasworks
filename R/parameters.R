@@ -40,10 +40,12 @@ check_gas_parameters <- function(pars, n_group = 1) {
 ##' @name example_gas_parameters
 ##' @title Example of fitted gas parameters for use in testing
 ##' @description Example of fitted gas parameters for use in testing
+##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
-example_gas_parameters <- function() {
-  pars <- list(prev_A = 0.1,
-               prev_R = 0.5,
+example_gas_parameters <- function(n_group = 1) {
+  pars <- list(prev_A = rep(0.1, n_group),
+               prev_R = rep(0.5, n_group),
+               n_group = n_group,
                beta = 2,
                sigma = 0.6,
                t_s = 100,
@@ -56,7 +58,7 @@ example_gas_parameters <- function() {
                k_gp = 1,
                k_hpr = 1,
                theta_A = 1,
-               phi_S = 0.25)
+               phi_S = rep(0.25, n_group))
   transform(pars)
 }
 
@@ -68,11 +70,13 @@ example_gas_parameters <- function() {
 ##' @param initial_pars default NULL uses `N0`, `prev_A` and `prev_R` to
 ##' calculate the starting position
 ##' @param demographic_pars default NULL uses `demographic_parameters()`)
+##' @inheritParams check_gas_parameters
 ##' @return A list of all model parameters
 ##' @export
 model_parameters <- function(gas_pars, initial_pars = NULL,
-                             demographic_pars = NULL) {
-  demographic_pars <- demographic_pars %||% demographic_parameters()
+                             demographic_pars = NULL, n_group = NULL) {
+  n_group <- gas_pars$n_group %||% 1
+  demographic_pars <- demographic_pars %||% demographic_parameters(n_group)
   pars <- c(demographic_pars, gas_pars)
 
   pars$dt <- 1 / 7 # Data is weekly, model steps are daily
@@ -98,13 +102,17 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
 ##' @name demographic_parameters
 ##' @title Demographic model parameters
 ##' @description Demographic model parameters
+##' @inheritParams check_gas_parameters
 ##' @return A list of demographic parameters
 ##' @export
-demographic_parameters <- function() {
-  list(N0 = 56e6,
-       alpha = 7e5,
-       omega = 0.0125,
-       m = matrix(1, 1, 1)) # mixing matrix
+demographic_parameters <- function(n_group = 1) {
+  N0 <- 56e6 # England population
+  x <- 11000 # births and deaths per week - i.e. 572000 per year
+  # convert annual mortality to weekly
+  list(N0 = round(rep(N0 / n_group, n_group)),
+       alpha = c(round(x), rep(0, n_group - 1)),
+       omega = rep(x / N0, n_group),
+       m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }
 
 ##' @name initial_parameters

@@ -8,8 +8,8 @@ test_that("compare function works", {
   rownames(state) <- names(idx)
   observed <- list(igas_inc = 25, scarlet_fever_inc = 53, pharyngitis_rate = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-1045.82878036054, -1043.67263594512, -1043.36126271083,
-                     -1045.77522055165, -1045.71156016202))
+  expect_equal(ll, c(-1046.97643040884, -1047.28434458067, -1048.59541140055,
+                     -1049.8724974575, -1048.36722365153))
 
   observed2 <- as.list(state[, 1])
 

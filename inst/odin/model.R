@@ -7,20 +7,22 @@ update(time) <- (step + 1) * dt
 n_group <- user(1)
 
 ## Core equations for transitions between compartments:
-update(U[])  <- U[i]  + n_xU[i] - n_UE[i] - n_UA[i] + n_AU[i] + n_RU[i] -
-  n_Ux[i]
-update(E[])  <- E[i]  + n_UE[i] - n_ES[i] - n_EI[i] - n_Ex[i]
-update(A[])  <- A[i]  + n_UA[i] - n_AU[i] - n_AR[i] - n_Ax[i]
-update(S1[]) <- S1[i] + n_ES[i] - n_SF[i] - n_SS[i] - n_S1x[i]
-update(S2[]) <- S2[i] + n_SS[i] - n_SR[i] - n_S2x[i]
-update(F[])  <- F[i]  + n_SF[i] - n_FR[i] - n_Fx[i]
-update(I[])  <- I[i]  + n_EI[i] - n_IR[i] - n_Ix[i]
-update(R[])  <- R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] - n_RU[i] -
-  n_Rx[i]
-update(N[])  <- N[i]  + n_xU[i] - n_Nx[i]
+update(U[])  <- U[i]  + dem_U[i]  - n_UE[i] - n_UA[i] + n_AU[i] + n_RU[i]
+update(A[])  <- A[i]  + dem_A[i]  + n_UA[i] - n_AU[i] - n_AR[i]
+update(E[])  <- E[i]  + dem_E[i]  + n_UE[i] - n_ES[i] - n_EI[i]
+update(I[])  <- I[i]  + dem_I[i]  + n_EI[i] - n_IR[i]
+update(S1[]) <- S1[i] + dem_S1[i] + n_ES[i] - n_SF[i] - n_SS[i]
+update(S2[]) <- S2[i] + dem_S2[i] + n_SS[i] - n_SR[i]
+update(F[])  <- F[i]  + dem_F[i]  + n_SF[i] - n_FR[i]
+update(R[])  <- R[i]  + dem_R[i]  + n_AR[i] + n_SR[i] + n_FR[i] + n_IR[i] -
+  n_RU[i]
+update(N[])  <- N[i]  + dem_N[i]
 
 n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Fx[i] +
   n_Ix[i] + n_Rx[i]
+
+dem_N[] <- dem_U[i] + dem_E[i] + dem_A[i] + dem_S1[i] + dem_S2[i] + dem_F[i] +
+  dem_I[i] + dem_R[i]
 
 ## Output incidence flows:
 update(entrants_inc) <- (
@@ -76,51 +78,72 @@ r_FR[] <- 1 / delta_F
 r_RU[] <- 1 / delta_R
 
 ## Total rates of transmission out of each compartment
-r_U[]  <- r_UE[i] + r_UA[i] + omega[i]
-r_A[]  <- r_AU[i] + r_AR[i] + omega[i]
-r_E[]  <- r_EI[i] + r_ES[i] + omega[i]
-r_I[]  <- r_IR[i] + omega[i]
-r_S1[] <- r_SF[i] + r_SS[i] + omega[i]
-r_S2[] <- r_SR[i] + omega[i]
-r_F[]  <- r_FR[i] + omega[i]
-r_R[]  <- r_RU[i] + omega[i]
+r_U[]  <- r_UE[i] + r_UA[i]
+r_A[]  <- r_AU[i] + r_AR[i]
+r_E[]  <- r_EI[i] + r_ES[i]
+r_I[]  <- r_IR[i]
+r_S1[] <- r_SF[i] + r_SS[i]
+r_S2[] <- r_SR[i]
+r_F[]  <- r_FR[i]
+r_R[]  <- r_RU[i]
 
-##Draw number of entrants
-n_xU[] <- rpois(alpha[i] * dt)
+## Calculate number of entrants
+n_xU[] <- alpha[i] * dt
 
-## Draws from binomial distributions for numbers leaving each compartments
-n_U[]  <- rbinom(U[i],  1 - exp(-r_U[i]  * dt))
-n_A[]  <- rbinom(A[i],  1 - exp(-r_A[i]  * dt))
-n_E[]  <- rbinom(E[i],  1 - exp(-r_E[i]  * dt))
-n_I[]  <- rbinom(I[i],  1 - exp(-r_I[i]  * dt))
-n_S1[] <- rbinom(S1[i], 1 - exp(-r_S1[i] * dt))
-n_S2[] <- rbinom(S2[i], 1 - exp(-r_S2[i] * dt))
-n_F[]  <- rbinom(F[i],  1 - exp(-r_F[i]  * dt))
-n_R[]  <- rbinom(R[i],  1 - exp(-r_R[i]  * dt))
+## Calculate number of leavers from each compartment - deterministic
+n_Ux[]  <- round(U[i]  * omega[i] * dt)
+n_Ax[]  <- round(A[i]  * omega[i] * dt)
+n_Ex[]  <- round(E[i]  * omega[i] * dt)
+n_Ix[]  <- round(I[i]  * omega[i] * dt)
+n_S1x[] <- round(S1[i] * omega[i] * dt)
+n_S2x[] <- round(S2[i] * omega[i] * dt)
+n_Fx[]  <- round(F[i]  * omega[i] * dt)
+n_Rx[]  <- round(R[i]  * omega[i] * dt)
 
-# Draw the number of leavers from each compartment
-n_Ux[]  <- rbinom(n_U[i],  omega[i] / r_U[i])
-n_Ax[]  <- rbinom(n_A[i],  omega[i] / r_A[i])
-n_Ex[]  <- rbinom(n_E[i],  omega[i] / r_E[i])
-n_Ix[]  <- rbinom(n_I[i],  omega[i] / r_I[i])
-n_S1x[] <- rbinom(n_S1[i], omega[i] / r_S1[i])
-n_S2x[] <- rbinom(n_S2[i], omega[i] / r_S2[i])
-n_Fx[]  <- rbinom(n_F[i],  omega[i] / r_F[i])
-n_Rx[]  <- rbinom(n_R[i],  omega[i] / r_R[i])
+## calculate net aging
+n_Ui[]   <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
+n_Ai[]  <- (if (i > 1) A[i - 1] else 0) - (if (i < n_group) A[i] else 0)
+n_Ei[]  <- (if (i > 1) E[i - 1] else 0) - (if (i < n_group) E[i] else 0)
+n_Ii[]  <- (if (i > 1) I[i - 1] else 0) - (if (i < n_group) I[i] else 0)
+n_S1i[] <- (if (i > 1) S1[i - 1] else 0) - (if (i < n_group) S1[i] else 0)
+n_S2i[] <- (if (i > 1) S2[i - 1] else 0) - (if (i < n_group) S2[i] else 0)
+n_Fi[]  <- (if (i > 1) F[i - 1] else 0) - (if (i < n_group) F[i] else 0)
+n_Ri[]  <- (if (i > 1) R[i - 1] else 0) - (if (i < n_group) R[i] else 0)
+
+## Calculate all demographic changes
+dem_U[]  <- n_xU[i] + round(n_Ui[i] * r_age * dt) - n_Ux[i]
+dem_A[]  <- round(n_Ai[i] * r_age * dt) - n_Ax[i]
+dem_E[]  <- round(n_Ei[i] * r_age * dt) - n_Ex[i]
+dem_I[]  <- round(n_Ii[i] * r_age * dt) - n_Ix[i]
+dem_S1[] <- round(n_S1i[i] * r_age * dt) - n_S1x[i]
+dem_S2[] <- round(n_S2i[i] * r_age * dt) - n_S2x[i]
+dem_F[]  <- round(n_Fi[i] * r_age * dt) - n_Fx[i]
+dem_R[]  <- round(n_Ri[i] * r_age * dt) - n_Rx[i]
+
+## Draws from binomial distributions for numbers leaving each compartment
+## all demographic transitions are done first
+n_U[]  <- rbinom(U[i] + dem_U[i],  1 - exp(-r_U[i]  * dt))
+n_A[]  <- rbinom(A[i] + dem_A[i],  1 - exp(-r_A[i]  * dt))
+n_E[]  <- rbinom(E[i] + dem_E[i],  1 - exp(-r_E[i]  * dt))
+n_I[]  <- rbinom(I[i] + dem_I[i],  1 - exp(-r_I[i]  * dt))
+n_S1[] <- rbinom(S1[i] + dem_S1[i], 1 - exp(-r_S1[i] * dt))
+n_S2[] <- rbinom(S2[i] + dem_S2[i], 1 - exp(-r_S2[i] * dt))
+n_F[]  <- rbinom(F[i] + dem_F[i],  1 - exp(-r_F[i]  * dt))
+n_R[]  <- rbinom(R[i] + dem_R[i],  1 - exp(-r_R[i]  * dt))
 
 ## Draw the numbers of transitions between compartments
-n_UE[] <- rbinom(n_U[i] - n_Ux[i], p_S)
-n_UA[] <- n_U[i] - n_Ux[i] - n_UE[i]
-n_AR[] <- rbinom(n_A[i] - n_Ax[i], p_R)
-n_AU[] <- n_A[i] - n_Ax[i] - n_AR[i]
-n_EI[] <- rbinom(n_E[i] - n_Ex[i], p_I)
-n_ES[] <- n_E[i] - n_Ex[i] - n_EI[i]
-n_IR[] <- n_I[i] - n_Ix[i]
-n_SF[] <- rbinom(n_S1[i] - n_S1x[i], p_F)
-n_SS[] <- n_S1[i] - n_S1x[i] - n_SF[i]
-n_SR[] <- n_S2[i] - n_S2x[i]
-n_FR[] <- n_F[i] - n_Fx[i]
-n_RU[] <- n_R[i] - n_Rx[i]
+n_UE[] <- rbinom(n_U[i], p_S)
+n_UA[] <- n_U[i] - n_UE[i]
+n_AR[] <- rbinom(n_A[i], p_R)
+n_AU[] <- n_A[i] - n_AR[i]
+n_EI[] <- rbinom(n_E[i], p_I)
+n_ES[] <- n_E[i] - n_EI[i]
+n_IR[] <- n_I[i]
+n_SF[] <- rbinom(n_S1[i], p_F)
+n_SS[] <- n_S1[i] - n_SF[i]
+n_SR[] <- n_S2[i]
+n_FR[] <- n_F[i]
+n_RU[] <- n_R[i]
 
 ## Initial states:
 initial(U[])  <- U0[i]
@@ -173,6 +196,7 @@ phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
 alpha[] <- user() # number of population entrants
 omega[] <- user() # rate of population exit
+r_age <- user(0)   # rate of aging - determined by group size
 
 ## Object dimensions
 
@@ -244,6 +268,25 @@ dim(n_S2x) <- n_group
 dim(n_Fx) <- n_group
 dim(n_Rx) <- n_group
 dim(n_Nx) <- n_group
+
+dim(n_Ui) <- n_group
+dim(n_Ai) <- n_group
+dim(n_Ei) <- n_group
+dim(n_Ii) <- n_group
+dim(n_S1i) <- n_group
+dim(n_S2i) <- n_group
+dim(n_Fi) <- n_group
+dim(n_Ri) <- n_group
+
+dim(dem_U) <- n_group
+dim(dem_A) <- n_group
+dim(dem_E) <- n_group
+dim(dem_I) <- n_group
+dim(dem_S1) <- n_group
+dim(dem_S2) <- n_group
+dim(dem_F) <- n_group
+dim(dem_R) <- n_group
+dim(dem_N) <- n_group
 
 dim(n_UE) <- n_group
 dim(n_UA) <- n_group
