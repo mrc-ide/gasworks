@@ -1,3 +1,8 @@
+# gasworks 0.1.2
+
+* add aging between groups
+* make all demographic processes deterministic
+
 # gasworks 0.1.1
 
 * add age-structure to model
