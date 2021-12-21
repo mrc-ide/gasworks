@@ -8,7 +8,7 @@
 
 check_gas_parameters <- function(pars, n_group = 1) {
   with(pars, {
-    assert_positive(beta, 1)
+    assert_nonnegative(beta, 1)
     assert_nonnegative(sigma, 1)
     assert_positive(t_s, 1)
     assert_unit_interval(p_S, 1)
