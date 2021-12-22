@@ -22,8 +22,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_positive(delta_F, 1)
     assert_positive(delta_R, 1)
     assert_unit_interval(theta_A, 1)
-    assert_nonnegative_integer(alpha, n_group)
-    assert_unit_interval(omega, n_group)
+    assert_nonnegative_integer(alpha, 1)
     assert_unit_interval(phi_S, n_group)
     assert_nonnegative_integer(U0, n_group)
     assert_nonnegative_integer(A0, n_group)
@@ -110,7 +109,7 @@ demographic_parameters <- function(n_group = 1) {
   x <- 11000 # births and deaths per week - i.e. 572000 per year
   # convert annual mortality to weekly
   list(N0 = round(rep(N0 / n_group, n_group)),
-       alpha = c(round(x), rep(0, n_group - 1)),
+       alpha = round(x),
        omega = rep(x / N0, n_group),
        m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }

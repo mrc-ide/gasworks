@@ -254,8 +254,8 @@ test_that("incidence time series output correctly", {
   expect_equal(y["F", , 2], y["scarlet_fever_inc", , 2])
   expect_equal(y["I", , 5], rowSums(y["igas_inc", , ]))
   expect_equal(y["I", , 2], y["igas_inc", , 2])
-  expect_true(all(y["entrants_inc", , ] == 0))
-  expect_true(all(y["leavers_inc", , ] == 0))
+  expect_true(all(y["births_inc", , ] == 0))
+  expect_true(all(y["net_leavers_inc", , ] == 0))
   expect_equal(y["pharyngitis_rate", , ] * pars$phi_S,
                y["pharyngitis_inc", , ] / y["N", , ] * 100000)
   expect_equal(y["scarlet_fever_rate", , ],
@@ -341,8 +341,8 @@ test_that("aging does not affect model dynamics", {
   expect_equal(y$beta_t, y_a$beta_t)
 
   # check all compartments equal
-  expect_equal(sum(y$leavers_inc), 0)
-  expect_equal(sum(y$entrants_inc), 0)
-  expect_equal(sum(y_a$leavers_inc), 0)
-  expect_equal(sum(y_a$entrants_inc), 0)
+  expect_equal(sum(y$net_leavers_inc), 0)
+  expect_equal(sum(y$births_inc), 0)
+  expect_equal(sum(y_a$net_leavers_inc), 0)
+  expect_equal(sum(y_a$births_inc), 0)
 })
