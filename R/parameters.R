@@ -61,6 +61,29 @@ example_gas_parameters <- function(n_group = 1) {
   transform(pars)
 }
 
+##' @name no_gas_parameters
+##' @title Model parameters with no gas for use in testing
+##' @description Model parameters with no gas for use in testing
+##' @inheritParams example_gas_parameters
+##' @return A list of named model parameters
+no_gas_parameters <- function(n_group = 1) {
+  pars <- list(prev_A = rep(0, n_group),
+               prev_R = rep(0, n_group),
+               n_group = n_group,
+               beta = 0,
+               sigma = 0,
+               t_s = 0,
+               p_S = 0,
+               p_R = 0,
+               p_I = 0,
+               p_F = 0,
+               delta_A = 0,
+               delta_R = 0,
+               theta_A = 1,
+               phi_S = rep(0, n_group))
+  transform(pars)
+}
+
 
 ##' @name model_parameters
 ##' @title Demographic model parameters
