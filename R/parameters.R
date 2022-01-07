@@ -85,7 +85,7 @@ no_gas_parameters <- function(n_group = 1) {
                delta_S = 1,
                delta_F = 1,
                theta_A = 0,
-               phi_S = rep(0, n_group))
+               phi_S = rep(1, n_group))
 }
 
 
