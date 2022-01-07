@@ -11,20 +11,23 @@ test_that("model runs", {
   expect_true(all(y >= 0))
 
 
-  tmp <- c(1, 4049679, 590696, 575, 140, 11000, 10995, 1.94454194361955,
-           4219.25679842802, 1.02678563046648, 22155557, 5931631, 1026133,
-           130, 812219, 419317, 518, 25654500, 56000005, 1, 4053537, 590849,
-           613, 136, 11000, 10995, 1.94454194361955, 4220.34965548166,
-           1.09464276778426, 22151667, 5931676, 1027491, 116, 813523, 419903,
-           533, 25655096, 56000005, 1, 4052149, 591552, 615, 145, 11000,
-           10995, 1.94454194361955, 4225.37108364318, 1.09821419606415,
-           22153031, 5931007, 1026642, 131, 813632, 419878, 549, 25655135,
-           56000005, 1, 4051109, 592307, 572, 144, 11000, 10995,
-           1.94454194361955, 4230.7639403458, 1.02142848804665, 22153390,
-           5929586, 1026023, 136, 813562, 420167, 504, 25656637, 56000005,
-           1, 4052087, 591492, 574, 135, 11000, 10995, 1.94454194361955,
-           4224.94251224959, 1.02499991632654, 22152224, 5932440, 1025458,
-           122, 813470, 419949, 502, 25655840, 56000005)
+  tmp <- c(1, 4049678, 590696, 575, 140, 10997, 10995, 1.94454194361955,
+           4219.25699216939, 1.0267856776148, 22155555, 5931631, 1026132,
+           130, 812219, 419317, 518, 25654500, 56000002, 1, 4053537, 590849,
+           613, 136, 10997, 10995, 1.94454194361955, 4220.34984927322,
+           1.09464281804847,
+           22151664, 5931676, 1027491, 116, 813523, 419903, 533, 25655096,
+           56000002, 1, 4052149, 591552, 615, 145, 10997, 10995,
+           1.94454194361955,
+           4225.37127766531, 1.09821424649235, 22153028, 5931007, 1026642,
+           131, 813632, 419878, 549, 25655135, 56000002, 1, 4051109, 592307,
+           572, 144, 10997, 10995, 1.94454194361955, 4230.76413461557,
+           1.02142853494898,
+           22153387, 5929586, 1026023, 136, 813562, 420167, 504, 25656637,
+           56000002, 1, 4052087, 591492, 574, 135, 10997, 10995,
+           1.94454194361955,
+           4224.94270625205, 1.02499996339286, 22152221, 5932440, 1025458,
+           122, 813470, 419949, 502, 25655840, 56000002)
   expect_equivalent(y, array(tmp, dim = c(19L, 5L, 1L)))
 })
 
@@ -254,8 +257,8 @@ test_that("incidence time series output correctly", {
   expect_equal(y["F", , 2], y["scarlet_fever_inc", , 2])
   expect_equal(y["I", , 5], rowSums(y["igas_inc", , ]))
   expect_equal(y["I", , 2], y["igas_inc", , 2])
-  expect_true(all(y["entrants_inc", , ] == 0))
-  expect_true(all(y["leavers_inc", , ] == 0))
+  expect_true(all(y["births_inc", , ] == 0))
+  expect_true(all(y["net_leavers_inc", , ] == 0))
   expect_equal(y["pharyngitis_rate", , ] * pars$phi_S,
                y["pharyngitis_inc", , ] / y["N", , ] * 100000)
   expect_equal(y["scarlet_fever_rate", , ],
@@ -273,16 +276,14 @@ test_that("incidence time series output correctly", {
 })
 
 test_that("aging works", {
-  pars <- example_gas_parameters(10)
+  pars <- model_parameters(no_gas_parameters(10))
+  pars$alpha <- pars$omega[] <- 0
+  pars$r_age <- 1 / pars$dt # everyone ages a group per week
+  pars$U0[] <- 0 # clear population
+  pars[grep("delta", names(pars))] <- Inf # no movement between compartments
 
   check_compartment_aging <- function(nm, pars) {
-    pars$alpha[] <- pars$omega[] <- 0 # no entrants or leavers
-    pars$r_age <- 1 / pars$dt # everyone ages a group per week
-    pars$beta <- 0 # no transmission
-    pars[grep("delta", names(pars))] <- Inf # no movement between compartments
-    pars$A0[] <- pars$U0[] <- pars$R0[] <- 0 # clear population
-    pars[[paste0(nm, 0)]][1] <- N0 <- 1e4  # everyone initially in group 1
-
+    pars[[paste0(nm, 0)]][1] <- N0 <- 1e4 # everyone initially in group 1
     # run model
     mod <- model$new(pars, 0, 2, seed = 1L)
     y <- lapply(seq(0, 9), mod$simulate)
@@ -294,10 +295,12 @@ test_that("aging works", {
     # check all demographic changes are deterministic
     expect_equal(y[, 1, ], y[, 2, ])
     ## check pop size is constant
+
     expect_true(all(apply(y[grep("N_", nms), , ], c(2, 3), sum) == N0))
     ## check everyone advances one group per day
     expect_equivalent(y[grep(nm, nms), 1, ], diag(pars$n_group) * N0)
     ## nothing going on in other compartments
+
     expect_equal(sum(y[grep(paste0("N_|time|", nm), nms, invert = TRUE), , ]),
                  0)
   }
@@ -341,8 +344,8 @@ test_that("aging does not affect model dynamics", {
   expect_equal(y$beta_t, y_a$beta_t)
 
   # check all compartments equal
-  expect_equal(sum(y$leavers_inc), 0)
-  expect_equal(sum(y$entrants_inc), 0)
-  expect_equal(sum(y_a$leavers_inc), 0)
-  expect_equal(sum(y_a$entrants_inc), 0)
+  expect_equal(sum(y$net_leavers_inc), 0)
+  expect_equal(sum(y$births_inc), 0)
+  expect_equal(sum(y_a$net_leavers_inc), 0)
+  expect_equal(sum(y_a$births_inc), 0)
 })

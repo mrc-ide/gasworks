@@ -1,3 +1,7 @@
+# gasworks 0.1.3
+
+* allow immigration via negative omega
+
 # gasworks 0.1.2
 
 * add aging between groups

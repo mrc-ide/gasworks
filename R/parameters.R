@@ -8,7 +8,7 @@
 
 check_gas_parameters <- function(pars, n_group = 1) {
   with(pars, {
-    assert_positive(beta, 1)
+    assert_nonnegative(beta, 1)
     assert_nonnegative(sigma, 1)
     assert_positive(t_s, 1)
     assert_unit_interval(p_S, 1)
@@ -22,8 +22,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_positive(delta_F, 1)
     assert_positive(delta_R, 1)
     assert_unit_interval(theta_A, 1)
-    assert_nonnegative_integer(alpha, n_group)
-    assert_unit_interval(omega, n_group)
+    assert_nonnegative_integer(alpha, 1)
     assert_unit_interval(phi_S, n_group)
     assert_nonnegative_integer(U0, n_group)
     assert_nonnegative_integer(A0, n_group)
@@ -60,6 +59,33 @@ example_gas_parameters <- function(n_group = 1) {
                theta_A = 1,
                phi_S = rep(0.25, n_group))
   transform(pars)
+}
+
+##' @name no_gas_parameters
+##' @title Model parameters with no gas for use in testing
+##' @description Model parameters with no gas for use in testing
+##' @inheritParams example_gas_parameters
+##' @return A list of named model parameters
+no_gas_parameters <- function(n_group = 1) {
+  pars <- list(m = diag(0, n_group),
+               prev_A = rep(0, n_group),
+               prev_R = rep(0, n_group),
+               n_group = n_group,
+               beta = 0,
+               sigma = 0,
+               t_s = 1,
+               p_S = 0,
+               p_R = 0,
+               p_I = 0,
+               p_F = 0,
+               delta_A = 1,
+               delta_R = 1,
+               delta_E = 1,
+               delta_I = 1,
+               delta_S = 1,
+               delta_F = 1,
+               theta_A = 0,
+               phi_S = rep(1, n_group))
 }
 
 
@@ -110,7 +136,7 @@ demographic_parameters <- function(n_group = 1) {
   x <- 11000 # births and deaths per week - i.e. 572000 per year
   # convert annual mortality to weekly
   list(N0 = round(rep(N0 / n_group, n_group)),
-       alpha = c(round(x), rep(0, n_group - 1)),
+       alpha = round(x),
        omega = rep(x / N0, n_group),
        m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }

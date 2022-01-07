@@ -25,13 +25,13 @@ dem_N[] <- dem_U[i] + dem_E[i] + dem_A[i] + dem_S1[i] + dem_S2[i] + dem_F[i] +
   dem_I[i] + dem_R[i]
 
 ## Output incidence flows:
-update(entrants_inc) <- (
+update(births_inc) <- (
   if (step %% steps_per_week == 0) sum(n_xU[])
-  else entrants_inc + sum(n_xU[]))
+  else births_inc + sum(n_xU[]))
 
-update(leavers_inc) <- (
+update(net_leavers_inc) <- (
   if (step %% steps_per_week == 0) sum(n_Nx[])
-  else leavers_inc + sum(n_Nx[]))
+  else net_leavers_inc + sum(n_Nx[]))
 
 update(infections_inc) <- (
   if (step %% steps_per_week == 0) sum(n_UE[]) + sum(n_UA[])
@@ -87,10 +87,13 @@ r_S2[] <- r_SR[i]
 r_F[]  <- r_FR[i]
 r_R[]  <- r_RU[i]
 
-## Calculate number of entrants
-n_xU[] <- alpha[i] * dt
+## Calculate number of births
+n_xU[1] <- round(alpha * dt)
 
-## Calculate number of leavers from each compartment - deterministic
+## Calculate net number of leavers from each compartment - deterministic
+## note that this can be negative when there is a net population increase due
+## to immigration > emigration + death. entrants are distributed across disease
+## states in proportion to the general population.
 n_Ux[]  <- round(U[i]  * omega[i] * dt)
 n_Ax[]  <- round(A[i]  * omega[i] * dt)
 n_Ex[]  <- round(E[i]  * omega[i] * dt)
@@ -159,8 +162,8 @@ initial(infections_inc) <- 0
 initial(pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
-initial(entrants_inc) <- 0
-initial(leavers_inc) <- 0
+initial(births_inc) <- 0
+initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
 initial(pharyngitis_rate) <- 0
 initial(scarlet_fever_rate) <- 0
@@ -194,8 +197,8 @@ delta_R <- user() # mean duration of natural immunity
 theta_A <- user() # infectiousness of carriers relative to symptomatics
 phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
-alpha[] <- user() # number of population entrants
-omega[] <- user() # rate of population exit
+alpha <- user() # number of births
+omega[] <- user() # rate of population exit, can be negative
 r_age <- user(0)   # rate of aging - determined by group size
 
 ## Object dimensions
@@ -203,7 +206,6 @@ r_age <- user(0)   # rate of aging - determined by group size
 dim(m)      <- c(n_group, n_group)
 dim(lambda) <- c(n_group, n_group)
 dim(foi)   <- n_group
-dim(alpha) <- n_group
 dim(omega) <- n_group
 dim(phi_S) <- n_group
 
