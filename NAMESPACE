@@ -3,6 +3,7 @@
 export(check_gas_parameters)
 export(compare)
 export(demographic_parameters)
+export(helium_age_groups)
 export(index)
 export(initial_parameters)
 export(model)
