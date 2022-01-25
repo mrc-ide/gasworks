@@ -60,8 +60,8 @@ dust_cpu_model_compare_data <- function(ptr) {
   .Call(`_gasworks_dust_cpu_model_compare_data`, ptr)
 }
 
-dust_cpu_model_filter <- function(ptr, save_trajectories, step_snapshot) {
-  .Call(`_gasworks_dust_cpu_model_filter`, ptr, save_trajectories, step_snapshot)
+dust_cpu_model_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
+  .Call(`_gasworks_dust_cpu_model_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
 }
 
 dust_cpu_model_set_n_threads <- function(ptr, n_threads) {

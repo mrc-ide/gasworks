@@ -112,10 +112,10 @@ extern "C" SEXP _gasworks_dust_cpu_model_compare_data(SEXP ptr) {
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_filter(SEXP ptr, bool save_trajectories, cpp11::sexp step_snapshot);
-extern "C" SEXP _gasworks_dust_cpu_model_filter(SEXP ptr, SEXP save_trajectories, SEXP step_snapshot) {
+SEXP dust_cpu_model_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _gasworks_dust_cpu_model_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot)));
+    return cpp11::as_sexp(dust_cpu_model_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
   END_CPP11
 }
 // model.cpp
@@ -138,7 +138,7 @@ extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_gasworks_dust_cpu_model_alloc",         (DL_FUNC) &_gasworks_dust_cpu_model_alloc,         8},
     {"_gasworks_dust_cpu_model_compare_data",  (DL_FUNC) &_gasworks_dust_cpu_model_compare_data,  1},
-    {"_gasworks_dust_cpu_model_filter",        (DL_FUNC) &_gasworks_dust_cpu_model_filter,        3},
+    {"_gasworks_dust_cpu_model_filter",        (DL_FUNC) &_gasworks_dust_cpu_model_filter,        5},
     {"_gasworks_dust_cpu_model_n_state",       (DL_FUNC) &_gasworks_dust_cpu_model_n_state,       1},
     {"_gasworks_dust_cpu_model_reorder",       (DL_FUNC) &_gasworks_dust_cpu_model_reorder,       2},
     {"_gasworks_dust_cpu_model_resample",      (DL_FUNC) &_gasworks_dust_cpu_model_resample,      2},
