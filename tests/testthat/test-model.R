@@ -191,6 +191,27 @@ test_that("there is no pharyngitis when p_F = 1", {
   expect_true(all(unlist(y) >= 0))
 })
 
+test_that("no pharyngitis cases are reported when p_T = 0", {
+  pars <- example_gas_parameters()
+  pars$p_T <- 0
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- mod$transform_variables(mod$simulate(7))
+
+  expect_true(all(y$A > 0))
+  expect_true(all(y$E > 0))
+  expect_true(all(y$S1 > 0))
+  expect_true(all(y$S2 > 0))
+  expect_true(all(y$I > 0))
+  expect_true(all(y$F > 0))
+  expect_true(all(y$R > 0))
+  expect_true(all(y$pharyngitis_inc > 0))
+  expect_true(all(y$pharyngitis_rate == 0))
+  expect_true(all(y$scarlet_fever_rate > 0))
+
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
+  expect_true(all(unlist(y) >= 0))
+})
+
 test_that("there is no immunity when p_S = 0 and p_R = 0", {
   pars <- example_gas_parameters()
   pars$p_S <- 0
