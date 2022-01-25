@@ -8,7 +8,7 @@ n_group <- user(1)
 
 ## What we really want is min(step + 1, length(alpha_t)) but that's not
 ## supported by odin (it could be made to support this).
-update(alpha_t) <- if (as.integer(step) >= length(alpha))
+alpha_t <- if (as.integer(step) >= length(alpha))
   alpha[length(alpha)] else alpha[step + 1]
 
 ## Core equations for transitions between compartments:
@@ -169,7 +169,6 @@ initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
 initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
-initial(alpha_t) <- 0
 initial(beta_t) <- 0
 initial(pharyngitis_rate) <- 0
 initial(scarlet_fever_rate) <- 0
