@@ -6,6 +6,11 @@ update(time) <- (step + 1) * dt
 # i: number of age groups
 n_group <- user(1)
 
+## What we really want is min(step + 1, length(alpha_t)) but that's not
+## supported by odin (it could be made to support this).
+update(alpha_t) <- if (as.integer(step) >= length(alpha))
+  alpha[length(alpha)] else alpha[step + 1]
+
 ## Core equations for transitions between compartments:
 update(U[])  <- U[i]  + dem_U[i]  - n_UE[i] - n_UA[i] + n_AU[i] + n_RU[i]
 update(A[])  <- A[i]  + dem_A[i]  + n_UA[i] - n_AU[i] - n_AR[i]
@@ -52,7 +57,7 @@ update(igas_inc) <- (
   else igas_inc + sum(n_EI[]))
 
 ## Output incidence rates per 100,000 population
-all_pharyngitis[] <- pharyngitis_inc_by_group[i] / phi_S[i]
+all_pharyngitis[] <- pharyngitis_inc_by_group[i] * p_T / phi_S[i]
 update(pharyngitis_rate) <- sum(all_pharyngitis[]) / sum(N[]) * 1e5
 update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(N[]) * 1e5
 
@@ -88,7 +93,7 @@ r_F[]  <- r_FR[i]
 r_R[]  <- r_RU[i]
 
 ## Calculate number of births
-n_xU[1] <- round(alpha * dt)
+n_xU[1] <- round(alpha_t * dt)
 
 ## Calculate net number of leavers from each compartment - deterministic
 ## note that this can be negative when there is a net population increase due
@@ -104,7 +109,7 @@ n_Fx[]  <- round(F[i]  * omega[i] * dt)
 n_Rx[]  <- round(R[i]  * omega[i] * dt)
 
 ## calculate net aging
-n_Ui[]   <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
+n_Ui[]  <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
 n_Ai[]  <- (if (i > 1) A[i - 1] else 0) - (if (i < n_group) A[i] else 0)
 n_Ei[]  <- (if (i > 1) E[i - 1] else 0) - (if (i < n_group) E[i] else 0)
 n_Ii[]  <- (if (i > 1) I[i - 1] else 0) - (if (i < n_group) I[i] else 0)
@@ -164,6 +169,7 @@ initial(scarlet_fever_inc) <- 0
 initial(igas_inc) <- 0
 initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
+initial(alpha_t) <- 0
 initial(beta_t) <- 0
 initial(pharyngitis_rate) <- 0
 initial(scarlet_fever_rate) <- 0
@@ -188,6 +194,7 @@ p_S <- user() # probability of any symptoms after infection
 p_R <- user() # probability of immunity after carriage
 p_I <- user() # probability of invasive disease after infection
 p_F <- user() # probability of scarlet fever after pharyngitis
+p_T <- user() # probability of seeking treatment for pharyngitis
 delta_A <- user() # mean duration of carriage
 delta_E <- user() # mean duration of incubation period
 delta_I <- user() # mean duration of invasive disease
@@ -197,7 +204,8 @@ delta_R <- user() # mean duration of natural immunity
 theta_A <- user() # infectiousness of carriers relative to symptomatics
 phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
-alpha <- user() # number of births
+alpha[]  <- user() # time-varying number of births
+dim(alpha) <- user()
 omega[] <- user() # rate of population exit, can be negative
 r_age <- user(0)   # rate of aging - determined by group size
 
