@@ -1,3 +1,8 @@
+# gasworks 0.1.4
+
+* add time-varying births
+* add under-reporting of pharyngitis (p_T)
+
 # gasworks 0.1.3
 
 * allow immigration via negative omega
