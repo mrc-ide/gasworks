@@ -347,3 +347,21 @@ test_that("aging does not affect model dynamics", {
   expect_equal(sum(y_a$net_leavers_inc), 0)
   expect_equal(sum(y_a$births_inc), 0)
 })
+
+test_that("time-varying births works", {
+  pars <- model_parameters(no_gas_parameters(1))
+  pars$alpha <- rep(seq_len(52), each = 7) * 7
+  pars$alpha
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- lapply(seq(0, length(pars$alpha), 7), mod$simulate)
+  y <- mcstate::array_bind(arrays = y)
+  rownames(y) <- names(model_index())
+
+  expect_equal(y["alpha_t", 1, ], seq(0, 364, 7))
+  ## weekly births are off by 1
+  expect_equal(y["births_inc", 1, ], c(0, seq(7, 364, 7) - 1))
+
+  # check that states sum to N
+  expect_equivalent(colSums(y[model_compartments(), , ]), y["N", , ])
+  expect_true(all(y >= 0))
+})
