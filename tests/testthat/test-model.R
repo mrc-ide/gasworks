@@ -10,7 +10,6 @@ test_that("model runs", {
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
-
   tmp <- c(1, 4049678, 590696, 575, 140, 10997, 10995, 1.94454194361955,
            4219.25699216939, 1.0267856776148, 22155555, 5931631, 1026132,
            130, 812219, 419317, 518, 25654500, 56000002, 1, 4053537, 590849,
@@ -193,6 +192,27 @@ test_that("there is no pharyngitis when p_F = 1", {
   expect_true(all(unlist(y) >= 0))
 })
 
+test_that("no pharyngitis cases are reported when p_T = 0", {
+  pars <- example_gas_parameters()
+  pars$p_T <- 0
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- mod$transform_variables(mod$simulate(7))
+
+  expect_true(all(y$A > 0))
+  expect_true(all(y$E > 0))
+  expect_true(all(y$S1 > 0))
+  expect_true(all(y$S2 > 0))
+  expect_true(all(y$I > 0))
+  expect_true(all(y$F > 0))
+  expect_true(all(y$R > 0))
+  expect_true(all(y$pharyngitis_inc > 0))
+  expect_true(all(y$pharyngitis_rate == 0))
+  expect_true(all(y$scarlet_fever_rate > 0))
+
+  expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
+  expect_true(all(unlist(y) >= 0))
+})
+
 test_that("there is no immunity when p_S = 0 and p_R = 0", {
   pars <- example_gas_parameters()
   pars$p_S <- 0
@@ -313,7 +333,7 @@ test_that("aging works", {
 test_that("aging does not affect model dynamics", {
   pars <- example_gas_parameters()
   pars_a <- example_gas_parameters(2)
-  pars$alpha[] <- pars_a$alpha[] <- 0
+  pars$alpha <- pars_a$alpha <- 0
   pars$omega[] <- pars_a$omega[] <- 0
 
   f <- function(pars) {
@@ -348,4 +368,20 @@ test_that("aging does not affect model dynamics", {
   expect_equal(sum(y$births_inc), 0)
   expect_equal(sum(y_a$net_leavers_inc), 0)
   expect_equal(sum(y_a$births_inc), 0)
+})
+
+test_that("time-varying births works", {
+  pars <- model_parameters(no_gas_parameters(1))
+  pars$alpha <- rep(seq_len(52), each = 7) * 7
+
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- lapply(seq(0, length(pars$alpha), 7), mod$simulate)
+  y <- mcstate::array_bind(arrays = y)
+  rownames(y) <- names(model_index())
+
+  expect_equal(y["births_inc", 1, ], seq(0, 364, 7))
+
+  # check that states sum to N
+  expect_equivalent(colSums(y[model_compartments(), , ]), y["N", , ])
+  expect_true(all(y >= 0))
 })
