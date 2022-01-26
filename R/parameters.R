@@ -27,7 +27,6 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_nonnegative_integer(U0, n_group)
     assert_nonnegative_integer(A0, n_group)
     assert_nonnegative_integer(E0, n_group)
-    assert_nonnegative_integer(I0, n_group)
     assert_nonnegative_integer(S10, n_group)
     assert_nonnegative_integer(S20, n_group)
     assert_nonnegative_integer(F0, n_group)
