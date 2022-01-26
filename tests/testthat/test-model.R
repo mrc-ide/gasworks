@@ -10,24 +10,22 @@ test_that("model runs", {
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
-  tmp <- c(1, 4044386, 574076, 692, 937, 10997, 10998, 1.94454194361955,
-           4101.77857142857, 1.23571428571429, 22160632, 5928037, 1052075,
-           799034, 408744, 707, 590, 25650180, 55999999, 1, 4046719, 575279,
-           695, 986, 10997, 10997, 1.94454194361955, 4110.37678571429,
-           1.24107142857143,
-           22158615, 5930879, 1053484, 797254, 409274, 677, 581, 25649236,
-           5.6e+07, 1, 4046735, 574527, 705, 987, 10997, 10998,
-           1.94454194361955,
-           4105.02321428571, 1.25892857142857, 22156003, 5932021, 1054374,
-           797964, 409616, 722, 610, 25648689, 55999999, 1, 4048958, 575661,
-           683, 933, 10997, 10997, 1.94454194361955, 4113.08392857143,
-           1.21964285714286,
-           22155574, 5931974, 1053189, 797209, 409551, 673, 579, 25651251,
-           5.6e+07, 1, 4046064, 576153, 664, 944, 10997, 10997,
-           1.94454194361955,
-           4116.56428571429, 1.18571428571429, 22158121, 5927703, 1052641,
-           798737, 410549, 670, 560, 25651019, 5.6e+07)
-  expect_equivalent(y, array(tmp, dim = c(19L, 5L, 1L)))
+  tmp <- c(1, 4018819, 1369730, 707, 974, 10997, 10998, 1.94454194361955,
+           9785.04838901872, 1.26250002254464, 22185442, 5921153, 1039293,
+           989017, 638, 600, 25863856, 55999999, 1, 4019221, 1369672, 691,
+           950, 10997, 10998, 1.94454194361955, 9784.60553186796,
+           1.23392859346301,
+           22185224, 5920925, 1039404, 988145, 646, 575, 25865080, 55999999,
+           1, 4018070, 1368033, 653, 1004, 10997, 10998, 1.94454194361955,
+           9772.83053165769, 1.16607144939413, 22185734, 5921853, 1039906,
+           987374, 671, 564, 25863897, 55999999, 1, 4015364, 1369906, 669,
+           968, 10997, 10998, 1.94454194361955, 9786.23767475424,
+           1.19464287847577,
+           22188926, 5917633, 1037129, 987837, 704, 562, 25867208, 55999999,
+           1, 4017723, 1371228, 742, 934, 10997, 10998, 1.94454194361955,
+           9795.81088921091, 1.32500002366071, 22185562, 5918936, 1038619,
+           989248, 661, 621, 25866352, 55999999)
+  expect_equivalent(y, array(tmp, dim = c(18L, 5L, 1L)))
 })
 
 test_that("there are no infections when beta is 0", {
@@ -37,14 +35,14 @@ test_that("there are no infections when beta is 0", {
   y <- mod$transform_variables(mod$simulate(7))
 
   expect_true(all(y$E == 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc == 0))
 
   expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
+  expect_true(all(y$N - pars$N0))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -56,8 +54,7 @@ test_that("there are no infections when theta_A is 0", {
   y <- mod$transform_variables(mod$simulate(7))
 
   expect_true(all(y$E == 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
@@ -75,8 +72,7 @@ test_that("there are no infections when A0 = 0", {
 
   expect_true(all(y$E == 0))
   expect_true(all(y$A == 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
@@ -94,8 +90,7 @@ test_that("there are no symptomatic infections when p_S = 0", {
   y <- mod$transform_variables(mod$simulate(7))
 
   expect_true(all(y$E == 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
@@ -114,8 +109,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
   y <- mod$transform_variables(mod$simulate(7))
 
   expect_true(all(y$A == 0))
-  expect_true(all(y$S1 > 0))
-  expect_true(all(y$S2 > 0))
+  expect_true(all(y$S > 0))
   expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
@@ -133,8 +127,7 @@ test_that("there is no iGAS when p_I = 0", {
 
   expect_true(all(y$A > 0))
   expect_true(all(y$E > 0))
-  expect_true(all(y$S1 > 0))
-  expect_true(all(y$S2 > 0))
+  expect_true(all(y$S > 0))
   expect_true(all(y$P > 0))
   expect_true(any(y$F > 0))
   expect_true(all(y$R > 0))
@@ -152,8 +145,7 @@ test_that("there is no scarlet fever when p_F = 0", {
 
   expect_true(all(y$A > 0))
   expect_true(all(y$E > 0))
-  expect_true(all(y$S1 > 0))
-  expect_true(all(y$S2 > 0))
+  expect_true(all(y$S > 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
@@ -171,8 +163,7 @@ test_that("there is no pharyngitis when p_F = 1", {
 
   expect_true(all(y$A > 0))
   expect_true(all(y$E > 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
@@ -189,8 +180,7 @@ test_that("no pharyngitis cases are reported when p_T = 0", {
 
   expect_true(all(y$A > 0))
   expect_true(all(y$E > 0))
-  expect_true(all(y$S1 > 0))
-  expect_true(all(y$S2 > 0))
+  expect_true(all(y$S > 0))
   expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
@@ -213,8 +203,7 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
 
   expect_true(all(y$A > 0))
   expect_true(all(y$E == 0))
-  expect_true(all(y$S1 == 0))
-  expect_true(all(y$S2 == 0))
+  expect_true(all(y$S == 0))
   expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
@@ -258,7 +247,7 @@ test_that("incidence time series output correctly", {
   pars <- example_gas_parameters()
   pars$omega <- 0
   pars$alpha <- 0
-  pars$delta_F <- 1e6
+  pars$delta_F <- Inf
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y)
@@ -275,14 +264,14 @@ test_that("incidence time series output correctly", {
   expect_equal(y["scarlet_fever_rate", , ],
                y["scarlet_fever_inc", , ] / y["N", , ] * 100000)
 
-  pars$delta_S <- 1e6
+  pars$delta_S <- Inf
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y, along = 3L)
   rownames(y) <- names(model_index())
-  expect_equal(y["S2", , 5],
+  expect_equal(y["S", , 5],
                rowSums(y["pharyngitis_inc", , ]))
-  expect_equal(y["S2", , 2],
+  expect_equal(y["S", , 2],
                y["pharyngitis_inc", , 2])
 })
 
