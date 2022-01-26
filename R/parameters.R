@@ -27,8 +27,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_nonnegative_integer(U0, n_group)
     assert_nonnegative_integer(A0, n_group)
     assert_nonnegative_integer(E0, n_group)
-    assert_nonnegative_integer(S10, n_group)
-    assert_nonnegative_integer(S20, n_group)
+    assert_nonnegative_integer(S0, n_group)
     assert_nonnegative_integer(P0, n_group)
     assert_nonnegative_integer(F0, n_group)
     assert_nonnegative_integer(R0, n_group)
@@ -111,8 +110,8 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$exp_noise <- 1e6 # exponential noise parameter for observation dist
 
   # add fixed model parameters (i.e. not fitted)
-  pars$delta_E <- 2.1   # mean days in incubation period
-  pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
+  pars$delta_E <- 2.1 # mean days in incubation period
+  pars$delta_S <- 4.3 # mean days with pharyngitis symptoms
   pars$delta_P <- 1.6 # mean days pharyngitis -> scarlet fever
   pars$delta_F <- 6   # mean days with scarlet fever
 
