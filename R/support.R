@@ -61,7 +61,7 @@ model_week_date <- function(week) {
 ##'@description Names of model compartments
 ##'@return Names of model compartments
 model_compartments <- function() {
-  c("U", "A", "E", "S1", "S2", "F", "R")
+  c("U", "A", "E", "S1", "S2", "P", "F", "R")
 }
 
 ##'@name model_index

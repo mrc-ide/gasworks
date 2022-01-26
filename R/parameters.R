@@ -17,8 +17,8 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_unit_interval(p_F, 1)
     assert_positive(delta_A, 1)
     assert_positive(delta_E, 1)
-    assert_positive(delta_I, 1)
     assert_positive(delta_S, 1)
+    assert_positive(delta_P, 1)
     assert_positive(delta_F, 1)
     assert_positive(delta_R, 1)
     assert_unit_interval(theta_A, 1)
@@ -29,6 +29,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_nonnegative_integer(E0, n_group)
     assert_nonnegative_integer(S10, n_group)
     assert_nonnegative_integer(S20, n_group)
+    assert_nonnegative_integer(P0, n_group)
     assert_nonnegative_integer(F0, n_group)
     assert_nonnegative_integer(R0, n_group)
   })
@@ -110,10 +111,10 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$exp_noise <- 1e6 # exponential noise parameter for observation dist
 
   # add fixed model parameters (i.e. not fitted)
-  pars$delta_E <- 2   # mean days in incubation period
-  pars$delta_I <- 14  # mean days iGAS
+  pars$delta_E <- 2.1   # mean days in incubation period
   pars$delta_S <- 2.3 # mean days with pharyngitis symptoms (x 2)
-  pars$delta_F <- 7   # mean days with scarlet fever
+  pars$delta_P <- 1.6 # mean days pharyngitis -> scarlet fever
+  pars$delta_F <- 6   # mean days with scarlet fever
 
   # convert duration in days to duration in weeks
   for (i in grep("^delta_", names(pars))) {
