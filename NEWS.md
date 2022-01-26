@@ -1,3 +1,7 @@
+# gasworks 0.1.5
+
+* remove iGAS compartment - output iGAS cases at observation level
+
 # gasworks 0.1.4
 
 * add time-varying births
