@@ -18,6 +18,7 @@ test_that("initial_parameters works as expected", {
   expect_equal(init_pars$E0, 0)
   expect_equal(init_pars$S10, 0)
   expect_equal(init_pars$S20, 0)
+  expect_equal(init_pars$P0, 0)
   expect_equal(init_pars$F0, 0)
 })
 

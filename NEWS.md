@@ -1,3 +1,7 @@
+# gasworks 0.1.6
+
+* add pre scarlet fever compartment P (pharyngitis symptoms but no rash)
+
 # gasworks 0.1.5
 
 * remove iGAS compartment - output iGAS cases at observation level

@@ -10,21 +10,24 @@ test_that("model runs", {
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
-  tmp <- c(1, 4053930, 590289, 1379, 983, 10997, 10996, 1.94454194361955,
-           4218.81234932813, 2.46249991205357, 22150757, 5934905, 1026743,
-           812983, 420182, 1104, 25653327, 56000001, 1, 4052302, 589703,
-           1368, 987, 10997, 10995, 1.94454194361955, 4214.60699233546,
-           2.44285705561225, 22152885, 5932512, 1027408, 811953, 418548,
-           1075, 25655621, 56000002, 1, 4053997, 589821, 1390, 1030, 10997,
-           10996, 1.94454194361955, 4215.4891351611, 2.4821427684949, 22150323,
-           5936091, 1026598, 811803, 418612, 1139, 25655435, 56000001, 1,
-           4050565, 590629, 1407, 977, 10997, 10995, 1.94454194361955,
-           4221.29092066818,
-           2.51249991026786, 22153705, 5931425, 1024635, 812811, 419159,
-           1128, 25657139, 56000002, 1, 4052950, 590145, 1436, 943, 10997,
-           10996, 1.94454194361955, 4217.88563896633, 2.5642856684949, 22151189,
-           5932736, 1026094, 814667, 419410, 1134, 25654771, 56000001)
-  expect_equivalent(y, array(tmp, dim = c(18L, 5L, 1L)))
+  tmp <- c(1, 4044386, 574076, 692, 937, 10997, 10998, 1.94454194361955,
+           4101.77857142857, 1.23571428571429, 22160632, 5928037, 1052075,
+           799034, 408744, 707, 590, 25650180, 55999999, 1, 4046719, 575279,
+           695, 986, 10997, 10997, 1.94454194361955, 4110.37678571429,
+           1.24107142857143,
+           22158615, 5930879, 1053484, 797254, 409274, 677, 581, 25649236,
+           5.6e+07, 1, 4046735, 574527, 705, 987, 10997, 10998,
+           1.94454194361955,
+           4105.02321428571, 1.25892857142857, 22156003, 5932021, 1054374,
+           797964, 409616, 722, 610, 25648689, 55999999, 1, 4048958, 575661,
+           683, 933, 10997, 10997, 1.94454194361955, 4113.08392857143,
+           1.21964285714286,
+           22155574, 5931974, 1053189, 797209, 409551, 673, 579, 25651251,
+           5.6e+07, 1, 4046064, 576153, 664, 944, 10997, 10997,
+           1.94454194361955,
+           4116.56428571429, 1.18571428571429, 22158121, 5927703, 1052641,
+           798737, 410549, 670, 560, 25651019, 5.6e+07)
+  expect_equivalent(y, array(tmp, dim = c(19L, 5L, 1L)))
 })
 
 test_that("there are no infections when beta is 0", {
@@ -36,6 +39,7 @@ test_that("there are no infections when beta is 0", {
   expect_true(all(y$E == 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc == 0))
@@ -54,6 +58,7 @@ test_that("there are no infections when theta_A is 0", {
   expect_true(all(y$E == 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc == 0))
@@ -72,6 +77,7 @@ test_that("there are no infections when A0 = 0", {
   expect_true(all(y$A == 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc == 0))
@@ -90,6 +96,7 @@ test_that("there are no symptomatic infections when p_S = 0", {
   expect_true(all(y$E == 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc > 0))
@@ -109,6 +116,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
   expect_true(all(y$A == 0))
   expect_true(all(y$S1 > 0))
   expect_true(all(y$S2 > 0))
+  expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc > 0))
@@ -127,6 +135,7 @@ test_that("there is no iGAS when p_I = 0", {
   expect_true(all(y$E > 0))
   expect_true(all(y$S1 > 0))
   expect_true(all(y$S2 > 0))
+  expect_true(all(y$P > 0))
   expect_true(any(y$F > 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc == 0))
@@ -145,6 +154,7 @@ test_that("there is no scarlet fever when p_F = 0", {
   expect_true(all(y$E > 0))
   expect_true(all(y$S1 > 0))
   expect_true(all(y$S2 > 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$igas_inc > 0))
@@ -163,6 +173,7 @@ test_that("there is no pharyngitis when p_F = 1", {
   expect_true(all(y$E > 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
 
@@ -180,6 +191,7 @@ test_that("no pharyngitis cases are reported when p_T = 0", {
   expect_true(all(y$E > 0))
   expect_true(all(y$S1 > 0))
   expect_true(all(y$S2 > 0))
+  expect_true(all(y$P > 0))
   expect_true(all(y$F > 0))
   expect_true(all(y$R > 0))
   expect_true(all(y$pharyngitis_inc > 0))
@@ -203,6 +215,7 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
   expect_true(all(y$E == 0))
   expect_true(all(y$S1 == 0))
   expect_true(all(y$S2 == 0))
+  expect_true(all(y$P == 0))
   expect_true(all(y$F == 0))
   expect_true(all(y$R > 0))
 
