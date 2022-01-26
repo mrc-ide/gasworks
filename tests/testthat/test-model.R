@@ -42,7 +42,6 @@ test_that("there are no infections when beta is 0", {
   expect_true(all(y$igas_inc == 0))
 
   expect_equal(y$N, Reduce(`+`, y[model_compartments()]))
-  expect_true(all(y$N - pars$N0))
   expect_true(all(unlist(y) >= 0))
 })
 
@@ -248,16 +247,20 @@ test_that("incidence time series output correctly", {
   pars$omega <- 0
   pars$alpha <- 0
   pars$delta_F <- Inf
+  pars$delta_S <- Inf
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y)
   rownames(y) <- names(model_index())
   expect_equal(y["F", , 5], rowSums(y["scarlet_fever_inc", , ]))
   expect_equal(y["F", , 2], y["scarlet_fever_inc", , 2])
+  expect_equal(y["S", , 5], rowSums(y["pharyngitis_inc", , ]))
+  expect_equal(y["S", , 2], y["pharyngitis_inc", , 2])
 
 
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
+  expect_true(all(y["N", , ] == pars$N0))
   expect_equal(y["pharyngitis_scarlet_fever_rate", , ] * y["N", , ] / 100000,
                y["pharyngitis_inc", , ] / pars$phi_S * pars$p_T +
                  y["scarlet_fever_inc", , ])
@@ -269,10 +272,7 @@ test_that("incidence time series output correctly", {
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y, along = 3L)
   rownames(y) <- names(model_index())
-  expect_equal(y["S", , 5],
-               rowSums(y["pharyngitis_inc", , ]))
-  expect_equal(y["S", , 2],
-               y["pharyngitis_inc", , 2])
+
 })
 
 test_that("aging works", {
