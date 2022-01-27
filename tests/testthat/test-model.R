@@ -308,7 +308,7 @@ test_that("aging works", {
   pars$alpha <- pars$omega[] <- 0
   pars$r_age <- 1 / pars$dt # everyone ages a group per week
   pars[grep("delta", names(pars))] <- Inf # no movement between compartments
-  pars$k_S <- 1
+  pars[grep("^k_", names(pars))] <- 1 # all exponential
   init <- initial_parameters(pars)
   pars[names(init)] <- init
   pars$U0[] <- 0 # clear population
