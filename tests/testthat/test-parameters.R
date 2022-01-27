@@ -15,10 +15,10 @@ test_that("initial_parameters works as expected", {
   expect_equivalent(pars$N0, sum(unlist(init_pars)))
   expect_equivalent(init_pars$A0, pars$N0 * pars$prev_A)
   expect_equivalent(init_pars$R0, (pars$N0 - init_pars$A0) * pars$prev_R)
-  expect_equivalent(init_pars$E0, 0)
-  expect_equivalent(init_pars$S0, c(0, 0))
-  expect_equivalent(init_pars$P0, 0)
-  expect_equivalent(init_pars$F0, 0)
+  expect_equivalent(init_pars$E0, rep(0, pars$k_E))
+  expect_equivalent(init_pars$S0, rep(0, pars$k_S))
+  expect_equivalent(init_pars$P0, rep(0, pars$k_P))
+  expect_equivalent(init_pars$F0, rep(0, pars$k_F))
 })
 
 test_that("model_parameters works as expected", {
