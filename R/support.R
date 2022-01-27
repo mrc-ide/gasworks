@@ -74,14 +74,6 @@ model_index <- function(n_group = 1) {
   mod <- model$new(pars, 1, 1)
   idx <- mod$info()$index
   ret <- unlist(idx)
-
-  if (n_group > 1) {
-    suffix <- sprintf("_%02d", unlist(lapply(idx, seq_along)))
-    suffix[which(lengths(idx) == 1)] <- ""
-    nms <- paste0(rep(names(idx), lengths(idx)), suffix)
-    names(ret) <- nms
-  }
-
   ret
 }
 
