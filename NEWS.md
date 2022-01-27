@@ -1,3 +1,7 @@
+# gasworks 0.1.7
+
+* allow time in each compartment to be Erlang distributed
+
 # gasworks 0.1.6
 
 * add pre scarlet fever compartment P (pharyngitis symptoms but no rash)
