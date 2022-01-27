@@ -62,19 +62,11 @@ test_that("ll_norm", {
 })
 
 test_that("ll_nbinom returns a vector of zeros if data missing", {
-  expect_equal(
-    ll_nbinom(NA, 10, 0.1, 1e6),
-    0)
-  expect_equal(
-    ll_nbinom(NA, rep(10, 5), 0.1, 1e6),
-    rep(0, 5))
+  expect_equal(ll_nbinom(NA, 10, 0.1, 1e6), 0)
+  expect_equal(ll_nbinom(NA, rep(10, 5), 0.1, 1e6), rep(0, 5))
 })
 
 test_that("ll_norm returns a vector of zeros if data missing", {
-  expect_equal(
-    ll_norm(NA, 10, 0.1, 1e6),
-    0)
-  expect_equal(
-    ll_norm(NA, rep(10, 5), 0.1, 1e6),
-    rep(0, 5))
+  expect_equal(ll_norm(NA, 10, 0.1, 1e6), 0)
+  expect_equal(ll_norm(NA, rep(10, 5), 0.1, 1e6), rep(0, 5))
 })
