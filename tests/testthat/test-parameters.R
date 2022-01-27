@@ -11,14 +11,14 @@ test_that("initial_parameters works as expected", {
   pars <- c(example_gas_parameters(), demographic_parameters())
   init_pars <- initial_parameters(pars)
   expect_equal(names(init_pars),
-               sprintf("%s0", model_compartments()))
-  expect_equal(pars$N0, sum(unlist(init_pars)))
-  expect_equal(init_pars$A0, pars$N0 * pars$prev_A)
-  expect_equal(init_pars$R0, (pars$N0 - init_pars$A0) * pars$prev_R)
-  expect_equal(init_pars$E0, 0)
-  expect_equal(init_pars$S0, 0)
-  expect_equal(init_pars$P0, 0)
-  expect_equal(init_pars$F0, 0)
+               paste0(c("A", "E", "S", "P", "F", "R", "U"), 0))
+  expect_equivalent(pars$N0, sum(unlist(init_pars)))
+  expect_equivalent(init_pars$A0, pars$N0 * pars$prev_A)
+  expect_equivalent(init_pars$R0, (pars$N0 - init_pars$A0) * pars$prev_R)
+  expect_equivalent(init_pars$E0, 0)
+  expect_equivalent(init_pars$S0, c(0, 0))
+  expect_equivalent(init_pars$P0, 0)
+  expect_equivalent(init_pars$F0, 0)
 })
 
 test_that("model_parameters works as expected", {
