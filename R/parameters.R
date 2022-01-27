@@ -21,16 +21,22 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_positive(delta_P, 1)
     assert_positive(delta_F, 1)
     assert_positive(delta_R, 1)
+    assert_positive_integer(k_A, 1)
+    assert_positive_integer(k_E, 1)
+    assert_positive_integer(k_S, 1)
+    assert_positive_integer(k_P, 1)
+    assert_positive_integer(k_F, 1)
+    assert_positive_integer(k_R, 1)
     assert_unit_interval(theta_A, 1)
     assert_nonnegative_integer(alpha)
     assert_unit_interval(phi_S, n_group)
     assert_nonnegative_integer(U0, n_group)
-    assert_nonnegative_integer(A0, n_group)
-    assert_nonnegative_integer(E0, n_group)
-    assert_nonnegative_integer(S0, n_group)
-    assert_nonnegative_integer(P0, n_group)
-    assert_nonnegative_integer(F0, n_group)
-    assert_nonnegative_integer(R0, n_group)
+    assert_nonnegative_integer(A0, n_group * k_A)
+    assert_nonnegative_integer(E0, n_group * k_E)
+    assert_nonnegative_integer(S0, n_group * k_S)
+    assert_nonnegative_integer(P0, n_group * k_P)
+    assert_nonnegative_integer(F0, n_group * k_F)
+    assert_nonnegative_integer(R0, n_group * k_R)
   })
 }
 
@@ -115,6 +121,13 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$delta_P <- 1.6 # mean days pharyngitis -> scarlet fever
   pars$delta_F <- 6   # mean days with scarlet fever
 
+  pars$k_A <- 1
+  pars$k_E <- 1
+  pars$k_S <- 2
+  pars$k_P <- 1
+  pars$k_F <- 1
+  pars$k_R <- 1
+
   # convert duration in days to duration in weeks
   for (i in grep("^delta_", names(pars))) {
     pars[[i]] <- pars[[i]] * pars$dt
@@ -155,14 +168,19 @@ initial_parameters <- function(pars) {
   n_group <- length(pars$N0)
   assert_unit_interval(pars$prev_A, n_group)
   assert_unit_interval(pars$prev_R, n_group)
-  nms <- paste0(model_compartments(), "0")
-  ret <- named_list(nms, list(rep(0, n_group)))
+
+  ret <- list()
   # set initial asymptomatic prevalence and prevalence of immunity
-  ret$A0 <- round(pars$N0 * pars$prev_A)
-  ret$R0 <- round((pars$N0 - ret$A0) * pars$prev_R)
+  ret$A0 <- matrix(round(pars$N0 * pars$prev_A / pars$k_A), ncol = pars$k_A)
+  ret$E0 <- matrix(0, n_group, pars$k_E)
+  ret$S0 <- matrix(0, n_group, pars$k_S)
+  ret$P0 <- matrix(0, n_group, pars$k_P)
+  ret$F0 <- matrix(0, n_group, pars$k_F)
+  ret$R0 <- matrix(round((pars$N0 - rowSums(ret$A0)) * pars$prev_R / pars$k_R),
+                   ncol = pars$k_R)
 
   # set initial uninfecteds
-  ret$U0 <- pars$N0 - ret$A0 - ret$R0
+  ret$U0 <- pars$N0 - rowSums(ret$A0) - rowSums(ret$R0)
 
   ret
 }
