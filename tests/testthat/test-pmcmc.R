@@ -9,8 +9,8 @@ test_that("compare function works", {
   observed <- list(igas_inc = 25, scarlet_fever_inc = 53,
                    pharyngitis_scarlet_fever_rate = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-2446.69560810172, -2445.72002766639, -2445.66270072129,
-                     -2446.24777780703, -2449.83251103714))
+  expect_equal(ll, c(-2446.91607098664, -2445.55743020475, -2443.93023185084,
+                     -2447.66207348488, -2447.34523027608))
 
   observed2 <- as.list(state[, 1])
 

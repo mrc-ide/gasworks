@@ -125,7 +125,7 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$k_E <- 1
   pars$k_S <- 2
   pars$k_P <- 1
-  pars$k_F <- 1
+  pars$k_F <- 2
   pars$k_R <- 1
 
   # convert duration in days to duration in weeks
