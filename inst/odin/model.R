@@ -3,7 +3,7 @@ steps_per_week <- 7
 dt <- 1 / steps_per_week
 initial(time) <- 0
 update(time) <- (step + 1) * dt
-# i: number of age groups
+# i: number of age groups, j: number of Erlang compartments
 n_group <- user(1)
 
 ## What we really want is min(step + 1, length(alpha_t)) but that's not
@@ -12,21 +12,20 @@ alpha_t <- if (as.integer(step) >= length(alpha))
   alpha[length(alpha)] else alpha[step + 1]
 
 ## Core equations for transitions between compartments:
-update(U[])  <- U[i]  + dem_U[i]  - n_UE[i] - n_UA[i] + n_AU[i] + n_RU[i]
-update(A[])  <- A[i]  + dem_A[i]  + n_UA[i] - n_AU[i] - n_AR[i]
-update(E[])  <- E[i]  + dem_E[i]  + n_UE[i] - n_ES[i] - n_EP[i]
-update(S1[]) <- S1[i] + dem_S1[i] + n_ES[i] - n_SS[i]
-update(S2[]) <- S2[i] + dem_S2[i] + n_SS[i] - n_SR[i]
-update(P[])  <- P[i]  + dem_P[i]  + n_EP[i] - n_PF[i]
-update(F[])  <- F[i]  + dem_F[i]  + n_PF[i] - n_FR[i]
-update(R[])  <- R[i]  + dem_R[i]  + n_AR[i] + n_SR[i] + n_FR[i] - n_RU[i]
-update(N[])  <- N[i]  + dem_N[i]
+update(U[])    <- U[i]    + dem_U[i]    + gas_U[i]
+update(A[, ])  <- A[i, j] + dem_A[i, j] + gas_A[i, j]
+update(E[, ])  <- E[i, j] + dem_E[i, j] + gas_E[i, j]
+update(S[, ])  <- S[i, j] + dem_S[i, j] + gas_S[i, j]
+update(P[, ])  <- P[i, j] + dem_P[i, j] + gas_P[i, j]
+update(F[, ])  <- F[i, j] + dem_F[i, j] + gas_F[i, j]
+update(R[, ])  <- R[i, j] + dem_R[i, j] + gas_R[i, j]
+update(N[])    <- N[i] + dem_N[i]
 
-n_Nx[] <- n_Ux[i] + n_Ex[i] + n_Ax[i] + n_S1x[i] + n_S2x[i] + n_Px[i] +
-  n_Fx[i] + n_Rx[i]
+n_Nx[] <- n_Ux[i] + sum(n_Ex[i, ]) + sum(n_Ax[i, ]) + sum(n_Sx[i, ]) +
+  sum(n_Px[i, ]) + sum(n_Fx[i, ]) + sum(n_Rx[i, ])
 
-dem_N[] <- dem_U[i] + dem_E[i] + dem_A[i] + dem_S1[i] + dem_S2[i] + dem_P[i] +
-  dem_F[i] + dem_R[i]
+dem_N[] <- dem_U[i] + sum(dem_E[i, ]) + sum(dem_A[i, ]) + sum(dem_S[i, ]) +
+  sum(dem_P[i, ]) + sum(dem_F[i, ]) + sum(dem_R[i, ])
 
 ## Output incidence flows:
 update(births_inc) <- (
@@ -45,8 +44,8 @@ update(infections_inc) <- (
   )
 
 pharyngitis_inc_by_group[] <- (
-  if (step %% steps_per_week == 0) n_SS[i]
-  else pharyngitis_inc_by_group[i] + n_SS[i]
+  if (step %% steps_per_week == 0) n_ES[i]
+  else pharyngitis_inc_by_group[i] + n_ES[i]
   )
 update(pharyngitis_inc) <- sum(pharyngitis_inc_by_group[])
 
@@ -73,18 +72,18 @@ update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(N[]) * 1e5
 ## Force of infection
 pi <- 3.14159265358979
 update(beta_t) <- beta * (1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25))
-lambda[, ] <- beta_t * m[i, j] *  (A[j] * theta_A + S1[j] + S2[j] + P[j]) / N[j]
+lambda[, ] <- beta_t * m[i, j] *
+  (sum(A[j, ]) * theta_A + sum(S[j, ]) + sum(P[j, ])) / N[j]
 foi[] <- sum(lambda[i, ])
 
-## Total rates of transmission out of each compartment
+## Total rates of transmission out of each (sub)compartment
 r_U[]  <- foi[i]
-r_A[]  <- 1 / delta_A
-r_E[]  <- 1 / delta_E
-r_S1[] <- 1 / delta_S
-r_S2[] <- 1 / delta_S
-r_P[]  <- 1 / delta_P
-r_F[]  <- 1 / delta_F
-r_R[]  <- 1 / delta_R
+r_A[]  <- k_A / delta_A
+r_E[]  <- k_E / delta_E
+r_S[]  <- k_S / delta_S
+r_P[]  <- k_P / delta_P
+r_F[]  <- k_F / delta_F
+r_R[]  <- k_R / delta_R
 # rate of developing iGAS
 r_I[]  <- foi[i] * p_I
 
@@ -95,73 +94,77 @@ n_xU[1] <- round(alpha_t * dt)
 ## note that this can be negative when there is a net population increase due
 ## to immigration > emigration + death. entrants are distributed across disease
 ## states in proportion to the general population.
-n_Ux[]  <- round(U[i]  * omega[i] * dt)
-n_Ax[]  <- round(A[i]  * omega[i] * dt)
-n_Ex[]  <- round(E[i]  * omega[i] * dt)
-n_S1x[] <- round(S1[i] * omega[i] * dt)
-n_S2x[] <- round(S2[i] * omega[i] * dt)
-n_Px[]  <- round(P[i]  * omega[i] * dt)
-n_Fx[]  <- round(F[i]  * omega[i] * dt)
-n_Rx[]  <- round(R[i]  * omega[i] * dt)
+n_Ux[]   <- round(U[i] * omega[i] * dt)
+n_Ax[, ] <- round(A[i, j] * omega[i] * dt)
+n_Ex[, ] <- round(E[i, j] * omega[i] * dt)
+n_Sx[, ] <- round(S[i, j] * omega[i] * dt)
+n_Px[, ] <- round(P[i, j] * omega[i] * dt)
+n_Fx[, ] <- round(F[i, j] * omega[i] * dt)
+n_Rx[, ] <- round(R[i, j] * omega[i] * dt)
 
 ## calculate net aging
-n_Ui[]  <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
-n_Ai[]  <- (if (i > 1) A[i - 1] else 0) - (if (i < n_group) A[i] else 0)
-n_Ei[]  <- (if (i > 1) E[i - 1] else 0) - (if (i < n_group) E[i] else 0)
-n_S1i[] <- (if (i > 1) S1[i - 1] else 0) - (if (i < n_group) S1[i] else 0)
-n_S2i[] <- (if (i > 1) S2[i - 1] else 0) - (if (i < n_group) S2[i] else 0)
-n_Pi[]  <- (if (i > 1) P[i - 1] else 0) - (if (i < n_group) P[i] else 0)
-n_Fi[]  <- (if (i > 1) F[i - 1] else 0) - (if (i < n_group) F[i] else 0)
-n_Ri[]  <- (if (i > 1) R[i - 1] else 0) - (if (i < n_group) R[i] else 0)
+n_Ui[] <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
+n_Ai[, ] <- (if (i > 1) A[i - 1, j] else 0) - (if (i < n_group) A[i, j] else 0)
+n_Ei[, ] <- (if (i > 1) E[i - 1, j] else 0) - (if (i < n_group) E[i, j] else 0)
+n_Si[, ] <- (if (i > 1) S[i - 1, j] else 0) - (if (i < n_group) S[i, j] else 0)
+n_Pi[, ] <- (if (i > 1) P[i - 1, j] else 0) - (if (i < n_group) P[i, j] else 0)
+n_Fi[, ] <- (if (i > 1) F[i - 1, j] else 0) - (if (i < n_group) F[i, j] else 0)
+n_Ri[, ] <- (if (i > 1) R[i - 1, j] else 0) - (if (i < n_group) R[i, j] else 0)
 
 ## Calculate all demographic changes
-dem_U[]  <- n_xU[i] + round(n_Ui[i] * r_age * dt) - n_Ux[i]
-dem_A[]  <- round(n_Ai[i] * r_age * dt) - n_Ax[i]
-dem_E[]  <- round(n_Ei[i] * r_age * dt) - n_Ex[i]
-dem_S1[] <- round(n_S1i[i] * r_age * dt) - n_S1x[i]
-dem_S2[] <- round(n_S2i[i] * r_age * dt) - n_S2x[i]
-dem_P[]  <- round(n_Pi[i] * r_age * dt) - n_Px[i]
-dem_F[]  <- round(n_Fi[i] * r_age * dt) - n_Fx[i]
-dem_R[]  <- round(n_Ri[i] * r_age * dt) - n_Rx[i]
+dem_U[]   <- n_xU[i] + round(n_Ui[i] * r_age * dt) - n_Ux[i]
+dem_A[, ] <- round(n_Ai[i, j] * r_age * dt) - n_Ax[i, j]
+dem_E[, ] <- round(n_Ei[i, j] * r_age * dt) - n_Ex[i, j]
+dem_S[, ] <- round(n_Si[i, j] * r_age * dt) - n_Sx[i, j]
+dem_P[, ] <- round(n_Pi[i, j] * r_age * dt) - n_Px[i, j]
+dem_F[, ] <- round(n_Fi[i, j] * r_age * dt) - n_Fx[i, j]
+dem_R[, ] <- round(n_Ri[i, j] * r_age * dt) - n_Rx[i, j]
 
 ## Draws from binomial distributions for numbers leaving each compartment
 ## all demographic transitions are done first
-n_U[]  <- rbinom(U[i] + dem_U[i],  1 - exp(-r_U[i]  * dt))
-n_A[]  <- rbinom(A[i] + dem_A[i],  1 - exp(-r_A[i]  * dt))
-n_E[]  <- rbinom(E[i] + dem_E[i],  1 - exp(-r_E[i]  * dt))
-n_S1[] <- rbinom(S1[i] + dem_S1[i], 1 - exp(-r_S1[i] * dt))
-n_S2[] <- rbinom(S2[i] + dem_S2[i], 1 - exp(-r_S2[i] * dt))
-n_P[]  <- rbinom(P[i] + dem_P[i],  1 - exp(-r_P[i]  * dt))
-n_F[]  <- rbinom(F[i] + dem_F[i],  1 - exp(-r_F[i]  * dt))
-n_R[]  <- rbinom(R[i] + dem_R[i],  1 - exp(-r_R[i]  * dt))
+n_U[]   <- rbinom(U[i]    + dem_U[i],    1 - exp(-r_U[i] * dt))
+n_A[, ] <- rbinom(A[i, j] + dem_A[i, j], 1 - exp(-r_A[i] * dt))
+n_E[, ] <- rbinom(E[i, j] + dem_E[i, j], 1 - exp(-r_E[i] * dt))
+n_S[, ] <- rbinom(S[i, j] + dem_S[i, j], 1 - exp(-r_S[i] * dt))
+n_P[, ] <- rbinom(P[i, j] + dem_P[i, j], 1 - exp(-r_P[i] * dt))
+n_F[, ] <- rbinom(F[i, j] + dem_F[i, j], 1 - exp(-r_F[i] * dt))
+n_R[, ] <- rbinom(R[i, j] + dem_R[i, j], 1 - exp(-r_R[i] * dt))
 
 # Number developing iGAS, applies to whole population
-n_I[]  <- rbinom(N[i] + dem_N[i],  1 - exp(-r_I[i]  * dt))
-
+n_I[] <- rbinom(N[i] + dem_N[i], 1 - exp(-r_I[i] * dt))
 
 ## Draw the numbers of transitions between compartments
 n_UE[] <- rbinom(n_U[i], p_S)
 n_UA[] <- n_U[i] - n_UE[i]
-n_AR[] <- rbinom(n_A[i], p_R)
-n_AU[] <- n_A[i] - n_AR[i]
-n_EP[] <- rbinom(n_E[i], p_F)
-n_ES[] <- n_E[i] - n_EP[i]
-n_SS[] <- n_S1[i]
-n_SR[] <- n_S2[i]
-n_PF[] <- n_P[i]
-n_FR[] <- n_F[i]
-n_RU[] <- n_R[i]
+n_AR[] <- rbinom(n_A[i, k_A], p_R)
+n_AU[] <- n_A[i, k_A] - n_AR[i]
+n_EP[] <- rbinom(n_E[i, k_E], p_F)
+n_ES[] <- n_E[i, k_E] - n_EP[i]
+n_SR[] <- n_S[i, k_S]
+n_PF[] <- n_P[i, k_P]
+n_FR[] <- n_F[i, k_F]
+n_RU[] <- n_R[i, k_R]
+
+## GAS transitions
+gas_U[]   <- n_AU[i] + n_RU[i] - n_U[i]
+gas_E[, ] <- (if (j == 1) n_UE[i] else n_E[i, j - 1]) - n_E[i, j]
+gas_A[, ] <- (if (j == 1) n_UA[i] else n_A[i, j - 1]) - n_A[i, j]
+gas_S[, ] <- (if (j == 1) n_ES[i] else n_S[i, j - 1]) - n_S[i, j]
+gas_P[, ] <- (if (j == 1) n_EP[i] else n_P[i, j - 1]) - n_P[i, j]
+gas_F[, ] <- (if (j == 1) n_PF[i] else n_F[i, j - 1]) - n_F[i, j]
+gas_R[, ] <- (if (j == 1) n_AR[i] + n_SR[i] + n_FR[i]
+              else n_R[i, j - 1]) - n_R[i, j]
 
 ## Initial states:
-initial(U[])  <- U0[i]
-initial(A[])  <- A0[i]
-initial(E[])  <- E0[i]
-initial(S1[]) <- S10[i]
-initial(S2[]) <- S20[i]
-initial(P[])  <- P0[i]
-initial(F[])  <- F0[i]
-initial(R[])  <- R0[i]
-initial(N[])  <- U0[i] + A0[i] + E0[i] + S10[i] + S20[i] + F0[i] + P0[i] + R0[i]
+initial(U[]) <- U0[i]
+initial(A[, ]) <- A0[i, j]
+initial(E[, ]) <- E0[i, j]
+initial(S[, ]) <- S0[i, j]
+initial(P[, ]) <- P0[i, j]
+initial(F[, ]) <- F0[i, j]
+initial(R[, ]) <- R0[i, j]
+initial(N[]) <- U0[i] + sum(A0[i, ]) + sum(E0[i, ]) + sum(S0[i, ]) +
+  sum(P0[i, ]) + sum(F0[i, ]) + sum(R0[i, ])
 initial(infections_inc) <- 0
 initial(pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
@@ -175,13 +178,12 @@ initial(scarlet_fever_rate) <- 0
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
 U0[] <- user()
-A0[] <- user()
-E0[] <- user()
-S10[] <- user()
-S20[] <- user()
-P0[] <- user()
-F0[] <- user()
-R0[] <- user()
+A0[, ] <- user()
+E0[, ] <- user()
+S0[, ] <- user()
+P0[, ] <- user()
+F0[, ] <- user()
+R0[, ] <- user()
 
 beta <- user() # rate of transmission
 m[, ] <- user()
@@ -195,10 +197,16 @@ p_F <- user() # probability of scarlet fever after pharyngitis
 p_T <- user() # probability of seeking treatment for pharyngitis
 delta_A <- user() # mean duration of carriage
 delta_E <- user() # mean duration of incubation period
-delta_S <- user() # mean duration of pharyngitis symptoms (x 2)
+delta_S <- user() # mean duration of pharyngitis symptoms
 delta_P <- user() # mean duration from pharyngitis to scarlet fever rash
 delta_F <- user() # mean duration of scarlet fever rash
 delta_R <- user() # mean duration of natural immunity
+k_A <- user() # number of sub-compartments for carriage
+k_E <- user() # number of sub-compartments for incubation period
+k_S <- user() # number of sub-compartments for pharyngitis symptoms
+k_P <- user() # number of sub-compartments for pre-scarlet fever
+k_F <- user() # number of sub-compartments for scarlet fever rash
+k_R <- user() # number of sub-compartments for natural immunity
 theta_A <- user() # infectiousness of carriers relative to symptomatics
 phi_S[] <- user() # proportion of all pharyngitis attributable to GAS
 
@@ -216,30 +224,26 @@ dim(omega) <- n_group
 dim(phi_S) <- n_group
 
 dim(U)  <- n_group
-dim(A)  <- n_group
-dim(E)  <- n_group
-dim(S1) <- n_group
-dim(S2) <- n_group
-dim(P)  <- n_group
-dim(F)  <- n_group
-dim(R)  <- n_group
+dim(A)  <- c(n_group, k_A)
+dim(E)  <- c(n_group, k_E)
+dim(S)  <- c(n_group, k_S)
+dim(P)  <- c(n_group, k_P)
+dim(F)  <- c(n_group, k_F)
+dim(R)  <- c(n_group, k_R)
 dim(N)  <- n_group
 
 dim(U0)  <- n_group
-dim(A0)  <- n_group
-dim(E0)  <- n_group
-dim(S10) <- n_group
-dim(S20) <- n_group
-dim(P0)  <- n_group
-dim(F0)  <- n_group
-dim(R0)  <- n_group
-
+dim(A0)  <- c(n_group, k_A)
+dim(E0)  <- c(n_group, k_E)
+dim(S0)  <- c(n_group, k_S)
+dim(P0)  <- c(n_group, k_P)
+dim(F0)  <- c(n_group, k_F)
+dim(R0)  <- c(n_group, k_R)
 
 dim(r_U) <- n_group
 dim(r_A) <- n_group
 dim(r_E) <- n_group
-dim(r_S1) <- n_group
-dim(r_S2) <- n_group
+dim(r_S) <- n_group
 dim(r_P) <- n_group
 dim(r_F) <- n_group
 dim(r_R) <- n_group
@@ -248,43 +252,47 @@ dim(r_I) <- n_group
 dim(n_xU) <- n_group
 
 dim(n_U) <- n_group
-dim(n_A) <- n_group
-dim(n_E) <- n_group
-dim(n_S1) <- n_group
-dim(n_S2) <- n_group
-dim(n_P) <- n_group
-dim(n_F) <- n_group
-dim(n_R) <- n_group
+dim(n_A) <- c(n_group, k_A)
+dim(n_E) <- c(n_group, k_E)
+dim(n_S) <- c(n_group, k_S)
+dim(n_P) <- c(n_group, k_P)
+dim(n_F) <- c(n_group, k_F)
+dim(n_R) <- c(n_group, k_R)
 dim(n_I) <- n_group
 
 dim(n_Ux) <- n_group
-dim(n_Ax) <- n_group
-dim(n_Ex) <- n_group
-dim(n_S1x) <- n_group
-dim(n_S2x) <- n_group
-dim(n_Px) <- n_group
-dim(n_Fx) <- n_group
-dim(n_Rx) <- n_group
+dim(n_Ax) <- c(n_group, k_A)
+dim(n_Ex) <- c(n_group, k_E)
+dim(n_Sx) <- c(n_group, k_S)
+dim(n_Px) <- c(n_group, k_P)
+dim(n_Fx) <- c(n_group, k_F)
+dim(n_Rx) <- c(n_group, k_R)
 dim(n_Nx) <- n_group
 
 dim(n_Ui) <- n_group
-dim(n_Ai) <- n_group
-dim(n_Ei) <- n_group
-dim(n_S1i) <- n_group
-dim(n_S2i) <- n_group
-dim(n_Pi) <- n_group
-dim(n_Fi) <- n_group
-dim(n_Ri) <- n_group
+dim(n_Ai) <- c(n_group, k_A)
+dim(n_Ei) <- c(n_group, k_E)
+dim(n_Si) <- c(n_group, k_S)
+dim(n_Pi) <- c(n_group, k_P)
+dim(n_Fi) <- c(n_group, k_F)
+dim(n_Ri) <- c(n_group, k_R)
 
 dim(dem_U) <- n_group
-dim(dem_A) <- n_group
-dim(dem_E) <- n_group
-dim(dem_S1) <- n_group
-dim(dem_S2) <- n_group
-dim(dem_P) <- n_group
-dim(dem_F) <- n_group
-dim(dem_R) <- n_group
+dim(dem_A) <- c(n_group, k_A)
+dim(dem_E) <- c(n_group, k_E)
+dim(dem_S) <- c(n_group, k_S)
+dim(dem_P) <- c(n_group, k_P)
+dim(dem_F) <- c(n_group, k_F)
+dim(dem_R) <- c(n_group, k_R)
 dim(dem_N) <- n_group
+
+dim(gas_U) <- n_group
+dim(gas_A) <- c(n_group, k_A)
+dim(gas_E) <- c(n_group, k_E)
+dim(gas_S) <- c(n_group, k_S)
+dim(gas_P) <- c(n_group, k_P)
+dim(gas_F) <- c(n_group, k_F)
+dim(gas_R) <- c(n_group, k_R)
 
 dim(n_UE) <- n_group
 dim(n_UA) <- n_group
@@ -292,7 +300,6 @@ dim(n_AR) <- n_group
 dim(n_AU) <- n_group
 dim(n_EP) <- n_group
 dim(n_ES) <- n_group
-dim(n_SS) <- n_group
 dim(n_SR) <- n_group
 dim(n_PF) <- n_group
 dim(n_FR) <- n_group
