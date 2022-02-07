@@ -108,7 +108,7 @@ no_gas_parameters <- function(n_group = 1) {
 ##' @export
 model_parameters <- function(gas_pars, initial_pars = NULL,
                              demographic_pars = NULL, n_group = NULL) {
-  n_group <- gas_pars$n_group %||% 1
+  n_group <- n_group %||% (gas_pars$n_group  %||% 1)
   demographic_pars <- demographic_pars %||% demographic_parameters(n_group)
   pars <- c(demographic_pars, gas_pars)
 
@@ -135,7 +135,7 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
 
   initial_pars <- initial_pars %||% initial_parameters(pars)
   pars <- c(pars, initial_pars)
-  check_gas_parameters(pars)
+  check_gas_parameters(pars, n_group)
   pars
 }
 

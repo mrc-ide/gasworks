@@ -18,7 +18,7 @@ NULL
 ##' @export
 index <- function(info) {
   run <- c("pharyngitis_scarlet_fever_rate", "scarlet_fever_inc", "igas_inc")
-  save <- c("U", "R", "entrants_inc", "leavers_inc", "infections_inc",
+  save <- c("U", "R", "births_inc", "net_leavers_inc", "infections_inc",
             "pharyngitis_inc")
 
   list(run = unlist(info$index[run]),
