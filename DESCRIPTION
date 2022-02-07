@@ -1,12 +1,11 @@
 Package: gasworks
 Title: Models of Group-A Streptococcus (GAS) Transmission
-Version: 0.1.7
+Version: 0.1.8
 Authors@R: 
     person(given = "Lilith",
            family = "Whittles",
            role = c("aut", "cre"),
-           email = "l.whittles@imperial.ac.uk",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "l.whittles@imperial.ac.uk")
 Description: Models of Group A Streptococcus (GAS) Transmission.
 Depends: R (>= 3.0.2)
 License: MIT + file LICENSE
