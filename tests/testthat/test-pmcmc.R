@@ -7,10 +7,10 @@ test_that("compare function works", {
   state <- drop(mod$simulate(7))[idx, ]
   rownames(state) <- names(idx)
   observed <- list(igas_inc = 25, scarlet_fever_inc = 53,
-                   pharyngitis_scarlet_fever_rate = 50)
+                   daily_pharyngitis_scarlet_fever_rate = 50)
   ll <- compare(state, observed, pars)
-  expect_equal(ll, c(-2446.91607098664, -2445.55743020475, -2443.93023185084,
-                     -2447.66207348488, -2447.34523027608))
+  expect_equal(ll, c(-344.219662752813, -343.987384362122, -343.804558576145,
+                     -344.283257048773, -344.228968177534))
 
   observed2 <- as.list(state[, 1])
 
