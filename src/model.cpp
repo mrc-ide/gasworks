@@ -509,7 +509,7 @@ public:
        internal.n_xU[i - 1] = std::round(alpha_t * shared->dt);
     }
     for (int i = 1; i <= shared->dim_w; ++i) {
-      internal.w[i - 1] = 100000 / (real_type) N[i - 1];
+      internal.w[i - 1] = 100000 / (real_type) N[i - 1] / (real_type) 7;
     }
     for (int i = 1; i <= shared->dim_dem_U; ++i) {
       internal.dem_U[i - 1] = internal.n_xU[i - 1] + std::round(internal.n_Ui[i - 1] * shared->r_age * shared->dt) - internal.n_Ux[i - 1];

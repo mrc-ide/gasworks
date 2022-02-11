@@ -59,11 +59,11 @@ update(igas_inc) <- (
   else igas_inc + sum(n_I[])
   )
 
-## Output incidence rates per 100,000 population
+## Output daily incidence rates per 100,000 population
 ## 1. pharyngitis or scarlet fever (prob of reporting / etiologic fraction)
 ## 2. scarlet fever
 
-w[] <- 1e5 / N[i] # calculate population weights per 100,000
+w[] <- 1e5 / N[i] / 7 # calculate daily population weights per 100,000
 pharyngitis_scarlet_fever[] <- pharyngitis_inc_by_group[i] * p_T / phi_S[i] +
   scarlet_fever_inc_by_group[i]
 update(pharyngitis_scarlet_fever_rate) <-
