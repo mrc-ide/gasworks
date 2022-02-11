@@ -2,9 +2,8 @@
 ##' @title Calculate the log likelihood of the data given the parameters
 ##' @description Calculate the log likelihood of the data given the parameters
 ##' @param state State vector for the end of the current day. This is
-##'   assumed to be filtered following [index()] so contains
-##'   3 rows corresponding to daily_pharyngitis_scarlet_fever_rate, scarlet_fever and
-##'    igas flows
+##' assumed to be filtered following [index()] so contains 3 rows corresponding
+##' to daily_pharyngitis_scarlet_fever_rate, scarlet_fever and igas flows
 ##' @param observed Observed data containing entries
 ##'  `daily_pharyngitis_scarlet_fever_rate`, `scarlet_fever_inc` and `igas_inc`.
 ##' @param pars A list of parameters, as created by [model_parameters()]

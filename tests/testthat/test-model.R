@@ -27,7 +27,7 @@ test_that("model runs", {
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734, 56000001, 5928868,
            1053003, 775962, 416807, 677, 501, 151, 25666298)
   nms <- c("time", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc",
-           "igas_inc", "births_inc", "net_leavers_inc","beta_t",
+           "igas_inc", "births_inc", "net_leavers_inc", "beta_t",
            "daily_pharyngitis_scarlet_fever_rate", "daily_scarlet_fever_rate",
            "daily_pharyngitis_scarlet_fever_rate_0_4",
            "daily_pharyngitis_scarlet_fever_rate_05_14",
@@ -341,7 +341,7 @@ test_that("rates are calculated correctly when n_group == 19", {
   expect_equal(colSums(y[grep("^F", nms), , 2]), y["scarlet_fever_inc", , 2])
   expect_equal(colSums(y[grep("^S", nms), , 5]),
                rowSums(y["pharyngitis_inc", , ]))
-  expect_equal(colSums(y[grep("^S", nms), ,2]), y["pharyngitis_inc", , 2])
+  expect_equal(colSums(y[grep("^S", nms), , 2]), y["pharyngitis_inc", , 2])
 
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
