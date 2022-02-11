@@ -62,12 +62,34 @@ update(igas_inc) <- (
 ## Output incidence rates per 100,000 population
 ## 1. pharyngitis or scarlet fever (prob of reporting / etiologic fraction)
 ## 2. scarlet fever
+
+w[] <- 1e5 / N[i] # calculate population weights per 100,000
 pharyngitis_scarlet_fever[] <- pharyngitis_inc_by_group[i] * p_T / phi_S[i] +
   scarlet_fever_inc_by_group[i]
-
 update(pharyngitis_scarlet_fever_rate) <-
-  sum(pharyngitis_scarlet_fever[]) / sum(N[]) * 1e5
-update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(N[]) * 1e5
+  sum(pharyngitis_scarlet_fever[]) * sum(w[])
+update(scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) * sum(w[])
+
+## When using the age-structured model (helium) output incidence rates for age
+## groups used by UK GP surveillance, i.e. 0-4, 5-14, 50-44, 45-64, 65-74, 75+
+update(scarlet_fever_rate_0_4) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[1]) * w[1]
+  else 0)
+update(scarlet_fever_rate_05_14) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[2:3]) * sum(w[2:3])
+  else 0)
+update(scarlet_fever_rate_15_44) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[4:10]) * sum(w[4:10])
+  else 0)
+update(scarlet_fever_rate_45_64) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[10:13]) * sum(w[10:13])
+  else 0)
+update(scarlet_fever_rate_65_74) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[14:15]) * sum(w[14:15])
+  else 0)
+update(scarlet_fever_rate_75) <- (
+  if (n_group == 19) sum(scarlet_fever_inc_by_group[16:19]) * sum(w[16:19])
+  else 0)
 
 ## Force of infection
 pi <- 3.14159265358979
@@ -174,6 +196,12 @@ initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
 initial(pharyngitis_scarlet_fever_rate) <- 0
 initial(scarlet_fever_rate) <- 0
+initial(scarlet_fever_rate_0_4)   <- 0
+initial(scarlet_fever_rate_05_14) <- 0
+initial(scarlet_fever_rate_15_44) <- 0
+initial(scarlet_fever_rate_45_64) <- 0
+initial(scarlet_fever_rate_65_74) <- 0
+initial(scarlet_fever_rate_75)    <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
@@ -305,6 +333,7 @@ dim(n_PF) <- n_group
 dim(n_FR) <- n_group
 dim(n_RU) <- n_group
 
+dim(w) <- n_group
 dim(pharyngitis_inc_by_group) <- n_group
 dim(scarlet_fever_inc_by_group) <- n_group
 dim(pharyngitis_scarlet_fever) <- n_group
