@@ -1,3 +1,10 @@
+# gasworks 0.1.9
+
+* output daily incidence rates (based on 7-day average) for scarlet fever and
+pharyngitis-or-scarlet-fever
+* allow fitting of daily incidence rates by age-groups reported in GP
+surveillance
+
 # gasworks 0.1.7
 
 * allow time in each compartment to be Erlang distributed
