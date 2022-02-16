@@ -17,7 +17,8 @@ NULL
 ##' pharyngitis_inc.
 ##' @export
 index <- function(info) {
-  run <- c("pharyngitis_scarlet_fever_rate", "scarlet_fever_inc", "igas_inc")
+  run <- c("daily_pharyngitis_scarlet_fever_rate",
+           "scarlet_fever_inc", "igas_inc")
   save <- c("U", "R", "births_inc", "net_leavers_inc", "infections_inc",
             "pharyngitis_inc")
 
