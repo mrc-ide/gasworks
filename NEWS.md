@@ -5,9 +5,11 @@ i.e. model week 1 ends on Sun 5 Jan 2014.
 
 # gasworks 0.1.8
 
-* output daily_pharyngitis_scarlet_fever_rate and daily_scarlet_fever_rate
-by age groups used in UKHSA data
-* ensure incidence rates are daily 7-day moving averages, and clarify in naming
+* output daily incidence rates (based on 7-day average) for scarlet fever and
+pharyngitis-or-scarlet-fever
+* allow fitting of daily incidence rates by age-groups reported in GP
+surveillance
+
 
 # gasworks 0.1.7
 
