@@ -1,6 +1,6 @@
 Package: gasworks
 Title: Models of Group-A Streptococcus (GAS) Transmission
-Version: 0.1.9
+Version: 0.1.10
 Authors@R: 
     person(given = "Lilith",
            family = "Whittles",
