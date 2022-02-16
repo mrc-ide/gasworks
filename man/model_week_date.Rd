@@ -8,7 +8,8 @@ model_week_date(week)
 }
 \arguments{
 \item{week}{A vector of model_weeks (i.e. integers),
-where model_week 1 ends on 7 Jan 2014}
+where model_week 1 = ends on Sunday 5 Jan 2014
+to align with the PHE/UKHSA definition of epi weeks}
 }
 \value{
 A vector of dates giving the date on which the week ends

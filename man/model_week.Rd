@@ -11,7 +11,8 @@ model_week(date)
 }
 \value{
 A vector of model_weeks (i.e. integers),
-where model_week 1 = the week ending 7 Jan 2014
+where model_week 1 = ends on Sunday 5 Jan 2014
+to align with the PHE/UKHSA definition of epi weeks
 }
 \description{
 Convert date to model_week
