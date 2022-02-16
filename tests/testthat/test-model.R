@@ -29,13 +29,13 @@ test_that("model runs", {
   nms <- c("time", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc",
            "igas_inc", "births_inc", "net_leavers_inc", "beta_t",
            "daily_pharyngitis_scarlet_fever_rate", "daily_scarlet_fever_rate",
-           "daily_pharyngitis_scarlet_fever_rate_0_4",
+           "daily_pharyngitis_scarlet_fever_rate_04",
            "daily_pharyngitis_scarlet_fever_rate_05_14",
            "daily_pharyngitis_scarlet_fever_rate_15_44",
            "daily_pharyngitis_scarlet_fever_rate_45_64",
            "daily_pharyngitis_scarlet_fever_rate_65_74",
            "daily_pharyngitis_scarlet_fever_rate_75",
-           "daily_scarlet_fever_rate_0_4", "daily_scarlet_fever_rate_05_14",
+           "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14",
            "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64",
            "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75",
            "U", "N", "A", "E", "S1", "S2", "P", "F1", "F2", "R")
@@ -359,18 +359,19 @@ test_that("rates are calculated correctly when n_group == 19", {
                y["scarlet_fever_inc", , ])
 
   age <- helium_age_groups()$age_start
-  N_0_4   <- colSums(N[age < 5, , , drop = FALSE])
+  N_04   <- colSums(N[age < 5, , , drop = FALSE])
   N_5_14  <- colSums(N[age >= 5 & age < 15, , , drop = FALSE])
   N_15_44 <- colSums(N[age >= 15 & age < 45, , , drop = FALSE])
   N_45_64 <- colSums(N[age >= 45 & age < 65, , , drop = FALSE])
   N_65_74 <- colSums(N[age >= 65 & age < 75, , , drop = FALSE])
   N_75    <- colSums(N[age >= 75, , , drop = FALSE])
 
-  expect_equivalent(N_0_4 + N_5_14 + N_15_44 + N_45_64 + N_65_74 + N_75,
+
+  expect_equivalent(N_04 + N_5_14 + N_15_44 + N_45_64 + N_65_74 + N_75,
                     colSums(N))
 
   expect_equivalent(
-    (y["daily_pharyngitis_scarlet_fever_rate_0_4", , ] * N_0_4 +
+    (y["daily_pharyngitis_scarlet_fever_rate_04", , ] * N_04 +
        y["daily_pharyngitis_scarlet_fever_rate_05_14", , ] * N_5_14 +
        y["daily_pharyngitis_scarlet_fever_rate_15_44", , ] * N_15_44 +
        y["daily_pharyngitis_scarlet_fever_rate_45_64", , ] * N_45_64 +
@@ -380,7 +381,7 @@ test_that("rates are calculated correctly when n_group == 19", {
       y["scarlet_fever_inc", , ])
 
   expect_equivalent(
-    (y["daily_scarlet_fever_rate_0_4", , ] * N_0_4 +
+    (y["daily_scarlet_fever_rate_04", , ] * N_04 +
        y["daily_scarlet_fever_rate_05_14", , ] * N_5_14 +
        y["daily_scarlet_fever_rate_15_44", , ] * N_15_44 +
        y["daily_scarlet_fever_rate_45_64", , ] * N_45_64 +

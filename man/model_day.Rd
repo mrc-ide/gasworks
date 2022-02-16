@@ -11,12 +11,13 @@ model_day(date)
 }
 \value{
 A vector of model_days (i.e. integers),
-where model_day 1 = 1 Jan 2014
+where model_day 1 = 30 Dec 2013, to align with the PHE/UKHSA definition of
+epi weeks, whereby week 1 of 2014 ends on Sunday 5 Jan 2014
 }
 \description{
 Convert date to model_day
 }
 \examples{
-model_day("2014-01-01")
-model_day("2014-01-07")
+model_day("2013-12-30")
+model_day("2014-01-05")
 }

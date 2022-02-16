@@ -72,11 +72,11 @@ update(daily_scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## When using the age-structured model (helium) output incidence rates for age
 ## groups used by UK GP surveillance:
-## 0-4,  5-14, 15-44,   45-64,   65-74, 75+
+##  04,  5-14, 15-44,   45-64,   65-74, 75+
 ## [1], [2:3], [4:9], [10:13], [14:15], [16:19]
 
 ## scarlet fever rates
-update(daily_scarlet_fever_rate_0_4) <- (
+update(daily_scarlet_fever_rate_04) <- (
   if (n_group == 19) sum(scarlet_fever_inc_by_group[1]) / w[1]
   else 0)
 update(daily_scarlet_fever_rate_05_14) <- (
@@ -96,7 +96,7 @@ update(daily_scarlet_fever_rate_75) <- (
   else 0)
 
 ## pharyngitis or scarlet fever rates
-update(daily_pharyngitis_scarlet_fever_rate_0_4) <- (
+update(daily_pharyngitis_scarlet_fever_rate_04) <- (
   if (n_group == 19) sum(pharyngitis_scarlet_fever[1]) / w[1]
   else 0)
 update(daily_pharyngitis_scarlet_fever_rate_05_14) <- (
@@ -221,14 +221,16 @@ initial(beta_t) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate) <- 0
 initial(daily_scarlet_fever_rate) <- 0
 
-initial(daily_pharyngitis_scarlet_fever_rate_0_4)   <- 0
+
+initial(daily_pharyngitis_scarlet_fever_rate_04)   <-  0
 initial(daily_pharyngitis_scarlet_fever_rate_05_14) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_15_44) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_45_64) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_65_74) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_75)    <- 0
 
-initial(daily_scarlet_fever_rate_0_4)   <- 0
+
+initial(daily_scarlet_fever_rate_04)    <- 0
 initial(daily_scarlet_fever_rate_05_14) <- 0
 initial(daily_scarlet_fever_rate_15_44) <- 0
 initial(daily_scarlet_fever_rate_45_64) <- 0

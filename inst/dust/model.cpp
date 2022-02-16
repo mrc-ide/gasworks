@@ -263,15 +263,15 @@ public:
     real_type initial_beta_t;
     real_type initial_births_inc;
     real_type initial_daily_pharyngitis_scarlet_fever_rate;
+    real_type initial_daily_pharyngitis_scarlet_fever_rate_04;
     real_type initial_daily_pharyngitis_scarlet_fever_rate_05_14;
-    real_type initial_daily_pharyngitis_scarlet_fever_rate_0_4;
     real_type initial_daily_pharyngitis_scarlet_fever_rate_15_44;
     real_type initial_daily_pharyngitis_scarlet_fever_rate_45_64;
     real_type initial_daily_pharyngitis_scarlet_fever_rate_65_74;
     real_type initial_daily_pharyngitis_scarlet_fever_rate_75;
     real_type initial_daily_scarlet_fever_rate;
+    real_type initial_daily_scarlet_fever_rate_04;
     real_type initial_daily_scarlet_fever_rate_05_14;
-    real_type initial_daily_scarlet_fever_rate_0_4;
     real_type initial_daily_scarlet_fever_rate_15_44;
     real_type initial_daily_scarlet_fever_rate_45_64;
     real_type initial_daily_scarlet_fever_rate_65_74;
@@ -395,13 +395,13 @@ public:
     state[7] = shared->initial_beta_t;
     state[8] = shared->initial_daily_pharyngitis_scarlet_fever_rate;
     state[9] = shared->initial_daily_scarlet_fever_rate;
-    state[10] = shared->initial_daily_pharyngitis_scarlet_fever_rate_0_4;
+    state[10] = shared->initial_daily_pharyngitis_scarlet_fever_rate_04;
     state[11] = shared->initial_daily_pharyngitis_scarlet_fever_rate_05_14;
     state[12] = shared->initial_daily_pharyngitis_scarlet_fever_rate_15_44;
     state[13] = shared->initial_daily_pharyngitis_scarlet_fever_rate_45_64;
     state[14] = shared->initial_daily_pharyngitis_scarlet_fever_rate_65_74;
     state[15] = shared->initial_daily_pharyngitis_scarlet_fever_rate_75;
-    state[16] = shared->initial_daily_scarlet_fever_rate_0_4;
+    state[16] = shared->initial_daily_scarlet_fever_rate_04;
     state[17] = shared->initial_daily_scarlet_fever_rate_05_14;
     state[18] = shared->initial_daily_scarlet_fever_rate_15_44;
     state[19] = shared->initial_daily_scarlet_fever_rate_45_64;
@@ -682,8 +682,8 @@ public:
       }
     }
     state_next[9] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
-    state_next[17] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
     state_next[16] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, 1) / (real_type) internal.w[0] : 0));
+    state_next[17] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
     state_next[18] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
     state_next[19] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
     state_next[20] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
@@ -718,8 +718,8 @@ public:
       }
     }
     state_next[8] = odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 0, shared->dim_pharyngitis_scarlet_fever) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
-    state_next[11] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
     state_next[10] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 0, 1) / (real_type) internal.w[0] : 0));
+    state_next[11] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
     state_next[12] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
     state_next[13] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
     state_next[14] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
@@ -963,15 +963,15 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_beta_t = 0;
   shared->initial_births_inc = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate = 0;
+  shared->initial_daily_pharyngitis_scarlet_fever_rate_04 = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate_05_14 = 0;
-  shared->initial_daily_pharyngitis_scarlet_fever_rate_0_4 = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate_15_44 = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate_45_64 = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate_65_74 = 0;
   shared->initial_daily_pharyngitis_scarlet_fever_rate_75 = 0;
   shared->initial_daily_scarlet_fever_rate = 0;
+  shared->initial_daily_scarlet_fever_rate_04 = 0;
   shared->initial_daily_scarlet_fever_rate_05_14 = 0;
-  shared->initial_daily_scarlet_fever_rate_0_4 = 0;
   shared->initial_daily_scarlet_fever_rate_15_44 = 0;
   shared->initial_daily_scarlet_fever_rate_45_64 = 0;
   shared->initial_daily_scarlet_fever_rate_65_74 = 0;
@@ -1353,7 +1353,7 @@ template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const model::internal_type internal = pars.internal;
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "births_inc", "net_leavers_inc", "beta_t", "daily_pharyngitis_scarlet_fever_rate", "daily_scarlet_fever_rate", "daily_pharyngitis_scarlet_fever_rate_0_4", "daily_pharyngitis_scarlet_fever_rate_05_14", "daily_pharyngitis_scarlet_fever_rate_15_44", "daily_pharyngitis_scarlet_fever_rate_45_64", "daily_pharyngitis_scarlet_fever_rate_65_74", "daily_pharyngitis_scarlet_fever_rate_75", "daily_scarlet_fever_rate_0_4", "daily_scarlet_fever_rate_05_14", "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64", "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75", "U", "N", "A", "E", "S", "P", "F", "R"});
+  cpp11::writable::strings nms({"time", "infections_inc", "pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "births_inc", "net_leavers_inc", "beta_t", "daily_pharyngitis_scarlet_fever_rate", "daily_scarlet_fever_rate", "daily_pharyngitis_scarlet_fever_rate_04", "daily_pharyngitis_scarlet_fever_rate_05_14", "daily_pharyngitis_scarlet_fever_rate_15_44", "daily_pharyngitis_scarlet_fever_rate_45_64", "daily_pharyngitis_scarlet_fever_rate_65_74", "daily_pharyngitis_scarlet_fever_rate_75", "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14", "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64", "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75", "U", "N", "A", "E", "S", "P", "F", "R"});
   cpp11::writable::list dim(30);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});

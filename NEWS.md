@@ -1,9 +1,15 @@
+# gasworks 0.1.10
+
+* update model date functions to align with UKHSA epi weeks, which end on Sunday
+i.e. model week 1 ends on Sun 5 Jan 2014.
+
 # gasworks 0.1.9
 
 * output daily incidence rates (based on 7-day average) for scarlet fever and
 pharyngitis-or-scarlet-fever
 * allow fitting of daily incidence rates by age-groups reported in GP
 surveillance
+
 
 # gasworks 0.1.7
 

@@ -1,16 +1,24 @@
 
+model_start_date <- function() {
+  ## PHE/UKHSA report data ending for w/e on a Sunday (i.e. isoweeks)
+  ## Model week 1 should end on 2014-01-05 i.e. first Sunday of 2014
+  start_date <- as.Date("2014-01-05") - 7
+  start_date
+}
+
 ##' @name model_day
 ##' @title Convert date to model_day
 ##' @description Convert date to model_day
 ##' @param date A vector of dates or character strings containing dates
 ##' @return A vector of model_days (i.e. integers),
-##' where model_day 1 = 1 Jan 2014
+##' where model_day 1 = 30 Dec 2013, to align with the PHE/UKHSA definition of
+##' epi weeks, whereby week 1 of 2014 ends on Sunday 5 Jan 2014
 ##' @examples
-##' model_day("2014-01-01")
-##' model_day("2014-01-07")
+##' model_day("2013-12-30")
+##' model_day("2014-01-05")
 ##' @export
 model_day <- function(date) {
-  start_date <- as.Date("2013-12-31")
+  start_date <- model_start_date()
   as.numeric(as.Date(date) - start_date)
 }
 
@@ -18,14 +26,14 @@ model_day <- function(date) {
 ##' @title Convert model_day to date
 ##' @description Convert model_day to date
 ##' @param day A vector of model_days (i.e. integers),
-##'  where model_day 1 = 1 Jan 2014
-##' @return A vector of dates
+##' where model_day 1 = 30 Dec 2013, to align with the PHE/UKHSA definition of
+##' epi weeks, whereby week 1 of 2014 ends on Sunday 5 Jan 2014
 ##' @examples
 ##' model_date(1)
 ##' model_date(7)
 ##' @export
 model_date <- function(day) {
-  as.Date("2013-12-31") + day
+  model_start_date() + day
 }
 
 ##' @name model_week
@@ -33,7 +41,8 @@ model_date <- function(day) {
 ##' @description Convert date to model_week
 ##' @param date A vector of dates or character strings containing dates
 ##' @return A vector of model_weeks (i.e. integers),
-##'  where model_week 1 = the week ending 7 Jan 2014
+##' where model_week 1 = ends on Sunday 5 Jan 2014
+##' to align with the PHE/UKHSA definition of epi weeks
 ##' @examples
 ##' model_week("2014-01-01")
 ##' model_week("2014-01-07")
@@ -46,7 +55,8 @@ model_week <- function(date) {
 ##' @title Convert model_week to date on which the week ends
 ##' @description Convert model_week to date on which the week ends
 ##' @param week A vector of model_weeks (i.e. integers),
-##'  where model_week 1 ends on 7 Jan 2014
+##' where model_week 1 = ends on Sunday 5 Jan 2014
+##' to align with the PHE/UKHSA definition of epi weeks
 ##' @return A vector of dates giving the date on which the week ends
 ##' @examples
 ##' model_week_date(1)
