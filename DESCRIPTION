@@ -1,6 +1,6 @@
 Package: gasworks
 Title: Models of Group-A Streptococcus (GAS) Transmission
-Version: 0.1.8
+Version: 0.1.9
 Authors@R: 
     person(given = "Lilith",
            family = "Whittles",
@@ -22,6 +22,7 @@ Suggests:
     mcstate,
     odin (>= 1.1.12),
     odin.dust (>= 0.2.11),
+    lubridate
 Remotes:
     mrc-ide/odin,
     mrc-ide/dust,
