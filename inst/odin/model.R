@@ -221,14 +221,16 @@ initial(beta_t) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate) <- 0
 initial(daily_scarlet_fever_rate) <- 0
 
-initial(daily_pharyngitis_scarlet_fever_rate_04)   <- 0
+
+initial(daily_pharyngitis_scarlet_fever_rate_04)   <-  0
 initial(daily_pharyngitis_scarlet_fever_rate_05_14) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_15_44) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_45_64) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_65_74) <- 0
 initial(daily_pharyngitis_scarlet_fever_rate_75)    <- 0
 
-initial(daily_scarlet_fever_rate_04)   <- 0
+
+initial(daily_scarlet_fever_rate_04)    <- 0
 initial(daily_scarlet_fever_rate_05_14) <- 0
 initial(daily_scarlet_fever_rate_15_44) <- 0
 initial(daily_scarlet_fever_rate_45_64) <- 0

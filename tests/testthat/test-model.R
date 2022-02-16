@@ -366,6 +366,7 @@ test_that("rates are calculated correctly when n_group == 19", {
   N_65_74 <- colSums(N[age >= 65 & age < 75, , , drop = FALSE])
   N_75    <- colSums(N[age >= 75, , , drop = FALSE])
 
+
   expect_equivalent(N_04 + N_5_14 + N_15_44 + N_45_64 + N_65_74 + N_75,
                     colSums(N))
 
