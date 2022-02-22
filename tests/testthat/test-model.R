@@ -105,6 +105,8 @@ test_that("there are no infections when theta_A is 0", {
   expect_true(all(y["F2", , ] == 0))
   expect_true(all(y["R", , ] > 0))
   expect_true(all(y["igas_inc", , ] == 0))
+  expect_true(all(y["prev_A", , ] > 0))
+  expect_true(all(y["prev_R", , ] > 0))
 
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
@@ -125,6 +127,8 @@ test_that("there are no infections when A0 = 0", {
   expect_true(all(y["F2", , ] == 0))
   expect_true(all(y["R", , ] > 0))
   expect_true(all(y["igas_inc", , ] == 0))
+  expect_true(all(y["prev_A", , ] == 0))
+  expect_true(all(y["prev_R", , ] > 0))
 
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
@@ -360,6 +364,9 @@ test_that("rates are calculated correctly when n_group == 19", {
   pars$alpha <- 0
   pars$delta_F <- Inf
   pars$delta_S <- Inf
+  pars$prev_A <- pars$prev_A <- seq(0.1, 0.2, length.out = 19)
+  ip <- initial_parameters(pars)
+  pars[names(ip)] <- ip
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y)
@@ -371,6 +378,10 @@ test_that("rates are calculated correctly when n_group == 19", {
   expect_equal(colSums(y[grep("^S", nms), , 5]),
                rowSums(y["gas_pharyngitis_inc", , ]))
   expect_equal(colSums(y[grep("^S", nms), , 2]), y["gas_pharyngitis_inc", , 2])
+  expect_equivalent(pars$prev_A,
+               y[grep("^prev_A", nms), 1, 1], tol = 1e-6)
+  expect_equivalent((1 - pars$prev_A) * pars$prev_R,
+                    y[grep("^prev_R", nms), 1, 1], tol = 1e-6)
 
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
