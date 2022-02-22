@@ -327,8 +327,8 @@ test_that("incidence time series output correctly", {
   rownames(y) <- names(model_index())
   expect_equal(y["F1", , 5] + y["F2", , 5], rowSums(y["scarlet_fever_inc", , ]))
   expect_equal(y["F1", , 2] + y["F2", , 2], y["scarlet_fever_inc", , 2])
-  expect_equal(y["S1", , 5] + y["S2", , 5], rowSums(y["pharyngitis_inc", , ]))
-  expect_equal(y["S1", , 2] + y["S2", , 5], y["pharyngitis_inc", , 2])
+  expect_equal(y["S1", , 5] + y["S2", , 5], rowSums(y["gas_pharyngitis_inc", , ]))
+  expect_equal(y["S1", , 2] + y["S2", , 5], y["gas_pharyngitis_inc", , 2])
 
 
   expect_true(all(y["births_inc", , ] == 0))
@@ -339,7 +339,7 @@ test_that("incidence time series output correctly", {
   ## multiply by population size
   expect_equal(
     y["daily_pharyngitis_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
-    y["pharyngitis_inc", , ] / pars$phi_S * pars$p_T +
+    y["gas_pharyngitis_inc", , ] / pars$phi_S * pars$p_T +
       y["scarlet_fever_inc", , ])
   expect_equal(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
                y["scarlet_fever_inc", , ])
