@@ -10,29 +10,32 @@ test_that("model runs", {
   expect_true(all(y >= 0))
 
   tmp <- c(1, 4045133, 5492776, 1373194, 727, 938, 10997, 10996,
-           1.94454194361955, 1401.21836734694, 0.185459183673469,
-           1401.40382653061,
+           1.94454194361955, 1401.21836734694, 0.185459183673469, 1401.40382653061,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 22159247, 56000001, 5928661, 1052289,
-           775606, 416796, 704, 542, 166, 25665990, 1, 4044289, 5489868,
-           1372467, 692, 939, 10997, 10997, 1.94454194361955, 1400.47653061224,
-           0.176530612244898, 1400.65306122449, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 22159247, 56000001, 0.103989553571429,
+           0.455696232142857, 5928661, 1052289, 775606, 416796, 704, 542,
+           166, 25665990, 1, 4044289, 5489868, 1372467, 692, 939, 10997,
+           10997, 1.94454194361955, 1400.47653061224, 0.176530612244898,
+           1400.65306122449, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22160502, 5.6e+07,
+           0.104027892857143, 0.455671839285714, 5930566, 1051231, 775591,
+           415890, 736, 513, 147, 25664824, 1, 4047132, 5486108, 1371527,
+           678, 1016, 10997, 10997, 1.94454194361955, 1399.51734693878,
+           0.172959183673469, 1399.69030612245, 0, 0, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 22160502, 5.6e+07, 5930566, 1051231, 775591, 415890, 736,
-           513, 147, 25664824, 1, 4047132, 5486108, 1371527, 678, 1016,
-           10997, 10997, 1.94454194361955, 1399.51734693878, 0.172959183673469,
-           1399.69030612245, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22156462, 5.6e+07,
-           5933201, 1054026, 775298, 416302, 704, 519, 139, 25663349, 1,
-           4047245, 5494588, 1373647, 698, 926, 10997, 10996, 1.94454194361955,
-           1401.6806122449, 0.178061224489796, 1401.85867346939, 0, 0, 0,
+           0, 22156462, 5.6e+07, 0.104074125, 0.455662464285714, 5933201,
+           1054026, 775298, 416302, 704, 519, 139, 25663349, 1, 4047245,
+           5494588, 1373647, 698, 926, 10997, 10996, 1.94454194361955,
+           1401.6806122449,
+           0.178061224489796, 1401.85867346939, 0, 0, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 22157315, 56000001, 5930844, 1052602, 776369,
-           416513, 710, 513, 157, 25664978, 1, 4045950, 5493920, 1373480,
-           680, 939, 10997, 10996, 1.94454194361955, 1401.51020408163,
-           0.173469387755102,
-           1401.68367346939, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734, 56000001,
+           0, 22157315, 56000001, 0.104017946428571, 0.455688285714286,
+           5930844, 1052602, 776369, 416513, 710, 513, 157, 25664978, 1,
+           4045950, 5493920, 1373480, 680, 939, 10997, 10996, 1.94454194361955,
+           1401.51020408163, 0.173469387755102, 1401.68367346939, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 22157734, 56000001, 0.104008053571429,
+           0.455698464285714,
            5928868, 1053003, 775962, 416807, 677, 501, 151, 25666298)
   nms <- c("time", "infections_inc", "pharyngitis_inc",
            "gas_pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "births_inc",
@@ -59,7 +62,8 @@ test_that("model runs", {
            "scarlet_fever_prop_15_44",
            "scarlet_fever_prop_45_64", "scarlet_fever_prop_65_74",
            "scarlet_fever_prop_75",
-           "U", "N", "A", "E", "S1", "S2", "P", "F1", "F2", "R")
+           "U", "N", "prev_A", "prev_R",
+           "A", "E", "S1", "S2", "P", "F1", "F2", "R")
   expect_equal(y, array(tmp, dim = c(length(nms), 5L, 1L),
                         dimnames = list(nms, NULL, NULL)))
 })
@@ -489,18 +493,18 @@ test_that("aging works", {
     rownames(y) <- nms <- names(unlist(mod$info()$index))
 
     # check no-one moves compartments
-    expect_equivalent(y[grep(nm, nms), , ], y[grep("^N", nms), , ])
+    expect_equivalent(y[startsWith(nms, nm), , ], y[grep("^N", nms), , ])
     # check all demographic changes are deterministic
     expect_equal(y[, 1, ], y[, 2, ])
     ## check pop size is constant
 
     expect_true(all(apply(y[grep("^N", nms), , ], c(2, 3), sum) == N0))
     ## check everyone advances one group per day
-    expect_equivalent(y[grep(nm, nms), 1, ], diag(pars$n_group) * N0)
+    expect_equivalent(y[startsWith(nms, nm), 1, ], diag(pars$n_group) * N0)
     ## nothing going on in other compartments
 
-    expect_equal(sum(y[grep(paste0("^N|time|", nm), nms, invert = TRUE), , ]),
-                 0)
+    expect_equal(sum(y[grep(paste0("^N|time|prev|", nm), nms,
+                            invert = TRUE), , ]), 0)
   }
 
   for (i in unique(substr(model_compartments(), 1, 1))) {
@@ -583,12 +587,12 @@ test_that("can vary erlang compartments", {
   y <- mcstate::array_bind(arrays = y)
   rownames(y) <- names(unlist(mod$info()$index))
 
-  expect_equal(length(grep("S", rownames(y))), pars$k_S)
-  expect_equal(length(grep("A", rownames(y))), pars$k_A)
-  expect_equal(length(grep("E", rownames(y))), pars$k_E)
-  expect_equal(length(grep("P", rownames(y))), pars$k_P)
-  expect_equal(length(grep("F", rownames(y))), pars$k_F)
-  expect_equal(length(grep("R", rownames(y))), pars$k_R)
+  expect_equal(length(grep("^S", rownames(y))), pars$k_S)
+  expect_equal(length(grep("^A", rownames(y))), pars$k_A)
+  expect_equal(length(grep("^E", rownames(y))), pars$k_E)
+  expect_equal(length(grep("^P", rownames(y))), pars$k_P)
+  expect_equal(length(grep("^F", rownames(y))), pars$k_F)
+  expect_equal(length(grep("^R", rownames(y))), pars$k_R)
 
   # check that states sum to N
   expect_true(all(y["N", , ] == pars$N0))
