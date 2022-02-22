@@ -1,3 +1,9 @@
+# gasworks 0.1.11
+
+* output new model states: gas_pharyngitis_inc, pharyngitis_inc (all-cause
+cases), proportion of scarlet fever cases in each age group, proportion of all-
+cause pharyngitis cases in each age group.
+
 # gasworks 0.1.10
 
 * update model date functions to align with UKHSA epi weeks, which end on Sunday
