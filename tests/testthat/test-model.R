@@ -250,7 +250,9 @@ test_that("no pharyngitis cases are reported when p_T = 0", {
   expect_true(all(y["R", , ] > 0))
   expect_true(all(y["igas_inc", , ] > 0))
   expect_true(all(y["daily_scarlet_fever_rate", , ] > 0))
-  expect_true(all(y["pharyngitis_inc", , ] > 0))
+  expect_true(all(y["gas_pharyngitis_inc", , ] > 0))
+  expect_true(all(y["pharyngitis_inc", , ] == 0))
+  expect_true(all(y["daily_pharyngitis_rate", , ] == 0))
   expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
                y["daily_scarlet_fever_rate", , ])
   expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
@@ -330,19 +332,20 @@ test_that("incidence time series output correctly", {
   expect_equal(y["S1", , 5] + y["S2", , 5], rowSums(y["gas_pharyngitis_inc", , ]))
   expect_equal(y["S1", , 2] + y["S2", , 5], y["gas_pharyngitis_inc", , 2])
 
-
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
   expect_true(all(y["N", , ] == pars$N0))
   ## output rates are daily so multiply by 7 for weekly
   ## divide by 1e5 for per person
   ## multiply by population size
-  expect_equal(
-    y["daily_pharyngitis_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
-    y["gas_pharyngitis_inc", , ] / pars$phi_S * pars$p_T +
-      y["scarlet_fever_inc", , ])
+  expect_equal(y["pharyngitis_inc", , ],
+    y["gas_pharyngitis_inc", , ] / pars$phi_S * pars$p_T)
+  expect_equal(y["daily_pharyngitis_rate", , ] * 7 / 1e5 * y["N", , ],
+    y["pharyngitis_inc", , ])
   expect_equal(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
                y["scarlet_fever_inc", , ])
+  expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
+    y["daily_pharyngitis_rate", , ] + y["daily_scarlet_fever_rate", , ])
 })
 
 
