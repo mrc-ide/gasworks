@@ -27,6 +27,10 @@ n_Nx[] <- n_Ux[i] + sum(n_Ex[i, ]) + sum(n_Ax[i, ]) + sum(n_Sx[i, ]) +
 dem_N[] <- dem_U[i] + sum(dem_E[i, ]) + sum(dem_A[i, ]) + sum(dem_S[i, ]) +
   sum(dem_P[i, ]) + sum(dem_F[i, ]) + sum(dem_R[i, ])
 
+## Output prevalence
+update(prev_A[]) <- sum(A[i, ]) / N[i]
+update(prev_R[]) <- sum(R[i, ]) / N[i]
+
 ## Output incidence flows:
 update(births_inc) <- (
   if (step %% steps_per_week == 0) sum(n_xU[])
@@ -272,6 +276,12 @@ initial(F[, ]) <- F0[i, j]
 initial(R[, ]) <- R0[i, j]
 initial(N[]) <- U0[i] + sum(A0[i, ]) + sum(E0[i, ]) + sum(S0[i, ]) +
   sum(P0[i, ]) + sum(F0[i, ]) + sum(R0[i, ])
+initial(prev_A[]) <- sum(A0[i, ]) /
+  (U0[i] + sum(A0[i, ]) + sum(E0[i, ]) + sum(S0[i, ]) + sum(P0[i, ]) +
+     sum(F0[i, ]) + sum(R0[i, ]))
+initial(prev_R[]) <- sum(R0[i, ]) /
+  (U0[i] + sum(A0[i, ]) + sum(E0[i, ]) + sum(S0[i, ]) + sum(P0[i, ]) +
+     sum(F0[i, ]) + sum(R0[i, ]))
 initial(infections_inc) <- 0
 initial(pharyngitis_inc) <- 0
 initial(gas_pharyngitis_inc) <- 0
@@ -375,6 +385,9 @@ dim(P)  <- c(n_group, k_P)
 dim(F)  <- c(n_group, k_F)
 dim(R)  <- c(n_group, k_R)
 dim(N)  <- n_group
+
+dim(prev_A) <- n_group
+dim(prev_R) <- n_group
 
 dim(U0)  <- n_group
 dim(A0)  <- c(n_group, k_A)

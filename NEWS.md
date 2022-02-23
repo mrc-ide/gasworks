@@ -1,8 +1,15 @@
+# gasworks 0.1.12
+
+* output new model states: prev_A and prev_R, will scale by age
+
 # gasworks 0.1.11
 
 * output new model states: gas_pharyngitis_inc, pharyngitis_inc (all-cause
-cases), proportion of scarlet fever cases in each age group, proportion of all-
-cause pharyngitis cases in each age group.
+cases)
+* when n_group == 19, additionally output: 
+proportion of scarlet fever cases, proportion of all-cause pharyngitis cases,
+proportion of all-cause pharyngitis or scarlet fever cases in each  UKHSA age
+group
 
 # gasworks 0.1.10
 
