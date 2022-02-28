@@ -809,12 +809,12 @@ public:
       }
     }
     state_next[10] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
-    state_next[18] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, 1) / (real_type) internal.w[0] : 0));
-    state_next[19] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
-    state_next[20] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
-    state_next[21] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
-    state_next[22] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
-    state_next[23] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 15, 19) / (real_type) odin_sum1<real_type>(internal.w.data(), 15, 19) : 0));
+    state_next[18] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, 1) / (real_type) internal.w[0] : 0));
+    state_next[19] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
+    state_next[20] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
+    state_next[21] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
+    state_next[22] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
+    state_next[23] = ((shared->n_group == 16 ? internal.scarlet_fever_inc_by_group[15] / (real_type) internal.w[15] : 0));
     state_next[4] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group);
     for (int i = 1; i <= shared->dim_gas_A_1; ++i) {
       for (int j = 1; j <= shared->dim_gas_A_2; ++j) {
@@ -839,12 +839,12 @@ public:
     }
     state_next[3] = odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 0, shared->dim_gas_pharyngitis_inc_by_group);
     state_next[1] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA) : infections_inc + odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA)));
-    state_next[36] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 0, 1) : 0));
-    state_next[37] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 1, 3) : 0));
-    state_next[38] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 3, 9) : 0));
-    state_next[39] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 9, 13) : 0));
-    state_next[40] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 13, 15) : 0));
-    state_next[41] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 15, 19) : 0));
+    state_next[36] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 0, 1) : 0));
+    state_next[37] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 1, 3) : 0));
+    state_next[38] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 3, 9) : 0));
+    state_next[39] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 9, 13) : 0));
+    state_next[40] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_prop.data(), 13, 15) : 0));
+    state_next[41] = ((shared->n_group == 16 ? internal.scarlet_fever_prop[15] : 0));
     for (int i = 1; i <= shared->dim_pharyngitis_prop; ++i) {
       internal.pharyngitis_prop[i - 1] = internal.pharyngitis_inc_by_group[i - 1] / (real_type) odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, shared->dim_pharyngitis_inc_by_group);
     }
@@ -857,26 +857,26 @@ public:
       }
     }
     state_next[9] = odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, shared->dim_pharyngitis_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
-    state_next[12] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, 1) / (real_type) internal.w[0] : 0));
-    state_next[13] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
-    state_next[14] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
-    state_next[15] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
-    state_next[16] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
-    state_next[17] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 15, 19) / (real_type) odin_sum1<real_type>(internal.w.data(), 15, 19) : 0));
+    state_next[12] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, 1) / (real_type) internal.w[0] : 0));
+    state_next[13] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
+    state_next[14] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
+    state_next[15] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
+    state_next[16] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
+    state_next[17] = ((shared->n_group == 16 ? internal.pharyngitis_inc_by_group[15] / (real_type) internal.w[15] : 0));
     state_next[2] = odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, shared->dim_pharyngitis_inc_by_group);
     state_next[11] = odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 0, shared->dim_pharyngitis_scarlet_fever) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
-    state_next[24] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 0, 1) / (real_type) internal.w[0] : 0));
-    state_next[25] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
-    state_next[26] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
-    state_next[27] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
-    state_next[28] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
-    state_next[29] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 15, 19) / (real_type) odin_sum1<real_type>(internal.w.data(), 15, 19) : 0));
-    state_next[30] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 0, 1) : 0));
-    state_next[31] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 1, 3) : 0));
-    state_next[32] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 3, 9) : 0));
-    state_next[33] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 9, 13) : 0));
-    state_next[34] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 13, 15) : 0));
-    state_next[35] = ((shared->n_group == 19 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 15, 19) : 0));
+    state_next[24] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 0, 1) / (real_type) internal.w[0] : 0));
+    state_next[25] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
+    state_next[26] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
+    state_next[27] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
+    state_next[28] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_scarlet_fever.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
+    state_next[29] = ((shared->n_group == 16 ? internal.pharyngitis_scarlet_fever[15] / (real_type) internal.w[15] : 0));
+    state_next[30] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 0, 1) : 0));
+    state_next[31] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 1, 3) : 0));
+    state_next[32] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 3, 9) : 0));
+    state_next[33] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 9, 13) : 0));
+    state_next[34] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_prop.data(), 13, 15) : 0));
+    state_next[35] = ((shared->n_group == 16 ? internal.pharyngitis_prop[15] : 0));
   }
 private:
   std::shared_ptr<const shared_type> shared;
