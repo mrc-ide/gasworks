@@ -1,3 +1,7 @@
+# gasworks 0.2.0
+
+* reduce helium age groups to 16, so max group is 75+
+
 # gasworks 0.1.12
 
 * output new model states: prev_A and prev_R, will scale by age
