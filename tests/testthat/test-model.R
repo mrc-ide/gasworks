@@ -359,13 +359,13 @@ test_that("incidence time series output correctly", {
 })
 
 
-test_that("rates are calculated correctly when n_group == 19", {
-  pars <- example_gas_parameters(19)
+test_that("rates are calculated correctly when n_group == 16", {
+  pars <- example_gas_parameters(16)
   pars$omega[] <- 0
   pars$alpha <- 0
   pars$delta_F <- Inf
   pars$delta_S <- Inf
-  pars$prev_A <- pars$prev_A <- seq(0.1, 0.2, length.out = 19)
+  pars$prev_A <- pars$prev_A <- seq(0.1, 0.2, length.out = 16)
   ip <- initial_parameters(pars)
   pars[names(ip)] <- ip
   mod <- model$new(pars, 0, 5, seed = 1L)
