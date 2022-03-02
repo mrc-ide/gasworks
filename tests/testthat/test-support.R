@@ -113,3 +113,35 @@ test_that("age_spline_polynomial", {
   ## check cannot use negative ages
   expect_error(age_spline_polynomial(-1, pars))
 })
+
+test_that("age_spline_lognormal", {
+
+  mode <- 10
+  sd <- 1
+  peak <- 0.2
+
+  pars <- c(mode, sd, peak)
+  age <- seq_len(10)
+
+  f <- function(x, mode, sd, peak) {
+    v <- sd ^ 2
+    mu <- log(mode) + v
+    ## algebraic derivation of peak * p(x) / p(mode) where p is lognormal pdf
+    peak * exp(mu - v / 2 - (log(x) - mu) ^ 2 / (2 * v)) / x
+  }
+
+  expect_equal(age_spline_lognormal(age, pars),  f(age, mode, sd, peak))
+  expect_equal(age_spline_lognormal(0, pars), 0)
+
+  ## check can only input three coefs
+  expect_error(age_spline_lognormal(age, pars[-1]))
+  expect_error(age_spline_lognormal(age, c(pars, 1)))
+
+  ## check coefs are valid
+  expect_error(age_spline_lognormal(age, c(-1, sd, peak)))
+  expect_error(age_spline_lognormal(age, c(mode, 0, peak)))
+  expect_error(age_spline_lognormal(age, c(mode, sd, 2)))
+
+  ## check cannot use negative ages
+  expect_error(age_spline_lognormal(-1, pars))
+})
