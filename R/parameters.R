@@ -46,6 +46,7 @@ check_gas_parameters <- function(pars, n_group = 1) {
 ##' @description Example of fitted gas parameters for use in testing
 ##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
+##' @export
 example_gas_parameters <- function(n_group = 1) {
   pars <- list(prev_A = rep(0.1, n_group),
                prev_R = rep(0.5, n_group),
