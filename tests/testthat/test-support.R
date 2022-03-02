@@ -73,3 +73,23 @@ test_that("ll_norm returns a vector of zeros if data missing", {
   expect_equal(ll_norm(NA, 10, 0.1, 1e6), 0)
   expect_equal(ll_norm(NA, rep(10, 5), 0.1, 1e6), rep(0, 5))
 })
+
+test_that("ll_multinom", {
+  data <- c(1, 5, 10)
+  f <- function(state) {
+    dmultinom(data, prob = state + 1e-6, log = TRUE)
+  }
+  ## rows: observations (eg by age)
+  ## cols: particles
+  state <- matrix(c(1, 2,
+                    5, 6,
+                    10, 11), byrow = TRUE, nrow = 3)
+  expect_equal(apply(state, 2, f), ll_multinom(data, state, noise = 1e-6))
+
+  ## check that zero probabilities are treated as equal
+  zero_state <- array(0, dim(state))
+  expect_true(all(diff(ll_multinom(data, zero_state, noise = 1e-6)) == 0))
+
+  ## check can deal with missing data
+  expect_equal(ll_multinom(c(NA, 1, 1), state, noise = 1e-6), rep(0, 2))
+})
