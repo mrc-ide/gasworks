@@ -127,3 +127,14 @@ ll_multinom <- function(data, prob, noise) {
   ## need to return -Inf when p all NA / 0
   apply(prob, 2, function(p) dmultinom(data, prob = p + noise, log = TRUE))
 }
+
+##' @title age_spline_polynomial
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the polynomial coefficients
+##' @return polynomial spline at input ages
+##' @export
+age_spline_polynomial <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+  exp(pars[1] + log(age + 1) * pars[2] + log(age + 1) ^ 2 * pars[3])
+}
