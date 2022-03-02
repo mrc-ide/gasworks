@@ -164,3 +164,29 @@ age_spline_lognormal <- function(age, pars) {
 
   peak * exp(dlnorm(age, mu, sigma, TRUE) - dlnorm(mode, mu, sigma, TRUE))
 }
+
+##' @title age_spline_gamma
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the gamma coefficients
+##' mode, shape, peak (i.e. height of peak at the mode), mode should be > 0,
+##' shape > 1 and peak should be in unit interval.
+##' @return gamma-based spline at input ages
+##' @export
+##' @importFrom stats dgamma
+age_spline_gamma <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+
+  mode  <- pars[1]
+  shape <- pars[2]
+  peak  <- pars[3]
+
+  assert_positive(mode)
+  stopifnot(shape > 1)
+  assert_unit_interval(peak)
+
+  ## mode of gamma = (shape - 1) / rate
+  rate <- (shape - 1) / mode
+  peak * exp(dgamma(age, shape, rate, log = TRUE) -
+               dgamma(mode, shape, rate, log = TRUE))
+}
