@@ -93,3 +93,23 @@ test_that("ll_multinom", {
   ## check can deal with missing data
   expect_equal(ll_multinom(c(NA, 1, 1), state, noise = 1e-6), rep(0, 2))
 })
+
+test_that("age_spline_polynomial", {
+  b0 <- -0.4
+  b1 <- 0.4
+  b2 <- -0.2
+  pars <- c(b0, b1, b2)
+  age <- seq(0, 10)
+  x <- log(age + 1)
+
+  tmp <- age_spline_polynomial(age, pars)
+  expect_equal(tmp, exp(b0 + b1 * x + b2 * x ^ 2))
+  expect_equal(tmp[1], exp(b0))
+
+  ## check can only input three coefs
+  expect_error(age_spline_polynomial(age, c(b0, b1)))
+  expect_error(age_spline_polynomial(age, c(pars, 1)))
+
+  ## check cannot use negative ages
+  expect_error(age_spline_polynomial(-1, pars))
+})
