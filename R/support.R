@@ -138,3 +138,29 @@ age_spline_polynomial <- function(age, pars) {
   assert_nonnegative(age)
   exp(pars[1] + log(age + 1) * pars[2] + log(age + 1) ^ 2 * pars[3])
 }
+
+##' @title age_spline_lognormal
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the lognormal coefficients
+##' mode, sd, peak (i.e. height of peak at the mode), mode and sd should be > 0,
+##' peak should be in unit interval.
+##' @return lognormal-based spline at input ages
+##' @export
+##' @importFrom stats dlnorm
+age_spline_lognormal <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+
+  mode  <- pars[1]
+  sigma <- pars[2]
+  peak  <- pars[3]
+
+  assert_positive(mode)
+  assert_positive(sigma)
+  assert_unit_interval(peak)
+
+  # mode of lognormal = exp(mu - sigma ^ 2)
+  mu <- log(mode) + sigma ^ 2
+
+  peak * exp(dlnorm(age, mu, sigma, TRUE) - dlnorm(mode, mu, sigma, TRUE))
+}
