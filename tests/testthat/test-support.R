@@ -176,3 +176,37 @@ test_that("age_spline_gamma", {
   ## check cannot use negative ages
   expect_error(age_spline_gamma(-1, pars))
 })
+
+test_that("mean_age_spline", {
+  groups <- helium_age_groups()
+
+  f <- function(spline, pars, groups) {
+    breaks <- c(groups$age_start[1], groups$age_end)
+    age <- seq(min(breaks), max(breaks))
+    idx <- cut(age, breaks, right = FALSE)
+    probs <- tapply(age, idx, spline, pars)
+    vapply(probs, mean, numeric(1))
+  }
+
+  pars <- c(5, 2, 0.5)
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                       age_spline_polynomial),
+                    f(age_spline_polynomial, pars, groups))
+
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                                    age_spline_lognormal),
+                    f(age_spline_lognormal, pars, groups))
+
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                                    age_spline_gamma),
+                    f(age_spline_gamma, pars, groups))
+
+  expect_error(mean_age_spline(groups$age_start, groups$age_end, pars,
+                               age_spline_polynomial),
+               "age brackets must not overlap")
+  expect_error(mean_age_spline(groups$age_end, groups$age_start, pars,
+                               age_spline_polynomial))
+  expect_error(mean_age_spline(groups$age_start[-1], groups$age_end - 1, pars,
+                  age_spline_gamma))
+
+})
