@@ -29,4 +29,8 @@ test_that("hydrogen_compare", {
 
   expect_equal(max(y), y[3])
   expect_true(all(y > hydrogen_compare(state * 5, observed, pars)))
+
+  expect_error(hydrogen_compare(state, unname(observed), pars),
+               "missing or misnamed data")
+  expect_error(hydrogen_compare(state, observed, example_gas_parameters(2)))
 })

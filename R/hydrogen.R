@@ -52,19 +52,20 @@ hydrogen_index <- function(info) {
 ##' pars <- example_gas_parameters(1)
 ##' hydrogen_compare(state, observed, pars)
 ##' hydrogen_compare(state * 5, observed, pars)
-hydrogen_compare <- function (state, observed, pars) {
+hydrogen_compare <- function(state, observed, pars) {
+
+  stopifnot(pars$n_group == 1)
   if (!all(rownames(state) %in% names(observed))) {
     stop("missing or misnamed data")
   }
 
-  ll_pharyngitis <- gasworks:::ll_norm(observed$daily_pharyngitis_rate,
-                                       state["daily_pharyngitis_rate", ],
-                                       pars$k_gp, pars$exp_noise)
-  ll_scarlet_fever <- gasworks:::ll_nbinom(observed$scarlet_fever_inc,
-                                           state["scarlet_fever_inc", ],
-                                           pars$k_hpr, pars$exp_noise)
-  ll_igas <- gasworks:::ll_nbinom(observed$igas_inc, state["igas_inc", ],
-                                  pars$k_hpr, pars$exp_noise)
+  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate,
+                            state["daily_pharyngitis_rate", ],
+                            pars$k_gp, pars$exp_noise)
+  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
+                                state["scarlet_fever_inc", ],
+                                pars$k_hpr, pars$exp_noise)
+  ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
+                       pars$k_hpr, pars$exp_noise)
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
-
