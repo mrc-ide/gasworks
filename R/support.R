@@ -109,3 +109,21 @@ ll_norm <- function(data, model, kappa, exp_noise) {
   # large kappa is over-dispersed
   dnorm(data, model, sd, log = TRUE)
 }
+
+##' @title ll_multinom
+##' @importFrom stats dmultinom
+##' @param data a vector containing observations from a multinomial distribution
+##' @param prob a matrix containing sets of probabilities for the multinomial
+##' distribution, with one set per column. Values will scale automatically to
+##' so that each column sums to 1. the number of rows should be the same length
+##' as the data.
+##' @param noise exponential noise for case when all probabilities are 0.
+ll_multinom <- function(data, prob, noise) {
+  stopifnot(nrow(prob) == length(data))
+  if (any(is.na(data))) {
+    return(numeric(ncol(prob)))
+  }
+  prob[is.na(prob)] <- 0
+  ## need to return -Inf when p all NA / 0
+  apply(prob, 2, function(p) dmultinom(data, prob = p + noise, log = TRUE))
+}
