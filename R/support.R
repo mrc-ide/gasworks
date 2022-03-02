@@ -190,3 +190,26 @@ age_spline_gamma <- function(age, pars) {
   peak * exp(dgamma(age, shape, rate, log = TRUE) -
                dgamma(mode, shape, rate, log = TRUE))
 }
+
+##' @title mean_age_spline
+##' @param age_start a vector denoting the start of each age bracket
+##' @param age_end a vector denoting the end of each age bracket
+##' @param pars a vector of length three giving the coefficients for `spline`
+##' @param spline a spline function, options include `age_spline_polynomial`,
+##' `age_spline_gamma` or `age_spline_lognormal`
+##' @return vector giving mean of spline output for ages within each bracket
+##' @export
+mean_age_spline <- function(age_start, age_end, pars, spline) {
+
+  stopifnot(length(age_start) == length(age_end))
+  stopifnot(all(age_start < age_end))
+  if (any(age_start[-1] == age_end[-length(age_end)])) {
+    stop("age brackets must not overlap")
+  }
+
+  f <- function(age_start, age_end) {
+    age <- seq(age_start, age_end)
+    mean(spline(age, pars))
+  }
+  mapply(f, age_start, age_end)
+}
