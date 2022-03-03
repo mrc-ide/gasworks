@@ -78,8 +78,7 @@ example_gas_parameters <- function(n_group = 1) {
 ##' @inheritParams example_gas_parameters
 ##' @return A list of named model parameters
 no_gas_parameters <- function(n_group = 1) {
-  pars <- list(m = diag(0, n_group),
-               prev_A = rep(0, n_group),
+  pars <- list(prev_A = rep(0, n_group),
                prev_R = rep(0, n_group),
                n_group = n_group,
                beta = 0,
