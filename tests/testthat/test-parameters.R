@@ -1,10 +1,11 @@
 
 test_that("demographic_parameters works as expected", {
   pars <- demographic_parameters()
-  expect_equal(names(pars), c("N0", "alpha", "omega", "m"))
+  expect_equal(names(pars), c("N0", "alpha", "omega", "r_age", "m"))
   expect_equal(pars$N0, 56000000)
   expect_equal(pars$alpha / pars$N0, pars$omega)
   expect_equivalent(pars$m, 1)
+  expect_equal(pars$r_age, 0)
 })
 
 test_that("initial_parameters works as expected", {
@@ -19,9 +20,4 @@ test_that("initial_parameters works as expected", {
   expect_equivalent(init_pars$S0, rep(0, pars$k_S))
   expect_equivalent(init_pars$P0, rep(0, pars$k_P))
   expect_equivalent(init_pars$F0, rep(0, pars$k_F))
-})
-
-test_that("model_parameters works as expected", {
-  expect_error(transform(example_gas_parameters()),
-                         "Parameters have already been transformed")
 })
