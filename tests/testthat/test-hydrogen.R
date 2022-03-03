@@ -61,3 +61,22 @@ test_that("hydrogen_compare", {
                "missing or misnamed data")
   expect_error(hydrogen_compare(state, observed, example_gas_parameters(2)))
 })
+
+test_that("hydrogen_filter", {
+  data <- data.frame(model_week = 1:6,
+                     daily_pharyngitis_rate = 10:15,
+                     scarlet_fever_inc = 100:105,
+                     igas_inc = 90:95)
+  x <- hydrogen_prepare_data(data)
+  expect_true(all(diff(x$step_start) == 7))
+
+  filter <- hydrogen_filter(data, 3)
+  expect_equal(filter$n_particles, 3)
+  expect_equal(filter$inputs()$compare, hydrogen_compare)
+  expect_equal(filter$inputs()$index, hydrogen_index)
+  expect_equal(filter$inputs()$data, x)
+
+  pars <- example_gas_parameters()
+  set.seed(1)
+  expect_equal(filter$run(pars), -21498257)
+})
