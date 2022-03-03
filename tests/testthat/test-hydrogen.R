@@ -27,8 +27,35 @@ test_that("hydrogen_compare", {
   pars <- example_gas_parameters(1)
   y <- hydrogen_compare(state, observed, pars)
 
-  expect_equal(max(y), y[3])
+  expect_equal(length(y), ncol(state))
   expect_true(all(y > hydrogen_compare(state * 5, observed, pars)))
+
+  # check loglikelihood is maximised at data point in univariate sensitivity
+  # analysis
+  for (i in 1:3) {
+    tmp <- matrix(unlist(observed), nrow = 3, ncol = 101,
+                  dimnames = list(names(observed), NULL))
+    tmp[i, ] <- tmp[i, ] * seq(0.5, 1.5, length.out = 101)
+    y <- hydrogen_compare(tmp, observed, pars)
+    expect_equal(which.max(y), which(tmp[i, ] == observed[[i]]))
+  }
+
+  set.seed(1L)
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  idx <- hydrogen_index(mod$info())$run
+  state <- drop(mod$simulate(7))[idx, ]
+  rownames(state) <- names(idx)
+  observed <- list(igas_inc = 100, scarlet_fever_inc = 700,
+                   daily_pharyngitis_rate = 1400)
+  ll <- hydrogen_compare(state, observed, pars)
+  expect_equal(ll, c(-16.1650170438662, -15.5366592271531, -15.6107135698617,
+                     -16.8228523227487, -16.56383408996))
+
+  # NA data returns 0
+  expect_equal(hydrogen_compare(state, replace(observed, 1:3, NA), pars),
+               rep(0, ncol(state)))
+  expect_equal(hydrogen_compare(state, replace(observed, 1:3, -1), pars),
+               rep(-Inf, ncol(state)))
 
   expect_error(hydrogen_compare(state, unname(observed), pars),
                "missing or misnamed data")
