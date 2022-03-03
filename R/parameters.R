@@ -37,6 +37,10 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_nonnegative_integer(P0, n_group * k_P)
     assert_nonnegative_integer(F0, n_group * k_F)
     assert_nonnegative_integer(R0, n_group * k_R)
+    assert_dim(m, c(n_group, n_group))
+    assert_nonnegative(m)
+    assert_nonnegative(r_age, 1)
+    assert_length(omega, n_group)
   })
 }
 
@@ -65,7 +69,7 @@ example_gas_parameters <- function(n_group = 1) {
                k_hpr = 1,
                theta_A = 1,
                phi_S = rep(0.25, n_group))
-  transform(pars)
+  model_parameters(pars)
 }
 
 ##' @name no_gas_parameters
@@ -153,6 +157,7 @@ demographic_parameters <- function(n_group = 1) {
   list(N0 = round(rep(N0 / n_group, n_group)),
        alpha = round(x),
        omega = rep(x / N0, n_group),
+       r_age = 0,
        m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }
 
@@ -186,18 +191,3 @@ initial_parameters <- function(pars) {
   ret
 }
 
-##' Transform fitted parameters into gas params
-##' @name transform
-##' @title Transform fitted parameters into gas params
-##' @description Transform fitted parameters into gas params
-##' @param pars list of fitted parameters
-##' @return A list of parameters for use in the model
-##' @export
-transform <- function(pars) {
-  pars <- as.list(pars)
-  if (!is.null(pars$dt)) {
-    stop("Parameters have already been transformed")
-  }
-  # add initial conditions and demographic parameters
-  model_parameters(pars)
-}
