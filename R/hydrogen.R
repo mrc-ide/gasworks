@@ -70,7 +70,7 @@ hydrogen_compare <- function(state, observed, pars) {
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
 
-##' @title Create particle filter for hydrogen model
+##' @title Prepare particle filter data for the hydrogen model
 ##' @param data The data set to be used for the particle filter,
 ##' This is essentially a [data.frame()] with at least columns `model_week`,
 ##' along with the data used in [hydrogen_compare()].

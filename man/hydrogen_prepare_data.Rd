@@ -2,7 +2,7 @@
 % Please edit documentation in R/hydrogen.R
 \name{hydrogen_prepare_data}
 \alias{hydrogen_prepare_data}
-\title{Create particle filter for hydrogen model}
+\title{Prepare particle filter data for the hydrogen model}
 \usage{
 hydrogen_prepare_data(data)
 }
@@ -16,5 +16,5 @@ A a \code{\link[=data.frame]{data.frame()}} with columns \code{step_start}, \cod
 along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.
 }
 \description{
-Create particle filter for hydrogen model
+Prepare particle filter data for the hydrogen model
 }
