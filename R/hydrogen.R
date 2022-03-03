@@ -69,3 +69,18 @@ hydrogen_compare <- function(state, observed, pars) {
 
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
+
+
+##' @title Create particle filter for hydrogen model
+##' @param data The data set to be used for the particle filter,
+##' created by [hydrogen_prepare_data()]. This is essentially
+##' a [data.frame()] with at least columns `step_start`
+##' and `step_end`, along with the data used in the
+##' `hydrogen_compare` function.
+##' @param n_particles The number of particles to simulate
+##' @export
+hydrogen_filter <- function(data, n_particles) {
+  mcstate::particle_filter$new(data, model, n_particles,
+                               compare = hydrogen_compare,
+                               index = hydrogen_index)
+  }
