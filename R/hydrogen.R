@@ -70,17 +70,42 @@ hydrogen_compare <- function(state, observed, pars) {
   ll_pharyngitis + ll_scarlet_fever + ll_igas
 }
 
-
 ##' @title Create particle filter for hydrogen model
 ##' @param data The data set to be used for the particle filter,
-##' created by [hydrogen_prepare_data()]. This is essentially
-##' a [data.frame()] with at least columns `step_start`
-##' and `step_end`, along with the data used in the
-##' `hydrogen_compare` function.
+##' This is essentially a [data.frame()] with at least columns `model_week`,
+##' along with the data used in [hydrogen_compare()].
+##' @return A a [data.frame()] with columns `step_start`, `step_end`,
+##' along with the data used in [hydrogen_compare()].
+##' @importFrom mcstate particle_filter_data
+hydrogen_prepare_data <- function(data) {
+  time <- "model_week"
+  states <- hydrogen_fitted_states()
+  fitted <- data[, c(time, states)]
+  mcstate::particle_filter_data(fitted, time = time, rate = 7)
+}
+
+##' @title Create particle filter for hydrogen model
+##' @inheritParams hydrogen_prepare_data
 ##' @param n_particles The number of particles to simulate
+##' @return a particle filter for the hydrogen model
 ##' @export
+##' @importFrom mcstate particle_filter
 hydrogen_filter <- function(data, n_particles) {
+  data <- hydrogen_prepare_data(data)
   mcstate::particle_filter$new(data, model, n_particles,
                                compare = hydrogen_compare,
                                index = hydrogen_index)
+}
+
+##' @title Create transform function for hydrogen model
+##' @param demographic_pars A list of demographic parameters containing elements
+##' `N0`, `alpha`, `omega`, `m`, `r_age` to be loaded into the transform
+##' @return A transform function for use in [`mcstate::pmcmc()`]
+##' @export
+hydrogen_create_transform <- function(demographic_pars) {
+  transform <- function(pars) {
+    pars <- as.list(pars)
+    model_parameters(pars, demographic_pars = demographic_pars)
   }
+  transform
+}
