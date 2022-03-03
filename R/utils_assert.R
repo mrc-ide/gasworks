@@ -39,12 +39,20 @@ assert_integer <- function(x, len = length(x), name = deparse(substitute(x)),
 
 
 assert_length <- function(x, len = length(x), name = deparse(substitute(x))) {
+  force(name)
   if (length(x) != len) {
     stop(sprintf("'%s' must be of length %s", name, len), call. = FALSE)
   }
   invisible(x)
 }
 
+assert_dim <- function(x, d = dim(x), name = deparse(substitute(x))) {
+  force(name)
+  if (!all(dim(x) == d)) {
+    stop(sprintf("'%s' must be of dimension %s", name, d), call. = FALSE)
+  }
+  invisible(x)
+}
 
 assert_strictly_increasing <- function(x, len = length(x),
                                        name = deparse(substitute(x))) {
