@@ -80,3 +80,17 @@ test_that("hydrogen_filter", {
   set.seed(1)
   expect_equal(filter$run(pars), -21498257)
 })
+
+test_that("hydrogen_create_transform", {
+  dem_pars <- list(N0 = 10,
+                   alpha = 1,
+                   omega = 0,
+                   r_age = 2,
+                   m = matrix(0))
+  transform <- hydrogen_create_transform(dem_pars)
+  gas_pars <- no_gas_parameters()
+  pars <- transform(gas_pars)
+
+  expect_equal(names(pars), unique(names(pars)))
+  expect_equal(pars[names(dem_pars)], dem_pars)
+})
