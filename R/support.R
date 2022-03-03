@@ -100,13 +100,10 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
 
 
 ##' @importFrom stats dnorm
-ll_norm <- function(data, model, kappa, exp_noise) {
+ll_norm <- function(data, model, sd) {
   if (is.na(data)) {
     return(numeric(length(model)))
   }
-  sd <- sqrt(model * (1 + kappa)) + rexp(length(model), exp_noise)
-  # var(x) =  mu * (1 + kappa), so kappa = 0 is Poisson,
-  # large kappa is over-dispersed
   dnorm(data, model, sd, log = TRUE)
 }
 
