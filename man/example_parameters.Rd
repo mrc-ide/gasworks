@@ -2,7 +2,7 @@
 % Please edit documentation in R/parameters.R
 \name{example_parameters}
 \alias{example_parameters}
-\title{Example of fitted gas parameters for use in testing}
+\title{Example of transformed model parameters for use in testing}
 \usage{
 example_parameters(n_group = 1)
 }
@@ -13,5 +13,5 @@ example_parameters(n_group = 1)
 A list of named model parameters
 }
 \description{
-Example of fitted gas parameters for use in testing
+Example of transformed model parameters for use in testing
 }

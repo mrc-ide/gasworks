@@ -135,9 +135,12 @@ test_that("helium_filter", {
   expect_equal(filter$inputs()$data, x)
   expect_equal(filter$inputs()$constant_log_likelihood, constant_ll)
 
-  pars <- example_parameters(16)
+
+  ## check filter runs
+  transform <- helium_create_transform(NULL)
+  pars <- example_helium_parameters()
   set.seed(1)
-  expect_equal(filter$run(pars), -21506639)
+  filter$run(transform(pars))
 })
 
 
@@ -154,9 +157,4 @@ test_that("helium_create_transform", {
 
   expect_equal(names(pars), unique(names(pars)))
   expect_equal(pars[names(dem_pars)], dem_pars)
-
-  ## check filter runs and we can reclaim the same value
-  set.seed(1)
-  expect_equal(filter$run(pars), -21506639)
 })
-

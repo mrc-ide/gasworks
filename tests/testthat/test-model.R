@@ -582,7 +582,7 @@ test_that("time-varying births works", {
 })
 
 test_that("can vary erlang compartments", {
-  pars <- model_parameters(example_parameters(1))
+  pars <- example_parameters(1)
   pars$alpha[] <- 0
   pars$omega[] <- 0
   pars$k_A <- 2
