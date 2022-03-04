@@ -141,3 +141,50 @@ helium_prepare_data <- function(data) {
   fitted <- data[, c(time, states)]
   mcstate::particle_filter_data(fitted, time = time, rate = 7)
 }
+
+##' @title Create particle filter for helium model
+##' @inheritParams helium_prepare_data
+##' @param constant_data a list with entries `etiologic_fraction` and
+##' `asymptomatic_carriage` each containing a data.frame with entries
+##' `age_start`, `age_end`, `N` and `n`.
+##' @param n_particles The number of particles to simulate
+##' @return a particle filter for the helium model
+##' @export
+helium_filter <- function(data, constant_data, n_particles) {
+  data <- helium_prepare_data(data)
+  constant_ll <- create_constant_log_likelihood(constant_data)
+  mcstate::particle_filter$new(data, model, n_particles,
+                               compare = helium_compare,
+                               index = helium_index,
+                               constant_log_likelihood = constant_ll)
+}
+
+
+create_constant_log_likelihood <- function(data) {
+
+  constant_log_likelihood <- function(pars) {
+
+    coefs <- helium_get_spline_coefficients(c("phi_S", "prev_A"), pars)
+
+    loglik_phi_S <- with(data$etiologic_fraction, {
+      dbinom(n, N, mean_age_spline(age_start, age_end, coefs$phi_S,
+                                   age_spline_gamma), TRUE)})
+    loglik_prev_A <- with(data$asymptomatic_carriage, {
+      dbinom(n, N, mean_age_spline(age_start, age_end, coefs$prev_A,
+                                   age_spline_gamma), TRUE)})
+
+    sum(loglik_phi_S) + sum(loglik_prev_A)
+  }
+
+  constant_log_likelihood
+}
+
+
+helium_get_spline_coefficients <- function(name, pars, prefix = "b") {
+  ret <- lapply(name, function(nm) {
+    nms <- grep(sprintf("%s[0-9+]_%s", prefix, nm), names(pars))
+    unlist(pars[nms])
+  })
+  names(ret) <- name
+  ret
+}
