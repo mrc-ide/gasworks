@@ -40,7 +40,7 @@ helium_age_groups <- function() {
 ##' of additional interesting model outputs
 ##' @export
 ##' @examples
-##' p <- example_gas_parameters(19)
+##' p <- example_parameters(19)
 ##' mod <- model$new(p, 0, 10)
 ##' helium_index(mod$info())
 helium_index <- function(info) {
@@ -187,4 +187,28 @@ helium_get_spline_coefficients <- function(name, pars, prefix = "b") {
   })
   names(ret) <- name
   ret
+}
+
+##' @title Create transform function for helium model
+##' @inheritParams hydrogen_create_transform
+##' @return A transform function for use in [`mcstate::pmcmc()`]
+##' @export
+helium_create_transform <- function(demographic_pars) {
+
+  transform <- function(pars) {
+    pars <- as.list(pars)
+
+    groups <- helium_age_groups()
+    pars$n_group <- groups$n_group
+
+    # calculate age splines using gamma method
+    nms <- c("phi_S", "prev_A", "prev_R")
+    coefs <- helium_get_spline_coefficients(nms, pars)
+    pars[nms] <- lapply(coefs, mean_age_spline, age_start = groups$age_start,
+                        age_end = groups$age_end - 1, spline = age_spline_gamma)
+
+    model_parameters(pars, demographic_pars = demographic_pars)
+  }
+
+  transform
 }
