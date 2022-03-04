@@ -92,7 +92,6 @@ test_that("create_constant_log_likelihood", {
                            age_spline_gamma)
   data$etiologic_fraction$n <- round(df$N * phi_S)
   data$asymptomatic_carriage$n <- round(df$N * prev_A)
-  constant_ll(pars)
 
   # check likelihood is maximised at true parameters
   x <- seq(0.6, 1.4, length.out = 101)
@@ -103,4 +102,44 @@ test_that("create_constant_log_likelihood", {
     })
     expect_equal(which.max(y), which(x == 1))
   }
+})
+
+test_that("helium_filter", {
+  data <- data.frame(model_week = 1:6,
+                     daily_pharyngitis_rate = 10:15,
+                     scarlet_fever_inc = 100:105,
+                     igas_inc = 90:95,
+                     daily_pharyngitis_rate_04 = 0:5,
+                     daily_pharyngitis_rate_05_14 = 1:6,
+                     daily_pharyngitis_rate_15_44 = 2:7,
+                     daily_pharyngitis_rate_45_64 = 3:8,
+                     daily_pharyngitis_rate_65_74 = 4:9,
+                     daily_pharyngitis_rate_75 = 5:10,
+                     daily_scarlet_fever_rate_04 = 6:11,
+                     daily_scarlet_fever_rate_05_14 = 7:12,
+                     daily_scarlet_fever_rate_15_44 = 8:13,
+                     daily_scarlet_fever_rate_45_64 = 9:14,
+                     daily_scarlet_fever_rate_65_74 = 10:15,
+                     daily_scarlet_fever_rate_75 = 11:16)
+  x <- helium_prepare_data(data)
+  expect_true(all(diff(x$step_start) == 7))
+
+  df <- data.frame(age_start = 0, age_end = 5, N = 1e3, n = 1e2)
+  constant_data <- list(etiologic_fraction = df, asymptomatic_carriage = df)
+  constant_ll <- create_constant_log_likelihood(constant_data)
+
+  filter <- helium_filter(data, constant_data, 3)
+  expect_equal(filter$n_particles, 3)
+  expect_equal(filter$inputs()$compare, helium_compare)
+  expect_equal(filter$inputs()$index, helium_index)
+  expect_equal(filter$inputs()$data, x)
+  expect_equal(filter$inputs()$constant_log_likelihood, constant_ll)
+
+  ## check filter runs and we can reclaim the same value
+  pars <- example_gas_parameters(16)
+  spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
+                      b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3)
+  pars <- c(pars, spline_pars)
+  set.seed(1)
+  expect_equal(filter$run(pars), -21506639)
 })
