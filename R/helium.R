@@ -40,7 +40,7 @@ helium_age_groups <- function() {
 ##' of additional interesting model outputs
 ##' @export
 ##' @examples
-##' p <- example_parameters(19)
+##' p <- example_parameters(16)
 ##' mod <- model$new(p, 0, 10)
 ##' helium_index(mod$info())
 helium_index <- function(info) {
