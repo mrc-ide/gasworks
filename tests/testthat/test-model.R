@@ -1,6 +1,6 @@
 
 test_that("model runs", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
   rownames(y) <- names(model_index())
@@ -70,7 +70,7 @@ test_that("model runs", {
 })
 
 test_that("there are no infections when beta is 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$beta <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -92,7 +92,7 @@ test_that("there are no infections when beta is 0", {
 
 
 test_that("there are no infections when theta_A is 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$theta_A <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -114,7 +114,7 @@ test_that("there are no infections when theta_A is 0", {
 })
 
 test_that("there are no infections when A0 = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$A0[] <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -137,7 +137,7 @@ test_that("there are no infections when A0 = 0", {
 
 
 test_that("there are no symptomatic infections when p_S = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_S <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -157,7 +157,7 @@ test_that("there are no symptomatic infections when p_S = 0", {
 })
 
 test_that("there are no asymptomatic infections when p_S = 1", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_S <- 1
   pars$E0[] <- pars$A0
   pars$A0[] <- 0
@@ -179,7 +179,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
 })
 
 test_that("there is no iGAS when p_I = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_I <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -199,7 +199,7 @@ test_that("there is no iGAS when p_I = 0", {
 })
 
 test_that("there is no scarlet fever when p_F = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_F <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -221,7 +221,7 @@ test_that("there is no scarlet fever when p_F = 0", {
 })
 
 test_that("there is no pharyngitis when p_F = 1", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_F <- 1
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -244,7 +244,7 @@ test_that("there is no pharyngitis when p_F = 1", {
 })
 
 test_that("no pharyngitis cases are reported when p_T = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_T <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- mod$simulate(7)
@@ -271,7 +271,7 @@ test_that("no pharyngitis cases are reported when p_T = 0", {
 })
 
 test_that("there is no immunity when p_S = 0 and p_R = 0", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$p_S <- 0
   pars$p_R <- 0
   pars$R0[] <- 0
@@ -297,7 +297,7 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
 
 
 test_that("the transmission rate is calculated correctly", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, 365 * 5, 7), mod$simulate)
   y <- mcstate::array_bind(arrays = y)
@@ -327,7 +327,7 @@ test_that("the transmission rate is calculated correctly", {
 
 
 test_that("incidence time series output correctly", {
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   pars$omega <- 0
   pars$alpha <- 0
   pars$delta_F <- Inf
@@ -360,7 +360,7 @@ test_that("incidence time series output correctly", {
 
 
 test_that("rates are calculated correctly when n_group == 16", {
-  pars <- example_gas_parameters(16)
+  pars <- example_parameters(16)
   pars$omega[] <- 0
   pars$alpha <- 0
   pars$delta_F <- Inf
@@ -525,8 +525,8 @@ test_that("aging works", {
 })
 
 test_that("aging does not affect model dynamics", {
-  pars <- example_gas_parameters()
-  pars_a <- example_gas_parameters(2)
+  pars <- example_parameters()
+  pars_a <- example_parameters(2)
   pars$alpha <- pars_a$alpha <- 0
   pars$omega[] <- pars_a$omega[] <- 0
 
@@ -582,7 +582,7 @@ test_that("time-varying births works", {
 })
 
 test_that("can vary erlang compartments", {
-  pars <- model_parameters(example_gas_parameters(1))
+  pars <- example_parameters(1)
   pars$alpha[] <- 0
   pars$omega[] <- 0
   pars$k_A <- 2

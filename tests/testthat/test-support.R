@@ -46,22 +46,8 @@ test_that("ll_nbinom", {
 })
 
 test_that("ll_norm", {
-  f <- function(model) {
-    set.seed(1)
-    dnorm(10, model, sqrt(model * 1.1) + rexp(length(model), 1e6),
-          log = TRUE)
-  }
-
-  set.seed(1)
-  expect_equal(ll_norm(10, 10, 0.1, 1e6), f(10))
-
   x <- 1:10
-  set.seed(1)
-  expect_equal(ll_norm(10, x, 0.1, 1e6), f(x))
-
-  x <- rep(10, 10)
-  expect_lt(diff(range(ll_norm(10, x, 0.1, 1e6))),
-            diff(range(ll_norm(10, x, 0.1, 1e2))))
+  expect_equal(ll_norm(10, x, 0.1), dnorm(10, x, 0.1, log = TRUE))
 })
 
 test_that("ll_nbinom returns a vector of zeros if data missing", {
@@ -70,6 +56,143 @@ test_that("ll_nbinom returns a vector of zeros if data missing", {
 })
 
 test_that("ll_norm returns a vector of zeros if data missing", {
-  expect_equal(ll_norm(NA, 10, 0.1, 1e6), 0)
-  expect_equal(ll_norm(NA, rep(10, 5), 0.1, 1e6), rep(0, 5))
+  expect_equal(ll_norm(NA, 10, 0.1), 0)
+  expect_equal(ll_norm(NA, rep(10, 5), 0.1), rep(0, 5))
+})
+
+test_that("ll_multinom", {
+  data <- c(1, 5, 10)
+  f <- function(state) {
+    dmultinom(data, prob = state + 1e-6, log = TRUE)
+  }
+  ## rows: observations (eg by age)
+  ## cols: particles
+  state <- matrix(c(1, 2,
+                    5, 6,
+                    10, 11), byrow = TRUE, nrow = 3)
+  expect_equal(apply(state, 2, f), ll_multinom(data, state, noise = 1e-6))
+
+  ## check that zero probabilities are treated as equal
+  zero_state <- array(0, dim(state))
+  expect_true(all(diff(ll_multinom(data, zero_state, noise = 1e-6)) == 0))
+
+  ## check can deal with missing data
+  expect_equal(ll_multinom(c(NA, 1, 1), state, noise = 1e-6), rep(0, 2))
+})
+
+test_that("age_spline_polynomial", {
+  b0 <- -0.4
+  b1 <- 0.4
+  b2 <- -0.2
+  pars <- c(b0, b1, b2)
+  age <- seq(0, 10)
+  x <- log(age + 1)
+
+  tmp <- age_spline_polynomial(age, pars)
+  expect_equal(tmp, exp(b0 + b1 * x + b2 * x ^ 2))
+  expect_equal(tmp[1], exp(b0))
+
+  ## check can only input three coefs
+  expect_error(age_spline_polynomial(age, c(b0, b1)))
+  expect_error(age_spline_polynomial(age, c(pars, 1)))
+
+  ## check cannot use negative ages
+  expect_error(age_spline_polynomial(-1, pars))
+})
+
+test_that("age_spline_lognormal", {
+
+  mode <- 10
+  sd <- 1
+  peak <- 0.2
+
+  pars <- c(mode, sd, peak)
+  age <- seq_len(10)
+
+  f <- function(x, mode, sd, peak) {
+    v <- sd ^ 2
+    mu <- log(mode) + v
+    ## algebraic derivation of peak * p(x) / p(mode) where p is lognormal pdf
+    peak * exp(mu - v / 2 - (log(x) - mu) ^ 2 / (2 * v)) / x
+  }
+
+  expect_equal(age_spline_lognormal(age, pars),  f(age, mode, sd, peak))
+  expect_equal(age_spline_lognormal(0, pars), 0)
+
+  ## check can only input three coefs
+  expect_error(age_spline_lognormal(age, pars[-1]))
+  expect_error(age_spline_lognormal(age, c(pars, 1)))
+
+  ## check coefs are valid
+  expect_error(age_spline_lognormal(age, c(-1, sd, peak)))
+  expect_error(age_spline_lognormal(age, c(mode, 0, peak)))
+  expect_error(age_spline_lognormal(age, c(mode, sd, 2)))
+
+  ## check cannot use negative ages
+  expect_error(age_spline_lognormal(-1, pars))
+})
+
+test_that("age_spline_gamma", {
+
+  mode <- 5
+  shape <- 2
+  peak <- 0.5
+
+  pars <- c(mode, shape, peak)
+  age <- seq_len(10)
+
+  f <- function(x, mode, shape, peak) {
+    ## algebraic derivation of peak * p(x) / p(mode) where p is lognormal pdf
+    rate <- (shape - 1) / mode
+    peak * (x / mode) ^ (shape - 1) * exp(-rate * x + shape - 1)
+  }
+
+  expect_equal(age_spline_gamma(age, pars),  f(age, mode, shape, peak))
+  expect_equal(age_spline_gamma(0, pars), 0)
+
+  ## check can only input three coefs
+  expect_error(age_spline_gamma(age, pars[-1]))
+  expect_error(age_spline_gamma(age, c(pars, 1)))
+
+  ## check coefs are valid
+  expect_error(age_spline_gamma(age, c(-1, shape, peak)))
+  expect_error(age_spline_gamma(age, c(mode, 1, peak)))
+  expect_error(age_spline_gamma(age, c(mode, shape, 2)))
+
+  ## check cannot use negative ages
+  expect_error(age_spline_gamma(-1, pars))
+})
+
+test_that("mean_age_spline", {
+  groups <- helium_age_groups()
+
+  f <- function(spline, pars, groups) {
+    breaks <- c(groups$age_start[1], groups$age_end)
+    age <- seq(min(breaks), max(breaks))
+    idx <- cut(age, breaks, right = FALSE)
+    probs <- tapply(age, idx, spline, pars)
+    vapply(probs, mean, numeric(1))
+  }
+
+  pars <- c(5, 2, 0.5)
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                       age_spline_polynomial),
+                    f(age_spline_polynomial, pars, groups))
+
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                                    age_spline_lognormal),
+                    f(age_spline_lognormal, pars, groups))
+
+  expect_equivalent(mean_age_spline(groups$age_start, groups$age_end - 1, pars,
+                                    age_spline_gamma),
+                    f(age_spline_gamma, pars, groups))
+
+  expect_error(mean_age_spline(groups$age_start, groups$age_end, pars,
+                               age_spline_polynomial),
+               "age brackets must not overlap")
+  expect_error(mean_age_spline(groups$age_end, groups$age_start, pars,
+                               age_spline_polynomial))
+  expect_error(mean_age_spline(groups$age_start[-1], groups$age_end - 1, pars,
+                  age_spline_gamma))
+
 })

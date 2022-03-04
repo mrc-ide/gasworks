@@ -1,6 +1,6 @@
 Package: gasworks
 Title: Models of Group-A Streptococcus (GAS) Transmission
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     person(given = "Lilith",
            family = "Whittles",
@@ -13,13 +13,13 @@ Encoding: UTF-8
 LazyData: true
 Language: en-GB
 Imports: 
-    dust (>= 0.11.23)
+    dust (>= 0.11.23),
+    mcstate
 LinkingTo:
     cpp11,
     dust (>= 0.11.23)
 Suggests:
     testthat,
-    mcstate,
     odin (>= 1.1.12),
     odin.dust (>= 0.2.11),
     lubridate

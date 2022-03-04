@@ -80,7 +80,7 @@ model_compartments <- function() {
 ##'@param n_group Integer number of age groups
 ##'@return Named list of model output indices
 model_index <- function(n_group = 1) {
-  pars <- example_gas_parameters(n_group)
+  pars <- example_parameters(n_group)
   mod <- model$new(pars, 1, 1)
   idx <- mod$info()$index
   ret <- unlist(idx)
@@ -100,12 +100,113 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
 
 
 ##' @importFrom stats dnorm
-ll_norm <- function(data, model, kappa, exp_noise) {
+ll_norm <- function(data, model, sd) {
   if (is.na(data)) {
     return(numeric(length(model)))
   }
-  sd <- sqrt(model * (1 + kappa)) + rexp(length(model), exp_noise)
-  # var(x) =  mu * (1 + kappa), so kappa = 0 is Poisson,
-  # large kappa is over-dispersed
   dnorm(data, model, sd, log = TRUE)
+}
+
+##' @title ll_multinom
+##' @importFrom stats dmultinom
+##' @param data a vector containing observations from a multinomial distribution
+##' @param prob a matrix containing sets of probabilities for the multinomial
+##' distribution, with one set per column. Values will scale automatically to
+##' so that each column sums to 1. the number of rows should be the same length
+##' as the data.
+##' @param noise exponential noise for case when all probabilities are 0.
+ll_multinom <- function(data, prob, noise) {
+  stopifnot(nrow(prob) == length(data))
+  if (any(is.na(data))) {
+    return(numeric(ncol(prob)))
+  }
+  prob[is.na(prob)] <- 0
+  ## need to return -Inf when p all NA / 0
+  apply(prob, 2, function(p) dmultinom(data, prob = p + noise, log = TRUE))
+}
+
+##' @title age_spline_polynomial
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the polynomial coefficients
+##' @return polynomial spline at input ages
+##' @export
+age_spline_polynomial <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+  exp(pars[1] + log(age + 1) * pars[2] + log(age + 1) ^ 2 * pars[3])
+}
+
+##' @title age_spline_lognormal
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the lognormal coefficients
+##' mode, sd, peak (i.e. height of peak at the mode), mode and sd should be > 0,
+##' peak should be in unit interval.
+##' @return lognormal-based spline at input ages
+##' @export
+##' @importFrom stats dlnorm
+age_spline_lognormal <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+
+  mode  <- pars[1]
+  sigma <- pars[2]
+  peak  <- pars[3]
+
+  assert_positive(mode)
+  assert_positive(sigma)
+  assert_unit_interval(peak)
+
+  # mode of lognormal = exp(mu - sigma ^ 2)
+  mu <- log(mode) + sigma ^ 2
+
+  peak * exp(dlnorm(age, mu, sigma, TRUE) - dlnorm(mode, mu, sigma, TRUE))
+}
+
+##' @title age_spline_gamma
+##' @param age a vector of ages
+##' @param pars a vector of length three giving the gamma coefficients
+##' mode, shape, peak (i.e. height of peak at the mode), mode should be > 0,
+##' shape > 1 and peak should be in unit interval.
+##' @return gamma-based spline at input ages
+##' @export
+##' @importFrom stats dgamma
+age_spline_gamma <- function(age, pars) {
+  assert_length(pars, 3)
+  assert_nonnegative(age)
+
+  mode  <- pars[1]
+  shape <- pars[2]
+  peak  <- pars[3]
+
+  assert_positive(mode)
+  stopifnot(shape > 1)
+  assert_unit_interval(peak)
+
+  ## mode of gamma = (shape - 1) / rate
+  rate <- (shape - 1) / mode
+  peak * exp(dgamma(age, shape, rate, log = TRUE) -
+               dgamma(mode, shape, rate, log = TRUE))
+}
+
+##' @title mean_age_spline
+##' @param age_start a vector denoting the start of each age bracket
+##' @param age_end a vector denoting the end of each age bracket
+##' @param pars a vector of length three giving the coefficients for `spline`
+##' @param spline a spline function, options include `age_spline_polynomial`,
+##' `age_spline_gamma` or `age_spline_lognormal`
+##' @return vector giving mean of spline output for ages within each bracket
+##' @export
+mean_age_spline <- function(age_start, age_end, pars, spline) {
+
+  stopifnot(length(age_start) == length(age_end))
+  stopifnot(all(age_start < age_end))
+  if (any(age_start[-1] == age_end[-length(age_end)])) {
+    stop("age brackets must not overlap")
+  }
+
+  f <- function(age_start, age_end) {
+    age <- seq(age_start, age_end)
+    mean(spline(age, pars))
+  }
+  mapply(f, age_start, age_end)
 }

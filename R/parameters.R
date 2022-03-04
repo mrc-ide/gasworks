@@ -37,44 +37,50 @@ check_gas_parameters <- function(pars, n_group = 1) {
     assert_nonnegative_integer(P0, n_group * k_P)
     assert_nonnegative_integer(F0, n_group * k_F)
     assert_nonnegative_integer(R0, n_group * k_R)
+    assert_dim(m, c(n_group, n_group))
+    assert_nonnegative(m)
+    assert_nonnegative(r_age, 1)
+    assert_length(omega, n_group)
   })
 }
 
+example_gas_parameters <- function(n_group = 1) {
+  list(prev_A = rep(0.1, n_group),
+       prev_R = rep(0.5, n_group),
+       n_group = n_group,
+       beta = 2,
+       sigma = 0.6,
+       t_s = 100,
+       p_S = 0.6,
+       p_R = 0.3,
+       p_I = 0.0001,
+       p_F = 0.001,
+       p_T = 1,
+       delta_A = 30,
+       delta_R = 365 * 5,
+       k_gp = 1,
+       k_hpr = 1,
+       theta_A = 1,
+       phi_S = rep(0.25, n_group))
+}
 
-##' @name example_gas_parameters
-##' @title Example of fitted gas parameters for use in testing
-##' @description Example of fitted gas parameters for use in testing
+##' @name example_parameters
+##' @title Example of transformed model parameters for use in testing
 ##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
-example_gas_parameters <- function(n_group = 1) {
-  pars <- list(prev_A = rep(0.1, n_group),
-               prev_R = rep(0.5, n_group),
-               n_group = n_group,
-               beta = 2,
-               sigma = 0.6,
-               t_s = 100,
-               p_S = 0.6,
-               p_R = 0.3,
-               p_I = 0.0001,
-               p_F = 0.001,
-               p_T = 1,
-               delta_A = 30,
-               delta_R = 365 * 5,
-               k_gp = 1,
-               k_hpr = 1,
-               theta_A = 1,
-               phi_S = rep(0.25, n_group))
-  transform(pars)
+##' @export
+example_parameters <- function(n_group = 1) {
+  pars <- example_gas_parameters(n_group)
+  model_parameters(pars)
 }
 
 ##' @name no_gas_parameters
 ##' @title Model parameters with no gas for use in testing
 ##' @description Model parameters with no gas for use in testing
-##' @inheritParams example_gas_parameters
+##' @inheritParams example_parameters
 ##' @return A list of named model parameters
 no_gas_parameters <- function(n_group = 1) {
-  pars <- list(m = diag(0, n_group),
-               prev_A = rep(0, n_group),
+  pars <- list(prev_A = rep(0, n_group),
                prev_R = rep(0, n_group),
                n_group = n_group,
                beta = 0,
@@ -94,7 +100,6 @@ no_gas_parameters <- function(n_group = 1) {
                theta_A = 0,
                phi_S = rep(1, n_group))
 }
-
 
 ##' @name model_parameters
 ##' @title Demographic model parameters
@@ -152,6 +157,7 @@ demographic_parameters <- function(n_group = 1) {
   list(N0 = round(rep(N0 / n_group, n_group)),
        alpha = round(x),
        omega = rep(x / N0, n_group),
+       r_age = 0,
        m = matrix(1 / n_group, n_group, n_group)) # uniform mixing matrix
 }
 
@@ -183,20 +189,4 @@ initial_parameters <- function(pars) {
   ret$U0 <- pars$N0 - rowSums(ret$A0) - rowSums(ret$R0)
 
   ret
-}
-
-##' Transform fitted parameters into gas params
-##' @name transform
-##' @title Transform fitted parameters into gas params
-##' @description Transform fitted parameters into gas params
-##' @param pars list of fitted parameters
-##' @return A list of parameters for use in the model
-##' @export
-transform <- function(pars) {
-  pars <- as.list(pars)
-  if (!is.null(pars$dt)) {
-    stop("Parameters have already been transformed")
-  }
-  # add initial conditions and demographic parameters
-  model_parameters(pars)
 }

@@ -36,6 +36,13 @@ test_that("assert_length", {
   expect_identical(assert_length(x, 2), x)
 })
 
+test_that("assert_dim", {
+  x <- matrix(1, 2, 3)
+  expect_error(assert_dim(x, c(3, 2)), "'x' must be of dimension 3, 2")
+  expect_identical(assert_dim(x), x)
+  expect_identical(assert_dim(x, c(2, 3)), x)
+})
+
 test_that("assert_strictly_increasing", {
   x <- c(0, 1, 2)
   expect_silent(assert_strictly_increasing(x))
