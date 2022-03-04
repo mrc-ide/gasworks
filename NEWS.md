@@ -1,3 +1,7 @@
+# gasworks 0.3.0
+
+* add running and fitting functions for both hydrogen and helium models
+
 # gasworks 0.2.0
 
 * reduce helium age groups to 16, so max group is 75+
