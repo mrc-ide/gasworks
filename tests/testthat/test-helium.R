@@ -74,3 +74,33 @@ test_that("helium_compare", {
                "missing or misnamed data")
   expect_error(helium_compare(state, observed, example_gas_parameters(1)))
 })
+
+test_that("create_constant_log_likelihood", {
+  df <- data.frame(age_start = seq(0, 20, 5),
+                   age_end = seq(4, 24, 5),
+                   N = 1e3)
+  data <- list(etiologic_fraction = df,
+               asymptomatic_carriage = df)
+  constant_ll <- create_constant_log_likelihood(data)
+  pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
+               b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3)
+
+  coefs <- helium_get_spline_coefficients(c("phi_S", "prev_A"), pars)
+  phi_S <- mean_age_spline(df$age_start, df$age_end, coefs$phi_S,
+                           age_spline_gamma)
+  prev_A <- mean_age_spline(df$age_start, df$age_end, coefs$prev_A,
+                           age_spline_gamma)
+  data$etiologic_fraction$n <- round(df$N * phi_S)
+  data$asymptomatic_carriage$n <- round(df$N * prev_A)
+  constant_ll(pars)
+
+  # check likelihood is maximised at true parameters
+  x <- seq(0.6, 1.4, length.out = 101)
+  for (i in seq_along(pars)) {
+    y <- sapply(x, function(x) {
+      pars[[i]] <- pars[[i]] * x
+      constant_ll(pars)
+    })
+    expect_equal(which.max(y), which(x == 1))
+  }
+})
