@@ -80,7 +80,7 @@ model_compartments <- function() {
 ##'@param n_group Integer number of age groups
 ##'@return Named list of model output indices
 model_index <- function(n_group = 1) {
-  pars <- example_gas_parameters(n_group)
+  pars <- example_parameters(n_group)
   mod <- model$new(pars, 1, 1)
   idx <- mod$info()$index
   ret <- unlist(idx)

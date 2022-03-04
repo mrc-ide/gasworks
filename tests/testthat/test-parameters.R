@@ -9,7 +9,7 @@ test_that("demographic_parameters works as expected", {
 })
 
 test_that("initial_parameters works as expected", {
-  pars <- c(example_gas_parameters(), demographic_parameters())
+  pars <- c(example_parameters(), demographic_parameters())
   init_pars <- initial_parameters(pars)
   expect_equal(names(init_pars),
                paste0(c("A", "E", "S", "P", "F", "R", "U"), 0))

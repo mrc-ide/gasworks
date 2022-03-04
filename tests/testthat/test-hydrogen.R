@@ -5,7 +5,7 @@ test_that("hydrogen_fitted_states", {
 })
 
 test_that("hydrogen_index", {
-  p <- example_gas_parameters(1)
+  p <- example_parameters(1)
   mod <- model$new(p, 0, 10)
   idx <- hydrogen_index(mod$info())
 
@@ -14,7 +14,7 @@ test_that("hydrogen_index", {
   expect_true(all(hydrogen_fitted_states() %in% names(idx$state)))
 
   # check can only use on hydrogen model
-  mod <- model$new(example_gas_parameters(2), 0, 10)
+  mod <- model$new(example_parameters(2), 0, 10)
   expect_error(hydrogen_index(mod$info()))
 })
 
@@ -24,7 +24,7 @@ test_that("hydrogen_compare", {
                  igas_inc = 90:95)
   observed <- list(daily_pharyngitis_rate = 13, scarlet_fever_inc = 103,
                    igas_inc = 93)
-  pars <- example_gas_parameters(1)
+  pars <- example_parameters(1)
   y <- hydrogen_compare(state, observed, pars)
 
   expect_equal(length(y), ncol(state))
@@ -59,7 +59,7 @@ test_that("hydrogen_compare", {
 
   expect_error(hydrogen_compare(state, unname(observed), pars),
                "missing or misnamed data")
-  expect_error(hydrogen_compare(state, observed, example_gas_parameters(2)))
+  expect_error(hydrogen_compare(state, observed, example_parameters(2)))
 })
 
 test_that("hydrogen_filter", {
@@ -76,7 +76,7 @@ test_that("hydrogen_filter", {
   expect_equal(filter$inputs()$index, hydrogen_index)
   expect_equal(filter$inputs()$data, x)
 
-  pars <- example_gas_parameters()
+  pars <- example_parameters()
   set.seed(1)
   expect_equal(filter$run(pars), -21498257)
 })

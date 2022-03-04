@@ -19,7 +19,7 @@ of additional interesting model outputs
 Hydrogen fitted states
 }
 \examples{
-p <- example_gas_parameters(1)
+p <- example_parameters(1)
 mod <- model$new(p, 0, 10)
 hydrogen_index(mod$info())
 }

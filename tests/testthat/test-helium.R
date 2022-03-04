@@ -8,7 +8,7 @@ test_that("helium age groups are parametrised correctly", {
 })
 
 test_that("helium_index", {
-  p <- example_gas_parameters(16)
+  p <- example_parameters(16)
   mod <- model$new(p, 0, 10)
   idx <- helium_index(mod$info())
 
@@ -25,12 +25,12 @@ test_that("helium_index", {
   expect_true(all(state_nms %in% names(idx$state)))
 
   # check can only use on helium model
-  mod <- model$new(example_gas_parameters(2), 0, 10)
+  mod <- model$new(example_parameters(2), 0, 10)
   expect_error(helium_index(mod$info()))
 })
 
 test_that("helium_compare", {
-  pars <- example_gas_parameters(16)
+  pars <- example_parameters(16)
   mod <- model$new(pars, 0, 5, seed = 1L)
   info <- mod$info()
 
@@ -72,7 +72,7 @@ test_that("helium_compare", {
 
   expect_error(helium_compare(state, unname(observed), pars),
                "missing or misnamed data")
-  expect_error(helium_compare(state, observed, example_gas_parameters(1)))
+  expect_error(helium_compare(state, observed, example_parameters(1)))
 })
 
 test_that("create_constant_log_likelihood", {
@@ -136,10 +136,24 @@ test_that("helium_filter", {
   expect_equal(filter$inputs()$constant_log_likelihood, constant_ll)
 
   ## check filter runs and we can reclaim the same value
-  pars <- example_gas_parameters(16)
-  spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
-                      b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3)
-  pars <- c(pars, spline_pars)
+  pars <- example_helium_parameters()
   set.seed(1)
   expect_equal(filter$run(pars), -21506639)
 })
+
+
+test_that("helium_create_transform", {
+  n_group <- helium_age_groups()$n_group
+  dem_pars <- list(N0 = seq_len(n_group),
+                   alpha = 1,
+                   omega = seq(0.1, 0.3, length.out = n_group),
+                   r_age = 2,
+                   m = matrix(0, n_group, n_group))
+  transform <- helium_create_transform(dem_pars)
+  gas_pars <- example_helium_parameters()
+  pars <- transform(gas_pars)
+
+  expect_equal(names(pars), unique(names(pars)))
+  expect_equal(pars[names(dem_pars)], dem_pars)
+})
+

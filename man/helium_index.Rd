@@ -15,7 +15,7 @@ of additional interesting model outputs
 Helium fitted states
 }
 \examples{
-p <- example_gas_parameters(19)
+p <- example_parameters(19)
 mod <- model$new(p, 0, 10)
 helium_index(mod$info())
 }

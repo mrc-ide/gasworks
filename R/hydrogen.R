@@ -15,7 +15,7 @@ hydrogen_fitted_states <- function() {
 ##' of additional interesting model outputs
 ##' @export
 ##' @examples
-##' p <- example_gas_parameters(1)
+##' p <- example_parameters(1)
 ##' mod <- model$new(p, 0, 10)
 ##' hydrogen_index(mod$info())
 hydrogen_index <- function(info) {
@@ -49,7 +49,7 @@ hydrogen_index <- function(info) {
 ##'                igas_inc = 90:95)
 ##' observed <- list(daily_pharyngitis_rate = 13, scarlet_fever_inc = 103,
 ##'                  igas_inc = 93)
-##' pars <- example_gas_parameters(1)
+##' pars <- example_parameters(1)
 ##' hydrogen_compare(state, observed, pars)
 ##' hydrogen_compare(state * 5, observed, pars)
 hydrogen_compare <- function(state, observed, pars) {

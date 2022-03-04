@@ -44,14 +44,13 @@ check_gas_parameters <- function(pars, n_group = 1) {
   })
 }
 
-
-##' @name example_gas_parameters
+##' @name example_parameters
 ##' @title Example of fitted gas parameters for use in testing
 ##' @description Example of fitted gas parameters for use in testing
 ##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
 ##' @export
-example_gas_parameters <- function(n_group = 1) {
+example_parameters <- function(n_group = 1) {
   pars <- list(prev_A = rep(0.1, n_group),
                prev_R = rep(0.5, n_group),
                n_group = n_group,
@@ -75,7 +74,7 @@ example_gas_parameters <- function(n_group = 1) {
 ##' @name no_gas_parameters
 ##' @title Model parameters with no gas for use in testing
 ##' @description Model parameters with no gas for use in testing
-##' @inheritParams example_gas_parameters
+##' @inheritParams example_parameters
 ##' @return A list of named model parameters
 no_gas_parameters <- function(n_group = 1) {
   pars <- list(prev_A = rep(0, n_group),
@@ -99,6 +98,14 @@ no_gas_parameters <- function(n_group = 1) {
                phi_S = rep(1, n_group))
 }
 
+example_helium_parameters <- function() {
+  groups <- helium_age_groups()
+  pars <- example_parameters(groups$n_group)
+  spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
+                      b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3,
+                      b0_prev_R = 75, b1_prev_R = 2, b2_prev_R = 0.9)
+  c(pars, spline_pars)
+}
 
 ##' @name model_parameters
 ##' @title Demographic model parameters
