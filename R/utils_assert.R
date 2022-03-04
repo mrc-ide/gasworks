@@ -49,7 +49,8 @@ assert_length <- function(x, len = length(x), name = deparse(substitute(x))) {
 assert_dim <- function(x, d = dim(x), name = deparse(substitute(x))) {
   force(name)
   if (!all(dim(x) == d)) {
-    stop(sprintf("'%s' must be of dimension %s", name, d), call. = FALSE)
+    stop(sprintf("'%s' must be of dimension %s", name, toString(d)),
+         call. = FALSE)
   }
   invisible(x)
 }
