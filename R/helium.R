@@ -43,7 +43,7 @@ helium_fitted_states <- function() {
 
 ##' @name helium_index
 ##' @title Helium fitted states
-##' @inheritParams helium_index
+##' @inheritParams hydrogen_index
 ##' @return A list with elements `run`, indicating the locations of the
 ##' compartments used in fitting the model, and `state` indicating the locations
 ##' of additional interesting model outputs

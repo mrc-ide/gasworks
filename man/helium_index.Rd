@@ -6,6 +6,10 @@
 \usage{
 helium_index(info)
 }
+\arguments{
+\item{info}{The result of running the \verb{$info()} method on an
+initialised model}
+}
 \value{
 A list with elements \code{run}, indicating the locations of the
 compartments used in fitting the model, and \code{state} indicating the locations
