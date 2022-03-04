@@ -12,7 +12,7 @@ This is essentially a \code{\link[=data.frame]{data.frame()}} with at least colu
 along with the data used in \code{\link[=helium_compare]{helium_compare()}}.}
 
 \item{constant_data}{a list with entries \code{etiologic_fraction} and
-\code{asymptomatic_prevalence} each containing a data.frame with entries
+\code{asymptomatic_carriage} each containing a data.frame with entries
 \code{age_start}, \code{age_end}, \code{N} and \code{n}.}
 
 \item{n_particles}{The number of particles to simulate}
