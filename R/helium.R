@@ -1,14 +1,3 @@
-##' @name helium_fitted_states
-##' @title Helium fitted states
-##' @return A character vector of data states to which the model is fitted
-##' @export
-helium_fitted_states <- function() {
-  groups <- helium_age_groups()
-  c("scarlet_fever_inc", "igas_inc", "daily_pharyngitis_rate",
-    paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
-    paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
-}
-
 ##' @name helium_age_groups
 ##' @title Helium model age groups
 ##' @description Helium model age groups
@@ -30,6 +19,26 @@ helium_age_groups <- function() {
        age_end = age[-1],
        n_group = length(age) - 1,
        idx_ukhsa = idx)
+}
+
+example_helium_parameters <- function() {
+  groups <- helium_age_groups()
+  pars <- example_gas_parameters(groups$n_group)
+  spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
+                      b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3,
+                      b0_prev_R = 75, b1_prev_R = 2, b2_prev_R = 0.9)
+  c(pars, spline_pars)
+}
+
+##' @name helium_fitted_states
+##' @title Helium fitted states
+##' @return A character vector of data states to which the model is fitted
+##' @export
+helium_fitted_states <- function() {
+  groups <- helium_age_groups()
+  c("scarlet_fever_inc", "igas_inc", "daily_pharyngitis_rate",
+    paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
+    paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
 }
 
 ##' @name helium_index

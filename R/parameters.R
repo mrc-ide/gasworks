@@ -44,30 +44,33 @@ check_gas_parameters <- function(pars, n_group = 1) {
   })
 }
 
+example_gas_parameters <- function(n_group = 1) {
+  list(prev_A = rep(0.1, n_group),
+       prev_R = rep(0.5, n_group),
+       n_group = n_group,
+       beta = 2,
+       sigma = 0.6,
+       t_s = 100,
+       p_S = 0.6,
+       p_R = 0.3,
+       p_I = 0.0001,
+       p_F = 0.001,
+       p_T = 1,
+       delta_A = 30,
+       delta_R = 365 * 5,
+       k_gp = 1,
+       k_hpr = 1,
+       theta_A = 1,
+       phi_S = rep(0.25, n_group))
+}
+
 ##' @name example_parameters
-##' @title Example of fitted gas parameters for use in testing
-##' @description Example of fitted gas parameters for use in testing
+##' @title Example of transformed model parameters for use in testing
 ##' @inheritParams check_gas_parameters
 ##' @return A list of named model parameters
 ##' @export
 example_parameters <- function(n_group = 1) {
-  pars <- list(prev_A = rep(0.1, n_group),
-               prev_R = rep(0.5, n_group),
-               n_group = n_group,
-               beta = 2,
-               sigma = 0.6,
-               t_s = 100,
-               p_S = 0.6,
-               p_R = 0.3,
-               p_I = 0.0001,
-               p_F = 0.001,
-               p_T = 1,
-               delta_A = 30,
-               delta_R = 365 * 5,
-               k_gp = 1,
-               k_hpr = 1,
-               theta_A = 1,
-               phi_S = rep(0.25, n_group))
+  pars <- example_gas_parameters(n_group)
   model_parameters(pars)
 }
 
@@ -96,15 +99,6 @@ no_gas_parameters <- function(n_group = 1) {
                delta_F = 1,
                theta_A = 0,
                phi_S = rep(1, n_group))
-}
-
-example_helium_parameters <- function() {
-  groups <- helium_age_groups()
-  pars <- example_parameters(groups$n_group)
-  spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
-                      b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3,
-                      b0_prev_R = 75, b1_prev_R = 2, b2_prev_R = 0.9)
-  c(pars, spline_pars)
 }
 
 ##' @name model_parameters
