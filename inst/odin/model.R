@@ -67,6 +67,10 @@ update(scarlet_fever_inc) <- sum(scarlet_fever_inc_by_group[])
 update(igas_inc) <- (
   if (step %% steps_per_week == 0) sum(n_I[]) else igas_inc + sum(n_I[]))
 
+## Output daily incidence rate per 100,000 population
+update(daily_gas_pharyngitis_rate) <-
+  sum(gas_pharyngitis_inc_by_group[]) / sum(N[]) * 1e5 / 7
+
 ## Output weekly cases by age group and proportion in each age group
 ## 1. pharyngitis (prob of treatment seeking / etiologic fraction)
 ## 2. scarlet fever
@@ -76,7 +80,7 @@ update(igas_inc) <- (
 ##  04,  5-14, 15-44,   45-64,   65-74, 75+
 ## [1], [2:3], [4:9], [10:13], [14:15], [16]
 
-## pharyngitis rates by age group
+## GAS pharyngitis cases by age group
 update(gas_pharyngitis_inc_04) <- (
   if (n_group == 16) sum(gas_pharyngitis_inc_by_group[1]) else 0)
 update(gas_pharyngitis_inc_05_14) <- (
@@ -228,6 +232,7 @@ initial(igas_inc) <- 0
 initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
+initial(daily_gas_pharyngitis_rate) <- 0
 
 initial(gas_pharyngitis_inc_04)   <-  0
 initial(gas_pharyngitis_inc_05_14) <- 0
