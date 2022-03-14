@@ -92,6 +92,26 @@ update(daily_gas_pharyngitis_rate_75) <- (
   if (n_group == 16) gas_pharyngitis_inc_by_group[16] / w[16]
   else 0)
 
+## Output daily scarlet fever rates by group
+update(daily_scarlet_fever_rate_04) <- (
+  if (n_group == 16) scarlet_fever_inc_by_group[1] / w[1]
+  else 0)
+update(daily_scarlet_fever_rate_05_14) <- (
+  if (n_group == 16) sum(scarlet_fever_inc_by_group[2:3]) / sum(w[2:3])
+  else 0)
+update(daily_scarlet_fever_rate_15_44) <- (
+  if (n_group == 16) sum(scarlet_fever_inc_by_group[4:9]) / sum(w[4:9])
+  else 0)
+update(daily_scarlet_fever_rate_45_64) <- (
+  if (n_group == 16) sum(scarlet_fever_inc_by_group[10:13]) / sum(w[10:13])
+  else 0)
+update(daily_scarlet_fever_rate_65_74) <- (
+  if (n_group == 16) sum(scarlet_fever_inc_by_group[14:15]) / sum(w[14:15])
+  else 0)
+update(daily_scarlet_fever_rate_75) <- (
+  if (n_group == 16) scarlet_fever_inc_by_group[16] / w[16]
+  else 0)
+
 ## Output weekly scarlet fever cases by group
 update(scarlet_fever_inc_04) <- (
   if (n_group == 16) sum(scarlet_fever_inc_by_group[1]) else 0)
@@ -224,6 +244,13 @@ initial(daily_gas_pharyngitis_rate_15_44) <- 0
 initial(daily_gas_pharyngitis_rate_45_64) <- 0
 initial(daily_gas_pharyngitis_rate_65_74) <- 0
 initial(daily_gas_pharyngitis_rate_75)    <- 0
+
+initial(daily_scarlet_fever_rate_04)   <-  0
+initial(daily_scarlet_fever_rate_05_14) <- 0
+initial(daily_scarlet_fever_rate_15_44) <- 0
+initial(daily_scarlet_fever_rate_45_64) <- 0
+initial(daily_scarlet_fever_rate_65_74) <- 0
+initial(daily_scarlet_fever_rate_75)    <- 0
 
 initial(scarlet_fever_inc_04)    <- 0
 initial(scarlet_fever_inc_05_14) <- 0

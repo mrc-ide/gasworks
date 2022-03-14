@@ -331,6 +331,12 @@ public:
     real_type initial_daily_gas_pharyngitis_rate_45_64;
     real_type initial_daily_gas_pharyngitis_rate_65_74;
     real_type initial_daily_gas_pharyngitis_rate_75;
+    real_type initial_daily_scarlet_fever_rate_04;
+    real_type initial_daily_scarlet_fever_rate_05_14;
+    real_type initial_daily_scarlet_fever_rate_15_44;
+    real_type initial_daily_scarlet_fever_rate_45_64;
+    real_type initial_daily_scarlet_fever_rate_65_74;
+    real_type initial_daily_scarlet_fever_rate_75;
     real_type initial_gas_pharyngitis_inc;
     real_type initial_igas_inc;
     real_type initial_infections_inc;
@@ -443,10 +449,10 @@ public:
     shared(pars.shared), internal(pars.internal) {
   }
   size_t size() {
-    return shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
+    return shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
   }
   std::vector<real_type> initial(size_t step) {
-    std::vector<real_type> state(shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21);
+    std::vector<real_type> state(shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27);
     state[0] = shared->initial_time;
     state[1] = shared->initial_infections_inc;
     state[2] = shared->initial_gas_pharyngitis_inc;
@@ -462,13 +468,19 @@ public:
     state[12] = shared->initial_daily_gas_pharyngitis_rate_45_64;
     state[13] = shared->initial_daily_gas_pharyngitis_rate_65_74;
     state[14] = shared->initial_daily_gas_pharyngitis_rate_75;
-    state[15] = shared->initial_scarlet_fever_inc_04;
-    state[16] = shared->initial_scarlet_fever_inc_05_14;
-    state[17] = shared->initial_scarlet_fever_inc_15_44;
-    state[18] = shared->initial_scarlet_fever_inc_45_64;
-    state[19] = shared->initial_scarlet_fever_inc_65_74;
-    state[20] = shared->initial_scarlet_fever_inc_75;
-    std::copy(shared->initial_U.begin(), shared->initial_U.end(), state.begin() + 21);
+    state[15] = shared->initial_daily_scarlet_fever_rate_04;
+    state[16] = shared->initial_daily_scarlet_fever_rate_05_14;
+    state[17] = shared->initial_daily_scarlet_fever_rate_15_44;
+    state[18] = shared->initial_daily_scarlet_fever_rate_45_64;
+    state[19] = shared->initial_daily_scarlet_fever_rate_65_74;
+    state[20] = shared->initial_daily_scarlet_fever_rate_75;
+    state[21] = shared->initial_scarlet_fever_inc_04;
+    state[22] = shared->initial_scarlet_fever_inc_05_14;
+    state[23] = shared->initial_scarlet_fever_inc_15_44;
+    state[24] = shared->initial_scarlet_fever_inc_45_64;
+    state[25] = shared->initial_scarlet_fever_inc_65_74;
+    state[26] = shared->initial_scarlet_fever_inc_75;
+    std::copy(shared->initial_U.begin(), shared->initial_U.end(), state.begin() + 27);
     std::copy(shared->initial_N.begin(), shared->initial_N.end(), state.begin() + shared->offset_variable_N);
     std::copy(shared->initial_prev_A.begin(), shared->initial_prev_A.end(), state.begin() + shared->offset_variable_prev_A);
     std::copy(shared->initial_prev_R.begin(), shared->initial_prev_R.end(), state.begin() + shared->offset_variable_prev_R);
@@ -481,7 +493,7 @@ public:
     return state;
   }
   void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
-    const real_type * U = state + 21;
+    const real_type * U = state + 27;
     const real_type * A = state + shared->offset_variable_A;
     const real_type * E = state + shared->offset_variable_E;
     const real_type * S = state + shared->offset_variable_S;
@@ -750,13 +762,19 @@ public:
         state_next[shared->offset_variable_R + i - 1 + shared->dim_R_1 * (j - 1)] = R[shared->dim_R_1 * (j - 1) + i - 1] + internal.dem_R[shared->dim_dem_R_1 * (j - 1) + i - 1] + internal.gas_R[shared->dim_gas_R_1 * (j - 1) + i - 1];
       }
     }
+    state_next[15] = ((shared->n_group == 16 ? internal.scarlet_fever_inc_by_group[0] / (real_type) internal.w[0] : 0));
+    state_next[16] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
+    state_next[17] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
+    state_next[18] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
+    state_next[19] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
+    state_next[20] = ((shared->n_group == 16 ? internal.scarlet_fever_inc_by_group[15] / (real_type) internal.w[15] : 0));
     state_next[3] = odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, shared->dim_scarlet_fever_inc_by_group);
-    state_next[15] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, 1) : 0));
-    state_next[16] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) : 0));
-    state_next[17] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) : 0));
-    state_next[18] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) : 0));
-    state_next[19] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) : 0));
-    state_next[20] = ((shared->n_group == 16 ? internal.scarlet_fever_inc_by_group[15] : 0));
+    state_next[21] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 0, 1) : 0));
+    state_next[22] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 1, 3) : 0));
+    state_next[23] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 3, 9) : 0));
+    state_next[24] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 9, 13) : 0));
+    state_next[25] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.scarlet_fever_inc_by_group.data(), 13, 15) : 0));
+    state_next[26] = ((shared->n_group == 16 ? internal.scarlet_fever_inc_by_group[15] : 0));
     for (int i = 1; i <= shared->dim_gas_A_1; ++i) {
       for (int j = 1; j <= shared->dim_gas_A_2; ++j) {
         internal.gas_A[i - 1 + shared->dim_gas_A_1 * (j - 1)] = ((j == 1 ? internal.n_UA[i - 1] : internal.n_A[shared->dim_n_A_1 * (j - 1 - 1) + i - 1])) - internal.n_A[shared->dim_n_A_1 * (j - 1) + i - 1];
@@ -773,7 +791,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_U; ++i) {
-      state_next[21 + i - 1] = U[i - 1] + internal.dem_U[i - 1] + internal.gas_U[i - 1];
+      state_next[27 + i - 1] = U[i - 1] + internal.dem_U[i - 1] + internal.gas_U[i - 1];
     }
     state_next[8] = odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 0, shared->dim_gas_pharyngitis_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
     state_next[9] = ((shared->n_group == 16 ? internal.gas_pharyngitis_inc_by_group[0] / (real_type) internal.w[0] : 0));
@@ -1034,6 +1052,12 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_daily_gas_pharyngitis_rate_45_64 = 0;
   shared->initial_daily_gas_pharyngitis_rate_65_74 = 0;
   shared->initial_daily_gas_pharyngitis_rate_75 = 0;
+  shared->initial_daily_scarlet_fever_rate_04 = 0;
+  shared->initial_daily_scarlet_fever_rate_05_14 = 0;
+  shared->initial_daily_scarlet_fever_rate_15_44 = 0;
+  shared->initial_daily_scarlet_fever_rate_45_64 = 0;
+  shared->initial_daily_scarlet_fever_rate_65_74 = 0;
+  shared->initial_daily_scarlet_fever_rate_75 = 0;
   shared->initial_gas_pharyngitis_inc = 0;
   shared->initial_igas_inc = 0;
   shared->initial_infections_inc = 0;
@@ -1303,10 +1327,10 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_n_S = shared->dim_n_S_1 * shared->dim_n_S_2;
   shared->dim_n_Si = shared->dim_n_Si_1 * shared->dim_n_Si_2;
   shared->dim_n_Sx = shared->dim_n_Sx_1 * shared->dim_n_Sx_2;
-  shared->offset_variable_A = shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
-  shared->offset_variable_N = shared->dim_U + 21;
-  shared->offset_variable_prev_A = shared->dim_N + shared->dim_U + 21;
-  shared->offset_variable_prev_R = shared->dim_N + shared->dim_U + shared->dim_prev_A + 21;
+  shared->offset_variable_A = shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
+  shared->offset_variable_N = shared->dim_U + 27;
+  shared->offset_variable_prev_A = shared->dim_N + shared->dim_U + 27;
+  shared->offset_variable_prev_R = shared->dim_N + shared->dim_U + shared->dim_prev_A + 27;
   shared->omega = user_get_array_fixed<real_type, 1>(user, "omega", shared->omega, {shared->dim_omega}, NA_REAL, NA_REAL);
   shared->A0 = user_get_array_fixed<real_type, 2>(user, "A0", shared->A0, {shared->dim_A0_1, shared->dim_A0_2}, NA_REAL, NA_REAL);
   shared->E0 = user_get_array_fixed<real_type, 2>(user, "E0", shared->E0, {shared->dim_E0_1, shared->dim_E0_2}, NA_REAL, NA_REAL);
@@ -1355,11 +1379,11 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
     shared->initial_U[i - 1] = shared->U0[i - 1];
   }
   shared->m = user_get_array_fixed<real_type, 2>(user, "m", shared->m, {shared->dim_m_1, shared->dim_m_2}, NA_REAL, NA_REAL);
-  shared->offset_variable_E = shared->dim_A + shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
-  shared->offset_variable_F = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
-  shared->offset_variable_P = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
-  shared->offset_variable_R = shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
-  shared->offset_variable_S = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 21;
+  shared->offset_variable_E = shared->dim_A + shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
+  shared->offset_variable_F = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
+  shared->offset_variable_P = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
+  shared->offset_variable_R = shared->dim_A + shared->dim_E + shared->dim_F + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
+  shared->offset_variable_S = shared->dim_A + shared->dim_E + shared->dim_N + shared->dim_U + shared->dim_prev_A + shared->dim_prev_R + 27;
   for (int i = 1; i <= shared->dim_r_A; ++i) {
     shared->r_A[i - 1] = shared->k_A / (real_type) shared->delta_A;
   }
@@ -1423,8 +1447,8 @@ template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const model::internal_type internal = pars.internal;
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "births_inc", "net_leavers_inc", "beta_t", "daily_gas_pharyngitis_rate", "daily_gas_pharyngitis_rate_04", "daily_gas_pharyngitis_rate_05_14", "daily_gas_pharyngitis_rate_15_44", "daily_gas_pharyngitis_rate_45_64", "daily_gas_pharyngitis_rate_65_74", "daily_gas_pharyngitis_rate_75", "scarlet_fever_inc_04", "scarlet_fever_inc_05_14", "scarlet_fever_inc_15_44", "scarlet_fever_inc_45_64", "scarlet_fever_inc_65_74", "scarlet_fever_inc_75", "U", "N", "prev_A", "prev_R", "A", "E", "S", "P", "F", "R"});
-  cpp11::writable::list dim(31);
+  cpp11::writable::strings nms({"time", "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc", "igas_inc", "births_inc", "net_leavers_inc", "beta_t", "daily_gas_pharyngitis_rate", "daily_gas_pharyngitis_rate_04", "daily_gas_pharyngitis_rate_05_14", "daily_gas_pharyngitis_rate_15_44", "daily_gas_pharyngitis_rate_45_64", "daily_gas_pharyngitis_rate_65_74", "daily_gas_pharyngitis_rate_75", "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14", "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64", "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75", "scarlet_fever_inc_04", "scarlet_fever_inc_05_14", "scarlet_fever_inc_15_44", "scarlet_fever_inc_45_64", "scarlet_fever_inc_65_74", "scarlet_fever_inc_75", "U", "N", "prev_A", "prev_R", "A", "E", "S", "P", "F", "R"});
+  cpp11::writable::list dim(37);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});
   dim[2] = cpp11::writable::integers({1});
@@ -1446,18 +1470,24 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   dim[18] = cpp11::writable::integers({1});
   dim[19] = cpp11::writable::integers({1});
   dim[20] = cpp11::writable::integers({1});
-  dim[21] = cpp11::writable::integers({shared->dim_U});
-  dim[22] = cpp11::writable::integers({shared->dim_N});
-  dim[23] = cpp11::writable::integers({shared->dim_prev_A});
-  dim[24] = cpp11::writable::integers({shared->dim_prev_R});
-  dim[25] = cpp11::writable::integers({shared->dim_A_1, shared->dim_A_2});
-  dim[26] = cpp11::writable::integers({shared->dim_E_1, shared->dim_E_2});
-  dim[27] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
-  dim[28] = cpp11::writable::integers({shared->dim_P_1, shared->dim_P_2});
-  dim[29] = cpp11::writable::integers({shared->dim_F_1, shared->dim_F_2});
-  dim[30] = cpp11::writable::integers({shared->dim_R_1, shared->dim_R_2});
+  dim[21] = cpp11::writable::integers({1});
+  dim[22] = cpp11::writable::integers({1});
+  dim[23] = cpp11::writable::integers({1});
+  dim[24] = cpp11::writable::integers({1});
+  dim[25] = cpp11::writable::integers({1});
+  dim[26] = cpp11::writable::integers({1});
+  dim[27] = cpp11::writable::integers({shared->dim_U});
+  dim[28] = cpp11::writable::integers({shared->dim_N});
+  dim[29] = cpp11::writable::integers({shared->dim_prev_A});
+  dim[30] = cpp11::writable::integers({shared->dim_prev_R});
+  dim[31] = cpp11::writable::integers({shared->dim_A_1, shared->dim_A_2});
+  dim[32] = cpp11::writable::integers({shared->dim_E_1, shared->dim_E_2});
+  dim[33] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
+  dim[34] = cpp11::writable::integers({shared->dim_P_1, shared->dim_P_2});
+  dim[35] = cpp11::writable::integers({shared->dim_F_1, shared->dim_F_2});
+  dim[36] = cpp11::writable::integers({shared->dim_R_1, shared->dim_R_2});
   dim.names() = nms;
-  cpp11::writable::list index(31);
+  cpp11::writable::list index(37);
   index[0] = cpp11::writable::integers({1});
   index[1] = cpp11::writable::integers({2});
   index[2] = cpp11::writable::integers({3});
@@ -1479,16 +1509,22 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   index[18] = cpp11::writable::integers({19});
   index[19] = cpp11::writable::integers({20});
   index[20] = cpp11::writable::integers({21});
-  index[21] = integer_sequence(22, shared->dim_U);
-  index[22] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
-  index[23] = integer_sequence(shared->offset_variable_prev_A + 1, shared->dim_prev_A);
-  index[24] = integer_sequence(shared->offset_variable_prev_R + 1, shared->dim_prev_R);
-  index[25] = integer_sequence(shared->offset_variable_A + 1, shared->dim_A);
-  index[26] = integer_sequence(shared->offset_variable_E + 1, shared->dim_E);
-  index[27] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
-  index[28] = integer_sequence(shared->offset_variable_P + 1, shared->dim_P);
-  index[29] = integer_sequence(shared->offset_variable_F + 1, shared->dim_F);
-  index[30] = integer_sequence(shared->offset_variable_R + 1, shared->dim_R);
+  index[21] = cpp11::writable::integers({22});
+  index[22] = cpp11::writable::integers({23});
+  index[23] = cpp11::writable::integers({24});
+  index[24] = cpp11::writable::integers({25});
+  index[25] = cpp11::writable::integers({26});
+  index[26] = cpp11::writable::integers({27});
+  index[27] = integer_sequence(28, shared->dim_U);
+  index[28] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
+  index[29] = integer_sequence(shared->offset_variable_prev_A + 1, shared->dim_prev_A);
+  index[30] = integer_sequence(shared->offset_variable_prev_R + 1, shared->dim_prev_R);
+  index[31] = integer_sequence(shared->offset_variable_A + 1, shared->dim_A);
+  index[32] = integer_sequence(shared->offset_variable_E + 1, shared->dim_E);
+  index[33] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
+  index[34] = integer_sequence(shared->offset_variable_P + 1, shared->dim_P);
+  index[35] = integer_sequence(shared->offset_variable_F + 1, shared->dim_F);
+  index[36] = integer_sequence(shared->offset_variable_R + 1, shared->dim_R);
   index.names() = nms;
   size_t len = shared->offset_variable_R + shared->dim_R;
   using namespace cpp11::literals;
