@@ -50,12 +50,13 @@ test_that("helium_compare", {
   observed <- as.list(c(state[c("scarlet_fever_inc", "igas_inc"), 3],
                       sf_rate, pharyngitis_rate))
 
+  set.seed(1)
   ll <- helium_compare(state, observed, pars)
 
   expect_equal(length(ll), ncol(state))
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
-  expect_equal(ll, c(-7.19893638381384, -15.5004167020109, -3.51658353452619,
-                     -9.15829333396769, -7.73752277727726))
+  expect_equal(ll, c(-7.19893580435882, -15.5004168598668, -3.51658334642205,
+                     -9.15829301941287, -7.73752318583186))
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
@@ -72,7 +73,7 @@ test_that("helium_compare", {
                           sum(state[nms, 3]))
 
     y <- helium_compare(tmp, observed, pars)
-    expect_equal(max(y), y[x == 1])
+    expect_equivalent(max(y), y[x == 1], tol = 1 / pars$exp_noise)
   }
 
   # NA data returns 0
