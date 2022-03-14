@@ -42,10 +42,10 @@ hydrogen_index <- function(info) {
 ##'   of particles (the number of columns in the modelled state)
 ##' @export
 ##' @examples
-##' state <- rbind(daily_pharyngitis_rate = 10:15,
+##' state <- rbind(daily_gas_pharyngitis_rate = 10:15,
 ##'                scarlet_fever_inc = 100:105,
 ##'                igas_inc = 90:95)
-##' observed <- list(daily_pharyngitis_rate = 13, scarlet_fever_inc = 103,
+##' observed <- list(daily_pharyngitis_rate = 52, scarlet_fever_inc = 103,
 ##'                  igas_inc = 93)
 ##' pars <- example_parameters(1)
 ##' hydrogen_compare(state, observed, pars)
