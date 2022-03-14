@@ -79,6 +79,8 @@ test_that("helium_compare", {
   # NA data returns 0
   expect_equal(helium_compare(state, replace(observed, seq_along(observed), NA),
                               pars), rep(0, ncol(state)))
+  expect_error(helium_compare(state, unname(observed), pars),
+               "missing or misnamed data")
 
   expect_error(helium_compare(state, observed, example_parameters(1)))
 })
