@@ -14,7 +14,7 @@ distribution, with one set per column. Values will scale automatically to
 so that each column sums to 1. the number of rows should be the same length
 as the data.}
 
-\item{noise}{exponential noise for case when all probabilities are 0.}
+\item{noise}{noise for case when all probabilities are 0.}
 }
 \description{
 ll_multinom
