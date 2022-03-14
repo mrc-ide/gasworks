@@ -128,18 +128,17 @@ ll_multinom <- function(data, prob, noise) {
 ##' @importFrom extraDistr ddirichlet
 ##' @param data a vector containing observations from a Dirichlet distribution
 ##' i.e. a vector of probabilities that sum to 1
-##' @param prob a matrix containing sets of shape parameters, with one row
+##' @param state a matrix containing sets of shape parameters, with one row
 ##' per parameter set
-ll_dirichlet <- function(data, prob) {
-  stopifnot(ncol(prob) == length(data))
+ll_dirichlet <- function(data, state, exp_noise) {
+  stopifnot(ncol(state) == length(data))
   if (any(is.na(data))) {
-    return(numeric(nrow(prob)))
+    return(numeric(nrow(state)))
   }
   stopifnot(all.equal(sum(data), 1))
-
-  prob[is.na(prob)] <- 0
+  alpha <- state + rexp(length(state), rate = exp_noise)
   ## need to return -Inf when p all NA / 0
-  extraDistr::ddirichlet(data, prob, TRUE)
+  extraDistr::ddirichlet(data, alpha, TRUE)
 }
 
 ##' @title age_spline_polynomial
