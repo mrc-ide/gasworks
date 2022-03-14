@@ -48,6 +48,7 @@ test_that("ll_nbinom", {
 test_that("ll_norm", {
   x <- 1:10
   expect_equal(ll_norm(10, x, 0.1), dnorm(10, x, 0.1, log = TRUE))
+  expect_equal(ll_norm(NA, x, 0.1), rep(0, 10))
 })
 
 test_that("ll_nbinom returns a vector of zeros if data missing", {

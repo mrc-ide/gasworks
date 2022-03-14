@@ -101,10 +101,9 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
 
 ##' @importFrom stats dnorm
 ll_norm <- function(data, model, sd) {
-  if (is.na(data)) {
-    return(numeric(length(model)))
-  }
-  dnorm(data, model, sd, log = TRUE)
+  ret <- dnorm(data, model, sd, log = TRUE)
+  ret[is.na(ret)] <- 0
+  ret
 }
 
 ##' @title ll_multinom
@@ -123,6 +122,24 @@ ll_multinom <- function(data, prob, noise) {
   prob[is.na(prob)] <- 0
   ## need to return -Inf when p all NA / 0
   apply(prob, 2, function(p) dmultinom(data, prob = p + noise, log = TRUE))
+}
+
+##' @title ll_dirichlet
+##' @importFrom extraDistr ddirichlet
+##' @param data a vector containing observations from a Dirichlet distribution
+##' i.e. a vector of probabilities that sum to 1
+##' @param prob a matrix containing sets of shape parameters, with one row
+##' per parameter set
+ll_dirichlet <- function(data, prob) {
+  stopifnot(ncol(prob) == length(data))
+  if (any(is.na(data))) {
+    return(numeric(nrow(prob)))
+  }
+  stopifnot(all.equal(sum(data), 1))
+
+  prob[is.na(prob)] <- 0
+  ## need to return -Inf when p all NA / 0
+  extraDistr::ddirichlet(data, prob, TRUE)
 }
 
 ##' @title age_spline_polynomial
