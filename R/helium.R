@@ -133,7 +133,7 @@ helium_compare <- function(state, observed, pars) {
   ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
                                 state["scarlet_fever_inc", ],
                                 pars$k_hpr, pars$exp_noise) +
-    ll_dirichlet(obs_sf_prop, model_sf_cases)
+    ll_dirichlet(obs_sf_prop, model_sf_cases, pars$exp_noise)
 
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
