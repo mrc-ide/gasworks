@@ -97,6 +97,9 @@ helium_compare <- function(state, observed, pars) {
   groups <- helium_age_groups()
 
   stopifnot(pars$n_group == groups$n_group)
+  if (!all(helium_fitted_states() %in% names(observed))) {
+    stop("missing or misnamed data")
+  }
 
   age_groups <- names(groups$idx_ukhsa)
 
