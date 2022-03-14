@@ -113,7 +113,7 @@ ll_norm <- function(data, model, sd) {
 ##' distribution, with one set per column. Values will scale automatically to
 ##' so that each column sums to 1. the number of rows should be the same length
 ##' as the data.
-##' @param noise exponential noise for case when all probabilities are 0.
+##' @param noise noise for case when all probabilities are 0.
 ll_multinom <- function(data, prob, noise) {
   stopifnot(nrow(prob) == length(data))
   if (any(is.na(data))) {
@@ -130,6 +130,7 @@ ll_multinom <- function(data, prob, noise) {
 ##' i.e. a vector of probabilities that sum to 1
 ##' @param state a matrix containing sets of shape parameters, with one row
 ##' per parameter set
+##' @param exp_noise exponential noise for case when all probabilities are 0.
 ll_dirichlet <- function(data, state, exp_noise) {
   stopifnot(ncol(state) == length(data))
   if (any(is.na(data))) {
