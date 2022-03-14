@@ -20,11 +20,9 @@ hydrogen_fitted_states <- function() {
 ##' hydrogen_index(mod$info())
 hydrogen_index <- function(info) {
   stopifnot(info$dim$N == 1)
-  run <- hydrogen_fitted_states()
+  run <-  c("daily_gas_pharyngitis_rate", "scarlet_fever_inc", "igas_inc")
   save <- c("prev_R", "prev_A", "N", "births_inc", "net_leavers_inc",
-            "infections_inc", "gas_pharyngitis_inc",
-            "daily_pharyngitis_scarlet_fever_rate",
-            "daily_scarlet_fever_rate")
+            "infections_inc", "gas_pharyngitis_inc")
 
   list(run = unlist(info$index[run]),
        state = unlist(info$index[c(run, save)]))
@@ -55,12 +53,14 @@ hydrogen_index <- function(info) {
 hydrogen_compare <- function(state, observed, pars) {
 
   stopifnot(pars$n_group == 1)
-  if (!all(rownames(state) %in% names(observed))) {
+  if (!all(hydrogen_fitted_states() %in% names(observed))) {
     stop("missing or misnamed data")
   }
 
-  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate,
-                            state["daily_pharyngitis_rate", ], pars$k_gp)
+
+  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate * pars$phi_S,
+                            state["daily_gas_pharyngitis_rate", ] * pars$p_T,
+                            pars$k_gp)
   ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
                                 state["scarlet_fever_inc", ],
                                 pars$k_hpr, pars$exp_noise)
