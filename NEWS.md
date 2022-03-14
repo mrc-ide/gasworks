@@ -1,3 +1,7 @@
+# gasworks 0.3.1
+
+* update helium compare to use Normal for pharyngitis rates and Dirichlet for scarlet fever proportions
+
 # gasworks 0.3.0
 
 * add running and fitting functions for both hydrogen and helium models
