@@ -81,6 +81,26 @@ test_that("ll_multinom", {
   expect_equal(ll_multinom(c(NA, 1, 1), state, noise = 1e-6), rep(0, 2))
 })
 
+
+test_that("ll_dirichlet", {
+  data <- c(0.1, 0.3, 0.6)
+  f <- function(state) {
+    extraDistr::ddirichlet(data, state, log = TRUE)
+  }
+  ## rows: observations (eg by age)
+  ## cols: particles
+  state <- outer(c(10, 20), data)
+  expect_equal(apply(state, 1, f), ll_dirichlet(data, state, Inf))
+
+  ## check that zero states
+  zero_state <- rep(0, 3)
+  expect_lt(ll_dirichlet(data, zero_state, 1e10),
+            ll_dirichlet(data, zero_state, 1e2))
+
+  ## check can deal with missing data
+  expect_equal(ll_dirichlet(c(NA, 1, 1), state), rep(0, 2))
+})
+
 test_that("age_spline_polynomial", {
   b0 <- -0.4
   b1 <- 0.4
