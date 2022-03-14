@@ -194,8 +194,8 @@ test_that("there is no scarlet fever when p_F = 0", {
   expect_true(all(y["F2", , ] == 0))
   expect_true(all(y["R", , ] > 0))
   expect_true(all(y["igas_inc", , ] > 0))
-  expect_true(all(y["daily_scarlet_fever_rate", , ] == 0))
-  expect_true(all(y["daily_pharyngitis_scarlet_fever_rate", , ] > 0))
+  expect_true(all(y["scarlet_fever_inc", , ] == 0))
+  expect_true(all(y["daily_gas_pharyngitis_rate", , ] > 0))
 
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
@@ -216,39 +216,11 @@ test_that("there is no pharyngitis when p_F = 1", {
   expect_true(all(y["F2", , ] > 0))
   expect_true(all(y["R", , ] > 0))
   expect_true(all(y["igas_inc", , ] > 0))
-  expect_true(all(y["daily_scarlet_fever_rate", , ] > 0))
-  expect_true(all(y["pharyngitis_inc", , ] == 0))
-  expect_true(all(y["daily_pharyngitis_scarlet_fever_rate", , ] > 0))
+  expect_true(all(y["scarlet_fever_inc", , ] > 0))
+  expect_true(all(y["daily_gas_pharyngitis_rate", , ] == 0))
 
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
-})
-
-test_that("no pharyngitis cases are reported when p_T = 0", {
-  pars <- example_parameters()
-  pars$p_T <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
-
-  expect_true(all(y["A", , ] > 0))
-  expect_true(all(y["S1", , ] > 0))
-  expect_true(all(y["S2", , ] > 0))
-  expect_true(all(y["P", , ] > 0))
-  expect_true(all(y["F1", , ] > 0))
-  expect_true(all(y["F2", , ] > 0))
-  expect_true(all(y["R", , ] > 0))
-  expect_true(all(y["igas_inc", , ] > 0))
-  expect_true(all(y["daily_scarlet_fever_rate", , ] > 0))
-  expect_true(all(y["gas_pharyngitis_inc", , ] > 0))
-  expect_true(all(y["pharyngitis_inc", , ] == 0))
-  expect_true(all(y["daily_pharyngitis_rate", , ] == 0))
-  expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
-               y["daily_scarlet_fever_rate", , ])
-  expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
-               y["scarlet_fever_inc", , ] / y["N", , ] * 1e5 / 7,
-               tolerance = 1e-6)
-
 })
 
 test_that("there is no immunity when p_S = 0 and p_R = 0", {
@@ -268,9 +240,9 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
   expect_true(all(y["F2", , ] == 0))
   expect_true(all(y["R", , ] == 0))
   expect_true(all(y["igas_inc", , ] > 0))
-  expect_true(all(y["daily_scarlet_fever_rate", , ] == 0))
-  expect_true(all(y["pharyngitis_inc", , ] == 0))
-  expect_true(all(y["daily_pharyngitis_scarlet_fever_rate", , ] == 0))
+  expect_true(all(y["scarlet_fever_inc", , ] == 0))
+  expect_true(all(y["gas_pharyngitis_inc", , ] == 0))
+  expect_true(all(y["daily_gas_pharyngitis_rate", , ] == 0))
 
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
@@ -329,14 +301,9 @@ test_that("incidence time series output correctly", {
   ## output rates are daily so multiply by 7 for weekly
   ## divide by 1e5 for per person
   ## multiply by population size
-  expect_equal(y["pharyngitis_inc", , ],
-    y["gas_pharyngitis_inc", , ] / pars$phi_S * pars$p_T)
-  expect_equal(y["daily_pharyngitis_rate", , ] * 7 / 1e5 * y["N", , ],
-    y["pharyngitis_inc", , ])
-  expect_equal(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
-               y["scarlet_fever_inc", , ])
-  expect_equal(y["daily_pharyngitis_scarlet_fever_rate", , ],
-    y["daily_pharyngitis_rate", , ] + y["daily_scarlet_fever_rate", , ])
+
+  expect_equal(y["daily_gas_pharyngitis_rate", , ] * 7 / 1e5 * y["N", , ],
+    y["gas_pharyngitis_inc", , ])
 })
 
 
@@ -373,13 +340,9 @@ test_that("rates are calculated correctly when n_group == 16", {
   ## output rates are daily so multiply by 7 for weekly
   ## divide by 1e5 for per person
   ## multiply by population size
-  expect_equivalent(y["pharyngitis_inc", , ],
-    y["gas_pharyngitis_inc", , ] / pars$phi_S[1] * pars$p_T)
-  expect_equivalent(
-    y["daily_pharyngitis_scarlet_fever_rate", , ] * 7 / 1e5 * colSums(N),
-    y["pharyngitis_inc", , ] + y["scarlet_fever_inc", , ])
-  expect_equivalent(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 *  colSums(N),
-               y["scarlet_fever_inc", , ])
+
+  expect_equivalent(y["daily_gas_pharyngitis_rate", , ] * 7 / 1e5 * colSums(N),
+    y["gas_pharyngitis_inc", , ])
 
   age <- helium_age_groups()$age_start
   N_04   <- colSums(N[age < 5, , , drop = FALSE])
@@ -394,22 +357,13 @@ test_that("rates are calculated correctly when n_group == 16", {
                     colSums(N))
 
   expect_equivalent(
-    (y["daily_pharyngitis_rate_04", , ] * N_04 +
-       y["daily_pharyngitis_rate_05_14", , ] * N_5_14 +
-       y["daily_pharyngitis_rate_15_44", , ] * N_15_44 +
-       y["daily_pharyngitis_rate_45_64", , ] * N_45_64 +
-       y["daily_pharyngitis_rate_65_74", , ] * N_65_74 +
-       y["daily_pharyngitis_rate_75", , ] * N_75) * 7 / 1e5,
-    y["pharyngitis_inc", , ])
-
-  expect_equivalent(
-    (y["daily_pharyngitis_scarlet_fever_rate_04", , ] * N_04 +
-       y["daily_pharyngitis_scarlet_fever_rate_05_14", , ] * N_5_14 +
-       y["daily_pharyngitis_scarlet_fever_rate_15_44", , ] * N_15_44 +
-       y["daily_pharyngitis_scarlet_fever_rate_45_64", , ] * N_45_64 +
-       y["daily_pharyngitis_scarlet_fever_rate_65_74", , ] * N_65_74 +
-       y["daily_pharyngitis_scarlet_fever_rate_75", , ] * N_75) * 7 / 1e5,
-    y["pharyngitis_inc", , ] + y["scarlet_fever_inc", , ])
+    (y["daily_gas_pharyngitis_rate_04", , ] * N_04 +
+       y["daily_gas_pharyngitis_rate_05_14", , ] * N_5_14 +
+       y["daily_gas_pharyngitis_rate_15_44", , ] * N_15_44 +
+       y["daily_gas_pharyngitis_rate_45_64", , ] * N_45_64 +
+       y["daily_gas_pharyngitis_rate_65_74", , ] * N_65_74 +
+       y["daily_gas_pharyngitis_rate_75", , ] * N_75) * 7 / 1e5,
+    y["gas_pharyngitis_inc", , ])
 
   expect_equivalent(
     (y["daily_scarlet_fever_rate_04", , ] * N_04 +
@@ -419,50 +373,6 @@ test_that("rates are calculated correctly when n_group == 16", {
        y["daily_scarlet_fever_rate_65_74", , ] * N_65_74 +
        y["daily_scarlet_fever_rate_75", , ] * N_75) * 7 / 1e5,
       y["scarlet_fever_inc", , ])
-
-  ## Check proportion outputs
-  expect_equal(sum(apply(y[grep("^scarlet_fever_prop", nms), , -1],
-                        c(2, 3), sum) - 1), 0)
-  expect_equal(sum(apply(y[grep("^pharyngitis_prop", nms), , -1],
-                         c(2, 3), sum) - 1), 0)
-
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_04", , ] * N_04 * 7 / 1e5,
-    y["scarlet_fever_prop_04", , ] * y["scarlet_fever_inc", , ])
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_05_14", , ] * N_5_14 * 7 / 1e5,
-    y["scarlet_fever_prop_05_14", , ] * y["scarlet_fever_inc", , ])
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_15_44", , ] * N_15_44 * 7 / 1e5,
-    y["scarlet_fever_prop_15_44", , ] * y["scarlet_fever_inc", , ])
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_45_64", , ] * N_45_64 * 7 / 1e5,
-    y["scarlet_fever_prop_45_64", , ] * y["scarlet_fever_inc", , ])
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_65_74", , ] * N_65_74 * 7 / 1e5,
-    y["scarlet_fever_prop_65_74", , ] * y["scarlet_fever_inc", , ])
-  expect_equivalent(
-    y["daily_scarlet_fever_rate_75", , ] * N_75 * 7 / 1e5,
-    y["scarlet_fever_prop_75", , ] * y["scarlet_fever_inc", , ])
-
-  expect_equivalent(
-    y["daily_pharyngitis_rate_04", , ] * N_04 * 7 / 1e5,
-    y["pharyngitis_prop_04", , ] * y["pharyngitis_inc", , ])
-  expect_equivalent(
-    y["daily_pharyngitis_rate_05_14", , ] * N_5_14 * 7 / 1e5,
-    y["pharyngitis_prop_05_14", , ] * y["pharyngitis_inc", , ])
-  expect_equivalent(
-    y["daily_pharyngitis_rate_15_44", , ] * N_15_44 * 7 / 1e5,
-    y["pharyngitis_prop_15_44", , ] * y["pharyngitis_inc", , ])
-  expect_equivalent(
-    y["daily_pharyngitis_rate_45_64", , ] * N_45_64 * 7 / 1e5,
-    y["pharyngitis_prop_45_64", , ] * y["pharyngitis_inc", , ])
-  expect_equivalent(
-    y["daily_pharyngitis_rate_65_74", , ] * N_65_74 * 7 / 1e5,
-    y["pharyngitis_prop_65_74", , ] * y["pharyngitis_inc", , ])
-  expect_equivalent(
-    y["daily_pharyngitis_rate_75", , ] * N_75 * 7 / 1e5,
-    y["pharyngitis_prop_75", , ] * y["pharyngitis_inc", , ])
 
 })
 
@@ -533,7 +443,7 @@ test_that("aging does not affect model dynamics", {
   expect_true(absdiff("A") < 0.01)
   expect_true(absdiff("R") < 0.01)
   expect_true(absdiff("infections_inc") < 0.01)
-  expect_true(absdiff("pharyngitis_inc") < 0.01)
+  expect_true(absdiff("gas_pharyngitis_inc") < 0.01)
 
   expect_true(all(y$N == pars$N0))
   expect_true(all(y_a$N == pars_a$N0))
