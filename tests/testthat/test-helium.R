@@ -13,14 +13,17 @@ test_that("helium_index", {
   idx <- helium_index(mod$info())
 
   expect_equal(names(idx), c("run", "state"))
-  state_nms <- c("scarlet_fever_inc", "igas_inc", "daily_pharyngitis_rate",
+  state_nms <- c("scarlet_fever_inc", "igas_inc",
                  paste0("N", seq_len(16)),
-                 "pharyngitis_prop_04", "pharyngitis_prop_05_14",
-                 "pharyngitis_prop_15_44", "pharyngitis_prop_45_64",
-                 "pharyngitis_prop_65_74", "pharyngitis_prop_75",
-                 "scarlet_fever_prop_04", "scarlet_fever_prop_05_14",
-                 "scarlet_fever_prop_15_44", "scarlet_fever_prop_45_64",
-                 "scarlet_fever_prop_65_74", "scarlet_fever_prop_75")
+                 "daily_gas_pharyngitis_rate_04",
+                 "daily_gas_pharyngitis_rate_05_14",
+                 "daily_gas_pharyngitis_rate_15_44",
+                 "daily_gas_pharyngitis_rate_45_64",
+                 "daily_gas_pharyngitis_rate_65_74",
+                 "daily_gas_pharyngitis_rate_75",
+                 "scarlet_fever_inc_04", "scarlet_fever_inc_05_14",
+                 "scarlet_fever_inc_15_44", "scarlet_fever_inc_45_64",
+                 "scarlet_fever_inc_65_74", "scarlet_fever_inc_75")
   expect_equal(names(idx$run), state_nms)
   expect_true(all(state_nms %in% names(idx$state)))
 
@@ -30,48 +33,55 @@ test_that("helium_index", {
 })
 
 test_that("helium_compare", {
-  pars <- example_parameters(16)
+  transform <- helium_create_transform(NULL)
+  pars <- transform(example_helium_parameters())
   mod <- model$new(pars, 0, 5, seed = 1L)
   info <- mod$info()
 
   full_state <- mod$run(7)
   rownames(full_state) <- names(unlist(info$index))
   state <- full_state[helium_index(info)$run, ]
-  observed <- as.list(full_state[helium_fitted_states(), 3])
+  groups <- helium_age_groups()
 
+  sf_rate <- full_state[grep("scarlet_fever_rate_", rownames(full_state)), 3]
+  pharyngitis_rate <- state[grep("^daily_", rownames(state)), 3] / pars$phi_S
+  names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
+
+  observed <- as.list(c(state[c("scarlet_fever_inc", "igas_inc"), 3],
+                      sf_rate, pharyngitis_rate))
+
+  set.seed(1)
   ll <- helium_compare(state, observed, pars)
 
   expect_equal(length(ll), ncol(state))
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
-  expect_equal(ll, c(-103.298262175227, -84.421679833637, -68.4963345542519,
-                     -107.834192364211, -83.0004051778352))
-
-  # check matches hydrogen_compare when age-based fitting is not used
-  idx <- hydrogen_fitted_states()
-  observed_na <- replace(observed, setdiff(names(observed), idx), NA)
-  expect_equal(hydrogen_compare(state[idx, ], observed[idx],
-                                replace(pars, "n_group", 1)),
-               helium_compare(state, observed_na, pars))
+  expect_equal(ll, c(-7.19778376630279, -15.4992527528925, -3.51530299227066,
+                     -9.15725054168741, -7.73631359002704))
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
-  idx <- grep("^N", rownames(state), invert = TRUE)
-  par(mfrow = c(3, 5), bty = "n", mar = c(3, 3, 1, 1))
+  idx <- grep("^N", rownames(state), invert = TRUE, value = TRUE)
+  x <- seq(0.5, 1.5, length.out = 101)
+
   for (i in idx) {
     tmp <- matrix(state[, 3], nrow = nrow(state), ncol = 101,
                   dimnames = list(rownames(state), NULL))
-    tmp[i, ] <- tmp[i, ] * seq(0.5, 1.5, length.out = 101)
-    y <- helium_compare(tmp, observed, pars)
-    expect_equal(which.max(y), ceiling(ncol(tmp) / 2))
-  }
+    tmp[i, ] <- tmp[i, ] * x
+    # rebase so that scarlet fever cases sum to same number
+    nms <- grep("scarlet_fever_inc_", rownames(tmp), value = TRUE)
+    tmp[nms, ] <- round(t(t(tmp[nms, ]) / colSums(tmp[nms, ])) *
+                          sum(state[nms, 3]))
 
+    y <- helium_compare(tmp, observed, pars)
+    expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
+  }
 
   # NA data returns 0
   expect_equal(helium_compare(state, replace(observed, seq_along(observed), NA),
                               pars), rep(0, ncol(state)))
-
   expect_error(helium_compare(state, unname(observed), pars),
                "missing or misnamed data")
+
   expect_error(helium_compare(state, observed, example_parameters(1)))
 })
 
@@ -81,7 +91,6 @@ test_that("create_constant_log_likelihood", {
                    N = 1e3)
   data <- list(etiologic_fraction = df,
                asymptomatic_carriage = df)
-  constant_ll <- create_constant_log_likelihood(data)
   pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
                b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3)
 
@@ -92,6 +101,7 @@ test_that("create_constant_log_likelihood", {
                            age_spline_gamma)
   data$etiologic_fraction$n <- round(df$N * phi_S)
   data$asymptomatic_carriage$n <- round(df$N * prev_A)
+  constant_ll <- create_constant_log_likelihood(data)
 
   # check likelihood is maximised at true parameters
   x <- seq(0.6, 1.4, length.out = 101)

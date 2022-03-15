@@ -101,10 +101,9 @@ ll_nbinom <- function(data, model, kappa, exp_noise) {
 
 ##' @importFrom stats dnorm
 ll_norm <- function(data, model, sd) {
-  if (is.na(data)) {
-    return(numeric(length(model)))
-  }
-  dnorm(data, model, sd, log = TRUE)
+  ret <- dnorm(data, model, sd, log = TRUE)
+  ret[is.na(ret)] <- 0
+  ret
 }
 
 ##' @title ll_multinom
@@ -114,7 +113,7 @@ ll_norm <- function(data, model, sd) {
 ##' distribution, with one set per column. Values will scale automatically to
 ##' so that each column sums to 1. the number of rows should be the same length
 ##' as the data.
-##' @param noise exponential noise for case when all probabilities are 0.
+##' @param noise noise for case when all probabilities are 0.
 ll_multinom <- function(data, prob, noise) {
   stopifnot(nrow(prob) == length(data))
   if (any(is.na(data))) {
@@ -123,6 +122,25 @@ ll_multinom <- function(data, prob, noise) {
   prob[is.na(prob)] <- 0
   ## need to return -Inf when p all NA / 0
   apply(prob, 2, function(p) dmultinom(data, prob = p + noise, log = TRUE))
+}
+
+##' @title ll_dirichlet
+##' @importFrom extraDistr ddirichlet
+##' @param data a vector containing observations from a Dirichlet distribution
+##' i.e. a vector of probabilities that sum to 1
+##' @param state a matrix containing sets of shape parameters, with one row
+##' per parameter set
+##' @param exp_noise exponential noise for case when all probabilities are 0.
+ll_dirichlet <- function(data, state, exp_noise) {
+  stopifnot(ncol(state) == length(data))
+  if (any(is.na(data))) {
+    return(numeric(nrow(state)))
+  }
+  stopifnot(all.equal(sum(data), 1))
+  alpha <- state + rexp(length(state), rate = exp_noise)
+  x <- data + rexp(length(data), rate = exp_noise)
+
+  extraDistr::ddirichlet(x, alpha, TRUE)
 }
 
 ##' @title age_spline_polynomial

@@ -48,6 +48,7 @@ test_that("ll_nbinom", {
 test_that("ll_norm", {
   x <- 1:10
   expect_equal(ll_norm(10, x, 0.1), dnorm(10, x, 0.1, log = TRUE))
+  expect_equal(ll_norm(NA, x, 0.1), rep(0, 10))
 })
 
 test_that("ll_nbinom returns a vector of zeros if data missing", {
@@ -78,6 +79,28 @@ test_that("ll_multinom", {
 
   ## check can deal with missing data
   expect_equal(ll_multinom(c(NA, 1, 1), state, noise = 1e-6), rep(0, 2))
+})
+
+
+test_that("ll_dirichlet", {
+  data <- c(0.1, 0.3, 0.6)
+  f <- function(state) {
+    extraDistr::ddirichlet(data, state, log = TRUE)
+  }
+  ## rows: observations (eg by age)
+  ## cols: particles
+  state <- outer(c(10, 20), data)
+  expect_equal(apply(state, 1, f), ll_dirichlet(data, state, Inf))
+
+  ## check that zero states
+  zero_state <- rep(0, 3)
+  expect_lt(ll_dirichlet(data, zero_state, 1e10),
+            ll_dirichlet(data, zero_state, 1e2))
+
+  ## check can deal with missing data
+  expect_equal(ll_dirichlet(c(NA, 0.1, 0.2), state, Inf), rep(0, 2))
+  ## check supported for zero data
+  ll_dirichlet(c(0, 0.5, 0.5), state, 1e6)
 })
 
 test_that("age_spline_polynomial", {

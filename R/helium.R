@@ -21,12 +21,20 @@ helium_age_groups <- function() {
        idx_ukhsa = idx)
 }
 
+ukhsa_age_groups <- function() {
+  age <- c(0, 5, 15, 45, 65, 75, 100)
+  list(age_start = age[-length(age)],
+       age_end = age[-1] - 1L,
+       n_group = length(age) - 1)
+}
+
 example_helium_parameters <- function() {
   groups <- helium_age_groups()
   pars <- example_gas_parameters(groups$n_group)
   spline_pars <- list(b0_phi_S = 5, b1_phi_S = 2, b2_phi_S = 0.2,
                       b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3,
                       b0_prev_R = 75, b1_prev_R = 2, b2_prev_R = 0.9)
+  pars$prev_A <- pars$prev_R <- pars$phi_S <-  NULL
   c(pars, spline_pars)
 }
 
@@ -36,7 +44,7 @@ example_helium_parameters <- function() {
 ##' @export
 helium_fitted_states <- function() {
   groups <- helium_age_groups()
-  c("scarlet_fever_inc", "igas_inc", "daily_pharyngitis_rate",
+  c("scarlet_fever_inc", "igas_inc",
     paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
     paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
 }
@@ -55,12 +63,12 @@ helium_fitted_states <- function() {
 helium_index <- function(info) {
   groups <- helium_age_groups()
   stopifnot(info$dim$N == groups$n_group)
-  run <- c("scarlet_fever_inc", "igas_inc", "daily_pharyngitis_rate", "N",
-           paste0("pharyngitis_prop_", names(groups$idx_ukhsa)),
-           paste0("scarlet_fever_prop_", names(groups$idx_ukhsa)))
+  run <- c("scarlet_fever_inc", "igas_inc", "N",
+           paste0("daily_gas_pharyngitis_rate_", names(groups$idx_ukhsa)),
+           paste0("scarlet_fever_inc_", names(groups$idx_ukhsa)))
   save <- c("prev_R", "prev_A",  "births_inc", "net_leavers_inc",
             "infections_inc", "gas_pharyngitis_inc",
-            "daily_scarlet_fever_rate")
+            "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate")
 
   list(run = unlist(info$index[run]),
        state = unlist(info$index[c(run, save)]))
@@ -74,7 +82,7 @@ helium_index <- function(info) {
 ##' rows corresponding to average daily pharyngitis rate per 100,000,
 ##' weekly number of scarlet fever cases and weekly number of iGAS cases.
 ##' @param observed Observed data. This will be a list with elements:
-##' `scarlet_fever_inc`, `igas_inc`, `daily_pharyngitis_rate`,
+##' `scarlet_fever_inc`, `igas_inc`,
 ##' `daily_pharyngitis_rate_04`, `daily_pharyngitis_rate_05_14`,
 ##' `daily_pharyngitis_rate_15_44`, `daily_pharyngitis_rate_45_64`,
 ##' `daily_pharyngitis_rate_65_74`, `daily_pharyngitis_rate_75`,
@@ -94,47 +102,47 @@ helium_compare <- function(state, observed, pars) {
   }
 
   age_groups <- names(groups$idx_ukhsa)
-  pharyngitis_prop <- state[sprintf("pharyngitis_prop_%s", age_groups), ]
-  scarlet_fever_prop <- state[sprintf("scarlet_fever_prop_%s", age_groups), ]
 
-  cases <- helium_convert_incidence_to_cases(state, observed)
 
-  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate,
-                            state["daily_pharyngitis_rate", ], pars$k_gp) +
-    ll_multinom(cases$pharyngitis, pharyngitis_prop, 1e-10)
+  ## Convert observed sf rates to propotion
+  N <- state[paste0("N", seq_len(groups$n_group)), 1]
+  # convert to UKHSA age groups
+  pop <- vapply(groups$idx_ukhsa, function(idx) sum(N[idx]), numeric(1))
+  obs_sf_rates <- observed[paste0("daily_scarlet_fever_rate_", age_groups)]
+  # convert daily -> weekly, per 100,000 -> per person, per person -> whole pop
+  obs_sf_cases <- round(unlist(obs_sf_rates) * 7 / 1e5 * pop)
+
+  obs_sf_prop <- obs_sf_cases / sum(obs_sf_cases)
+
+  obs_gas_pharyngitis_rate <- pars$phi_S *
+    unlist(observed[paste0("daily_pharyngitis_rate_", age_groups)])
+
+  model_sf_cases <- t(state[sprintf("scarlet_fever_inc_%s", age_groups), ])
+  model_gas_pharyngitis_rate <- pars$p_T *
+    state[sprintf("daily_gas_pharyngitis_rate_%s", age_groups), ]
+
+  # we want
+  # model:
+  # - pharyngitis rates by age
+  # - scarlet fever cases by age
+  # - scarlet fever cases total
+  # data:
+  # - pharyngitis rates by age
+  # - sf rates by age -> cases -> props
+  # - scarlet fever cases total
+  ll_pharyngitis <- ll_norm(obs_gas_pharyngitis_rate,
+                            model_gas_pharyngitis_rate, pars$k_gp)
 
   ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
                                 state["scarlet_fever_inc", ],
                                 pars$k_hpr, pars$exp_noise) +
-    ll_multinom(cases$scarlet_fever, scarlet_fever_prop, 1e-10)
+    ll_dirichlet(obs_sf_prop, model_sf_cases, pars$exp_noise)
 
-  ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ], pars$k_hpr,
-                       pars$exp_noise)
+  ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
+                       pars$k_hpr, pars$exp_noise)
 
-  ll_pharyngitis + ll_scarlet_fever + ll_igas
-}
-
-
-helium_convert_incidence_to_cases <- function(state, observed) {
-  # state and observed are same as supplied to compare function
-  groups <- helium_age_groups()
-  # can take a single particle as all will be the same due to deterministic
-  # demography
-  N <- state[paste0("N", seq_len(groups$n_group)), 1]
-  # convert to UKHSA age groups
-  pop <- vapply(groups$idx_ukhsa, function(idx) sum(N[idx]), numeric(1))
-
-  nms <- names(groups$idx_ukhsa)
-  # extract rates by age from data
-  rates <- list(
-    pharyngitis = observed[paste0("daily_pharyngitis_rate_", nms)],
-    scarlet_fever = observed[paste0("daily_scarlet_fever_rate_", nms)])
-
-  # convert daily -> weekly
-  # per 100,000 -> per person
-  # per person -> whole pop
-  cases <- lapply(rates, function(x) round(unlist(x) * pop * 7 / 1e5))
-  cases
+  ll <- colSums(ll_pharyngitis) + ll_scarlet_fever + ll_igas
+  ll
 }
 
 ##' @title Prepare particle filter data for the helium model
@@ -160,6 +168,7 @@ helium_prepare_data <- function(data) {
 ##' @return a particle filter for the helium model
 ##' @export
 helium_filter <- function(data, constant_data, n_particles) {
+
   data <- helium_prepare_data(data)
   constant_ll <- create_constant_log_likelihood(constant_data)
   mcstate::particle_filter$new(data, model, n_particles,
@@ -209,12 +218,17 @@ helium_create_transform <- function(demographic_pars) {
 
     groups <- helium_age_groups()
     pars$n_group <- groups$n_group
+    ukhsa <- ukhsa_age_groups()
 
     # calculate age splines using gamma method
     nms <- c("phi_S", "prev_A", "prev_R")
     coefs <- helium_get_spline_coefficients(nms, pars)
     pars[nms] <- lapply(coefs, mean_age_spline, age_start = groups$age_start,
                         age_end = groups$age_end - 1, spline = age_spline_gamma)
+    # phi_S is applied to observed UKHSA groups
+
+    pars$phi_S <- mean_age_spline(ukhsa$age_start, ukhsa$age_end, coefs$phi_S,
+                                  age_spline_gamma)
 
     model_parameters(pars, demographic_pars = demographic_pars)
   }
