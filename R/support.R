@@ -138,8 +138,9 @@ ll_dirichlet <- function(data, state, exp_noise) {
   }
   stopifnot(all.equal(sum(data), 1))
   alpha <- state + rexp(length(state), rate = exp_noise)
-  ## need to return -Inf when p all NA / 0
-  extraDistr::ddirichlet(data, alpha, TRUE)
+  x <- data + rexp(length(data), rate = exp_noise)
+
+  extraDistr::ddirichlet(x, alpha, TRUE)
 }
 
 ##' @title age_spline_polynomial
