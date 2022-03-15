@@ -55,8 +55,8 @@ test_that("helium_compare", {
 
   expect_equal(length(ll), ncol(state))
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
-  expect_equal(ll, c(-7.19893580435882, -15.5004168598668, -3.51658334642205,
-                     -9.15829301941287, -7.73752318583186))
+  expect_equal(ll, c(-7.19778376630279, -15.4992527528925, -3.51530299227066,
+                     -9.15725054168741, -7.73631359002704))
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
@@ -73,7 +73,7 @@ test_that("helium_compare", {
                           sum(state[nms, 3]))
 
     y <- helium_compare(tmp, observed, pars)
-    expect_equivalent(max(y), y[x == 1], tol = 1 / pars$exp_noise)
+    expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
   }
 
   # NA data returns 0

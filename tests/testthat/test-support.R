@@ -98,7 +98,9 @@ test_that("ll_dirichlet", {
             ll_dirichlet(data, zero_state, 1e2))
 
   ## check can deal with missing data
-  expect_equal(ll_dirichlet(c(NA, 1, 1), state), rep(0, 2))
+  expect_equal(ll_dirichlet(c(NA, 0.1, 0.2), state, Inf), rep(0, 2))
+  ## check supported for zero data
+  ll_dirichlet(c(0, 0.5, 0.5), state, 1e6)
 })
 
 test_that("age_spline_polynomial", {
