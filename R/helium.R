@@ -68,7 +68,7 @@ helium_index <- function(info) {
            paste0("scarlet_fever_inc_", names(groups$idx_ukhsa)))
   save <- c("prev_R", "prev_A",  "births_inc", "net_leavers_inc",
             "infections_inc", "gas_pharyngitis_inc",
-            "daily_scarlet_fever_rate")
+            "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate")
 
   list(run = unlist(info$index[run]),
        state = unlist(info$index[c(run, save)]))
@@ -141,7 +141,8 @@ helium_compare <- function(state, observed, pars) {
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
-  colSums(ll_pharyngitis) + ll_scarlet_fever + ll_igas
+  ll <- colSums(ll_pharyngitis) + ll_scarlet_fever + ll_igas
+  ll
 }
 
 ##' @title Prepare particle filter data for the helium model
