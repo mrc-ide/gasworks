@@ -13,17 +13,19 @@ test_that("helium_index", {
   idx <- helium_index(mod$info())
 
   expect_equal(names(idx), c("run", "state"))
-  state_nms <- c("scarlet_fever_inc", "igas_inc",
-                 paste0("N", seq_len(16)),
+  state_nms <- c("scarlet_fever_cases", "igas_inc",
                  "daily_gas_pharyngitis_rate_04",
                  "daily_gas_pharyngitis_rate_05_14",
                  "daily_gas_pharyngitis_rate_15_44",
                  "daily_gas_pharyngitis_rate_45_64",
                  "daily_gas_pharyngitis_rate_65_74",
                  "daily_gas_pharyngitis_rate_75",
-                 "scarlet_fever_inc_04", "scarlet_fever_inc_05_14",
-                 "scarlet_fever_inc_15_44", "scarlet_fever_inc_45_64",
-                 "scarlet_fever_inc_65_74", "scarlet_fever_inc_75")
+                 "daily_scarlet_fever_rate_04",
+                 "daily_scarlet_fever_rate_05_14",
+                 "daily_scarlet_fever_rate_15_44",
+                 "daily_scarlet_fever_rate_45_64",
+                 "daily_scarlet_fever_rate_65_74",
+                 "daily_scarlet_fever_rate_75")
   expect_equal(names(idx$run), state_nms)
   expect_true(all(state_nms %in% names(idx$state)))
 
@@ -43,11 +45,11 @@ test_that("helium_compare", {
   state <- full_state[helium_index(info)$run, ]
   groups <- helium_age_groups()
 
-  sf_rate <- full_state[grep("scarlet_fever_rate_", rownames(full_state)), 3]
-  pharyngitis_rate <- state[grep("^daily_", rownames(state)), 3] / pars$phi_S
+  sf_rate <- full_state[grep("daily_sca", rownames(full_state)), 3]
+  pharyngitis_rate <- state[grep("^daily_gas", rownames(state)), 3] / pars$phi_S
   names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
 
-  observed <- as.list(c(state[c("scarlet_fever_inc", "igas_inc"), 3],
+  observed <- as.list(c(state[c("scarlet_fever_cases", "igas_inc"), 3],
                       sf_rate, pharyngitis_rate))
 
   set.seed(1)
@@ -55,8 +57,8 @@ test_that("helium_compare", {
 
   expect_equal(length(ll), ncol(state))
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
-  expect_equal(ll, c(-7.19778376630279, -15.4992527528925, -3.51530299227066,
-                     -9.15725054168741, -7.73631359002704))
+  expect_equal(ll, c(-24.813554694153, -33.7484013304405, -24.0115119493748,
+                     -25.1792899314225, -24.2923960810031))
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
@@ -117,7 +119,8 @@ test_that("create_constant_log_likelihood", {
 test_that("helium_filter", {
   data <- data.frame(model_week = 1:6,
                      daily_pharyngitis_rate = 10:15,
-                     scarlet_fever_inc = 100:105,
+                     daily_scarlet_fever_rate = 1:6,
+                     scarlet_fever_cases = 100:105,
                      igas_inc = 90:95,
                      daily_pharyngitis_rate_04 = 0:5,
                      daily_pharyngitis_rate_05_14 = 1:6,
