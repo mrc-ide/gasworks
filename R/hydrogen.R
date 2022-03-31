@@ -21,8 +21,7 @@ hydrogen_fitted_states <- function() {
 ##' hydrogen_index(mod$info())
 hydrogen_index <- function(info) {
   stopifnot(info$dim$N == 1)
-  run <-  c("daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate",
-            "scarlet_fever_cases", "igas_inc")
+  run <- hydrogen_fitted_states()
   save <- c("prev_R", "prev_A", "N", "births_inc", "net_leavers_inc",
             "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc")
 
@@ -45,7 +44,7 @@ hydrogen_index <- function(info) {
 ##'   of particles (the number of columns in the modelled state)
 ##' @export
 ##' @examples
-##' state <- rbind(daily_gas_pharyngitis_rate = 10:15,
+##' state <- rbind(daily_pharyngitis_rate = 10:15,
 ##'                daily_scarlet_fever_rate = 0:5,
 ##'                scarlet_fever_cases = 100:105,
 ##'                igas_inc = 90:95)
@@ -63,20 +62,20 @@ hydrogen_compare <- function(state, observed, pars) {
     stop("missing or misnamed data")
   }
 
+  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate,
+                            state["daily_pharyngitis_rate", ], pars$k_gp)
 
-  ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate * pars$phi_S,
-                            state["daily_gas_pharyngitis_rate", ] * pars$p_T,
-                            pars$k_gp)
-  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_cases,
+  ll_sf_cases <- ll_nbinom(observed$scarlet_fever_cases,
                                 state["scarlet_fever_cases", ],
-                                pars$k_hpr, pars$exp_noise) +
-    ll_norm(observed$daily_scarlet_fever_rate,
+                           pars$k_hpr, pars$exp_noise)
+
+  ll_sf_rate <- ll_norm(observed$daily_scarlet_fever_rate,
             state["daily_scarlet_fever_rate", ], pars$k_gp)
 
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
-  ll_pharyngitis + ll_scarlet_fever + ll_igas
+  ll_pharyngitis + ll_sf_cases + ll_sf_rate + ll_igas
 }
 
 ##' @title Prepare particle filter data for the hydrogen model

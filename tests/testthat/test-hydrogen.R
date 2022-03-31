@@ -12,7 +12,7 @@ test_that("hydrogen_index", {
 
   expect_equal(names(idx), c("run", "state"))
   expect_equal(names(idx$run),
-               c("daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate",
+               c("daily_pharyngitis_rate", "daily_scarlet_fever_rate",
                  "scarlet_fever_cases", "igas_inc"))
 
   # check can only use on hydrogen model
@@ -22,11 +22,11 @@ test_that("hydrogen_index", {
 
 test_that("hydrogen_compare", {
   pars <- example_parameters(1)
-  state <- rbind(daily_gas_pharyngitis_rate = 10:15,
+  state <- rbind(daily_pharyngitis_rate = 10:15,
                  daily_scarlet_fever_rate = 1:6,
                  scarlet_fever_cases = 100:105,
                  igas_inc = 90:95)
-  observed <- list(daily_pharyngitis_rate = 13 / pars$phi_S,
+  observed <- list(daily_pharyngitis_rate = 13,
                    daily_scarlet_fever_rate = 4,
                    scarlet_fever_cases = 103,
                    igas_inc = 93)
@@ -39,7 +39,8 @@ test_that("hydrogen_compare", {
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
   x <- seq(0.5, 1.5, length.out = 101)
-  for (i in seq_along(nrow(state))) {
+  par(mfrow = c(2, 2), mar = c(3, 3, 1, 1))
+  for (i in seq_len(nrow(state))) {
     tmp <- matrix(state[, 4], nrow = nrow(state), ncol = 101,
                   dimnames = list(rownames(state), NULL))
     tmp[i, ] <- tmp[i, ] * x
@@ -56,8 +57,8 @@ test_that("hydrogen_compare", {
                    daily_pharyngitis_rate = 1400,
                    daily_scarlet_fever_rate = 0.17)
   ll <- hydrogen_compare(state, observed, pars)
-  expect_equal(ll, c(-17.4284917966389, -17.4969689904182, -17.6260807979267,
-                     -17.5544631699755, -17.6074746321239))
+  expect_equal(ll, c(-18.1243131991795, -17.6034134081087, -17.7352779748842,
+                     -18.8784276313978, -18.6765604297084))
 
   # NA data returns 0
   expect_equal(hydrogen_compare(state, replace(observed, 1:4, NA), pars),
