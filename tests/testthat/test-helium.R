@@ -14,12 +14,13 @@ test_that("helium_index", {
 
   expect_equal(names(idx), c("run", "state"))
   state_nms <- c("scarlet_fever_cases", "igas_inc",
-                 "daily_gas_pharyngitis_rate_04",
-                 "daily_gas_pharyngitis_rate_05_14",
-                 "daily_gas_pharyngitis_rate_15_44",
-                 "daily_gas_pharyngitis_rate_45_64",
-                 "daily_gas_pharyngitis_rate_65_74",
-                 "daily_gas_pharyngitis_rate_75",
+                 "daily_pharyngitis_rate",
+                 "daily_pharyngitis_rate_04",
+                 "daily_pharyngitis_rate_05_14",
+                 "daily_pharyngitis_rate_15_44",
+                 "daily_pharyngitis_rate_45_64",
+                 "daily_pharyngitis_rate_65_74",
+                 "daily_pharyngitis_rate_75",
                  "daily_scarlet_fever_rate_04",
                  "daily_scarlet_fever_rate_05_14",
                  "daily_scarlet_fever_rate_15_44",
@@ -46,8 +47,7 @@ test_that("helium_compare", {
   groups <- helium_age_groups()
 
   sf_rate <- full_state[grep("daily_sca", rownames(full_state)), 3]
-  pharyngitis_rate <- state[grep("^daily_gas", rownames(state)), 3] / pars$phi_S
-  names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
+  pharyngitis_rate <- state[grep("daily_pha", rownames(state)), 3]
 
   observed <- as.list(c(state[c("scarlet_fever_cases", "igas_inc"), 3],
                       sf_rate, pharyngitis_rate))

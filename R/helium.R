@@ -65,12 +65,12 @@ helium_fitted_states <- function() {
 helium_index <- function(info) {
   groups <- helium_age_groups()
   stopifnot(info$dim$N == groups$n_group)
-  run <- c("scarlet_fever_cases", "igas_inc",
-           paste0("daily_gas_pharyngitis_rate_", names(groups$idx_ukhsa)),
+  run <- c("scarlet_fever_cases", "igas_inc", "daily_pharyngitis_rate",
+           paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
            paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
   save <- c("prev_R", "prev_A",  "births_inc", "net_leavers_inc",
             "infections_inc", "gas_pharyngitis_inc", "scarllet_fever_inc",
-            "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate")
+            "daily_pharyngitis_rate", "daily_scarlet_fever_rate")
 
   list(run = unlist(info$index[run]),
        state = unlist(info$index[c(run, save)]))
@@ -107,26 +107,33 @@ helium_compare <- function(state, observed, pars) {
 
   obs_sf_rate <- unlist(
     observed[paste0("daily_scarlet_fever_rate_", age_groups)])
-  obs_gas_pharyngitis_rate <- pars$phi_S *
-    unlist(observed[paste0("daily_pharyngitis_rate_", age_groups)])
+  obs_pharyngitis_rate <- unlist(
+    observed[paste0("daily_pharyngitis_rate_", age_groups)])
 
   model_sf_rate <- state[sprintf("daily_scarlet_fever_rate_%s", age_groups), ]
-  model_gas_pharyngitis_rate <- pars$p_T *
-    state[sprintf("daily_gas_pharyngitis_rate_%s", age_groups), ]
+  model_pharyngitis_rate <-
+    state[sprintf("daily_pharyngitis_rate_%s", age_groups), ]
 
-  ll_pharyngitis <- ll_norm(obs_gas_pharyngitis_rate,
-                            model_gas_pharyngitis_rate, pars$k_gp)
+  ## age-split only available between W38 2016-2018 W16
+  ## need to fit to overall rate in otherwise
+  if (all(is.na(obs_pharyngitis_rate))) {
+    ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate,
+                             state["daily_pharyngitis_rate", ], pars$k_gp)
+  } else {
+    ll_pharyngitis <- colSums(ll_norm(obs_pharyngitis_rate,
+                              model_pharyngitis_rate, pars$k_gp))
+  }
 
-  # if q_F is time-varying then need to do this in odin
   ll_sf_cases <- ll_nbinom(observed$scarlet_fever_cases,
                                 state["scarlet_fever_cases", ],
                                 pars$k_hpr, pars$exp_noise)
-  ll_sf_rate <- ll_norm(obs_sf_rate, model_sf_rate, pars$k_gp)
+
+  ll_sf_rate <- colSums(ll_norm(obs_sf_rate, model_sf_rate, pars$k_gp))
 
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
-  ll <- colSums(ll_pharyngitis) + colSums(ll_sf_rate) + ll_sf_cases + ll_igas
+  ll <- ll_pharyngitis + ll_sf_rate + ll_sf_cases + ll_igas
   ll
 }
 
@@ -210,10 +217,6 @@ helium_create_transform <- function(demographic_pars) {
     coefs <- helium_get_spline_coefficients(nms, pars)
     pars[nms] <- lapply(coefs, mean_age_spline, age_start = groups$age_start,
                         age_end = groups$age_end - 1, spline = age_spline_gamma)
-
-    # phi_S is applied to observed UKHSA groups
-    pars$phi_S <- mean_age_spline(ukhsa$age_start, ukhsa$age_end, coefs$phi_S,
-                                  age_spline_gamma)
 
     ## time-varying rate of reporting SF
     pars$q_F_t <- seq(model_day("2014-01-01"), model_day("2020-01-01"))
