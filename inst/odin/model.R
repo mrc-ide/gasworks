@@ -55,6 +55,8 @@ gas_pharyngitis_inc_by_group[] <- (
   else gas_pharyngitis_inc_by_group[i] + n_ES[i]
   )
 
+pharyngitis_inc_by_group[] <- gas_pharyngitis_inc_by_group[i] / phi_S[i] * p_T
+
 scarlet_fever_inc_by_group[] <- (
   if (step %% steps_per_week == 0) n_PF[i]
   else scarlet_fever_inc_by_group[i] + n_PF[i])
@@ -68,10 +70,8 @@ update(igas_inc) <- (
 
 ## Output daily incidence rate per 100,000 population
  w[] <- N[i] / 1e5 * 7
-update(daily_gas_pharyngitis_rate) <-
-  sum(gas_pharyngitis_inc_by_group[]) / sum(w[])
-update(daily_scarlet_fever_rate) <-
-  sum(scarlet_fever_inc_by_group[]) / sum(w[])
+update(daily_pharyngitis_rate) <- sum(pharyngitis_inc_by_group[]) / sum(w[])
+update(daily_scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## When using the age-structured model (helium) output incidence rates for age
 ## groups used by UK GP surveillance:
@@ -79,22 +79,22 @@ update(daily_scarlet_fever_rate) <-
 ## [1], [2:3], [4:9], [10:13], [14:15], [16]
 
 ## Output daily GAS pharyngitis rates by group
-update(daily_gas_pharyngitis_rate_04) <- (
+update(daily_pharyngitis_rate_04) <- (
   if (n_group == 16) gas_pharyngitis_inc_by_group[1] / w[1]
   else 0)
-update(daily_gas_pharyngitis_rate_05_14) <- (
+update(daily_pharyngitis_rate_05_14) <- (
   if (n_group == 16) sum(gas_pharyngitis_inc_by_group[2:3]) / sum(w[2:3])
   else 0)
-update(daily_gas_pharyngitis_rate_15_44) <- (
+update(daily_pharyngitis_rate_15_44) <- (
   if (n_group == 16) sum(gas_pharyngitis_inc_by_group[4:9]) / sum(w[4:9])
   else 0)
-update(daily_gas_pharyngitis_rate_45_64) <- (
+update(daily_pharyngitis_rate_45_64) <- (
   if (n_group == 16) sum(gas_pharyngitis_inc_by_group[10:13]) / sum(w[10:13])
   else 0)
-update(daily_gas_pharyngitis_rate_65_74) <- (
+update(daily_pharyngitis_rate_65_74) <- (
   if (n_group == 16) sum(gas_pharyngitis_inc_by_group[14:15]) / sum(w[14:15])
   else 0)
-update(daily_gas_pharyngitis_rate_75) <- (
+update(daily_pharyngitis_rate_75) <- (
   if (n_group == 16) gas_pharyngitis_inc_by_group[16] / w[16]
   else 0)
 
@@ -243,15 +243,15 @@ initial(igas_inc) <- 0
 initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
-initial(daily_gas_pharyngitis_rate) <- 0
+initial(daily_pharyngitis_rate) <- 0
 initial(daily_scarlet_fever_rate) <- 0
 
-initial(daily_gas_pharyngitis_rate_04)   <-  0
-initial(daily_gas_pharyngitis_rate_05_14) <- 0
-initial(daily_gas_pharyngitis_rate_15_44) <- 0
-initial(daily_gas_pharyngitis_rate_45_64) <- 0
-initial(daily_gas_pharyngitis_rate_65_74) <- 0
-initial(daily_gas_pharyngitis_rate_75)    <- 0
+initial(daily_pharyngitis_rate_04)   <-  0
+initial(daily_pharyngitis_rate_05_14) <- 0
+initial(daily_pharyngitis_rate_15_44) <- 0
+initial(daily_pharyngitis_rate_45_64) <- 0
+initial(daily_pharyngitis_rate_65_74) <- 0
+initial(daily_pharyngitis_rate_75)    <- 0
 
 initial(daily_scarlet_fever_rate_04)   <-  0
 initial(daily_scarlet_fever_rate_05_14) <- 0
@@ -286,6 +286,7 @@ p_S <- user() # probability of pharyngitis symptoms after infection
 p_R <- user() # probability of immunity after carriage
 p_I <- user() # probability of invasive disease after infection
 p_F <- user() # probability of scarlet fever after pharyngitis
+p_T <- user() # probability of seeking treatment for GAS pharyngitis
 delta_A <- user() # mean duration of carriage
 delta_E <- user() # mean duration of incubation period
 delta_S <- user() # mean duration of pharyngitis symptoms
@@ -299,6 +300,7 @@ k_P <- user() # number of sub-compartments for pre-scarlet fever
 k_F <- user() # number of sub-compartments for scarlet fever rash
 k_R <- user() # number of sub-compartments for natural immunity
 theta_A <- user() # infectiousness of carriers relative to symptomatics
+phi_S[] <- user() # proportion of pharyngitis caused by GAS
 
 alpha[]  <- user() # time-varying number of births
 dim(alpha) <- user()
@@ -326,6 +328,7 @@ dim(N)  <- n_group
 
 dim(prev_A) <- n_group
 dim(prev_R) <- n_group
+dim(phi_S) <- n_group
 
 dim(U0)  <- n_group
 dim(A0)  <- c(n_group, k_A)
@@ -402,4 +405,5 @@ dim(n_RU) <- n_group
 
 dim(w) <- n_group
 dim(gas_pharyngitis_inc_by_group) <- n_group
+dim(pharyngitis_inc_by_group) <- n_group
 dim(scarlet_fever_inc_by_group)   <- n_group
