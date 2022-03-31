@@ -1,3 +1,8 @@
+# gasworks 0.3.2
+
+* update helium and hydrogen compare to fit to GP scarlet fever incidence,
+as well as notifiable cases (subject to time-varying under-reporting)
+
 # gasworks 0.3.1
 
 * update helium compare to use Normal for pharyngitis rates and Dirichlet for scarlet fever proportions

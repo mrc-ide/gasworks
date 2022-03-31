@@ -35,6 +35,8 @@ example_helium_parameters <- function() {
                       b0_prev_A = 10, b1_prev_A = 3, b2_prev_A = 0.3,
                       b0_prev_R = 75, b1_prev_R = 2, b2_prev_R = 0.9)
   pars$prev_A <- pars$prev_R <- pars$phi_S <-  NULL
+  pars$q_F_2014 <- 0.3
+  pars$q_F_2020 <- 0.6
   c(pars, spline_pars)
 }
 
@@ -44,7 +46,7 @@ example_helium_parameters <- function() {
 ##' @export
 helium_fitted_states <- function() {
   groups <- helium_age_groups()
-  c("scarlet_fever_inc", "igas_inc",
+  c("scarlet_fever_cases", "igas_inc",
     paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
     paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
 }
@@ -63,11 +65,11 @@ helium_fitted_states <- function() {
 helium_index <- function(info) {
   groups <- helium_age_groups()
   stopifnot(info$dim$N == groups$n_group)
-  run <- c("scarlet_fever_inc", "igas_inc", "N",
+  run <- c("scarlet_fever_cases", "igas_inc",
            paste0("daily_gas_pharyngitis_rate_", names(groups$idx_ukhsa)),
-           paste0("scarlet_fever_inc_", names(groups$idx_ukhsa)))
+           paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
   save <- c("prev_R", "prev_A",  "births_inc", "net_leavers_inc",
-            "infections_inc", "gas_pharyngitis_inc",
+            "infections_inc", "gas_pharyngitis_inc", "scarllet_fever_inc",
             "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate")
 
   list(run = unlist(info$index[run]),
@@ -82,7 +84,7 @@ helium_index <- function(info) {
 ##' rows corresponding to average daily pharyngitis rate per 100,000,
 ##' weekly number of scarlet fever cases and weekly number of iGAS cases.
 ##' @param observed Observed data. This will be a list with elements:
-##' `scarlet_fever_inc`, `igas_inc`,
+##' `scarlet_fever_cases`, `igas_inc`,
 ##' `daily_pharyngitis_rate_04`, `daily_pharyngitis_rate_05_14`,
 ##' `daily_pharyngitis_rate_15_44`, `daily_pharyngitis_rate_45_64`,
 ##' `daily_pharyngitis_rate_65_74`, `daily_pharyngitis_rate_75`,
@@ -103,45 +105,28 @@ helium_compare <- function(state, observed, pars) {
 
   age_groups <- names(groups$idx_ukhsa)
 
-
-  ## Convert observed sf rates to propotion
-  N <- state[paste0("N", seq_len(groups$n_group)), 1]
-  # convert to UKHSA age groups
-  pop <- vapply(groups$idx_ukhsa, function(idx) sum(N[idx]), numeric(1))
-  obs_sf_rates <- observed[paste0("daily_scarlet_fever_rate_", age_groups)]
-  # convert daily -> weekly, per 100,000 -> per person, per person -> whole pop
-  obs_sf_cases <- round(unlist(obs_sf_rates) * 7 / 1e5 * pop)
-
-  obs_sf_prop <- obs_sf_cases / sum(obs_sf_cases)
-
+  obs_sf_rate <- unlist(
+    observed[paste0("daily_scarlet_fever_rate_", age_groups)])
   obs_gas_pharyngitis_rate <- pars$phi_S *
     unlist(observed[paste0("daily_pharyngitis_rate_", age_groups)])
 
-  model_sf_cases <- t(state[sprintf("scarlet_fever_inc_%s", age_groups), ])
+  model_sf_rate <- state[sprintf("daily_scarlet_fever_rate_%s", age_groups), ]
   model_gas_pharyngitis_rate <- pars$p_T *
     state[sprintf("daily_gas_pharyngitis_rate_%s", age_groups), ]
 
-  # we want
-  # model:
-  # - pharyngitis rates by age
-  # - scarlet fever cases by age
-  # - scarlet fever cases total
-  # data:
-  # - pharyngitis rates by age
-  # - sf rates by age -> cases -> props
-  # - scarlet fever cases total
   ll_pharyngitis <- ll_norm(obs_gas_pharyngitis_rate,
                             model_gas_pharyngitis_rate, pars$k_gp)
 
-  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
-                                state["scarlet_fever_inc", ],
-                                pars$k_hpr, pars$exp_noise) +
-    ll_dirichlet(obs_sf_prop, model_sf_cases, pars$exp_noise)
+  # if q_F is time-varying then need to do this in odin
+  ll_sf_cases <- ll_nbinom(observed$scarlet_fever_cases,
+                                state["scarlet_fever_cases", ],
+                                pars$k_hpr, pars$exp_noise)
+  ll_sf_rate <- ll_norm(obs_sf_rate, model_sf_rate, pars$k_gp)
 
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
-  ll <- colSums(ll_pharyngitis) + ll_scarlet_fever + ll_igas
+  ll <- colSums(ll_pharyngitis) + colSums(ll_sf_rate) + ll_sf_cases + ll_igas
   ll
 }
 
@@ -225,10 +210,15 @@ helium_create_transform <- function(demographic_pars) {
     coefs <- helium_get_spline_coefficients(nms, pars)
     pars[nms] <- lapply(coefs, mean_age_spline, age_start = groups$age_start,
                         age_end = groups$age_end - 1, spline = age_spline_gamma)
-    # phi_S is applied to observed UKHSA groups
 
+    # phi_S is applied to observed UKHSA groups
     pars$phi_S <- mean_age_spline(ukhsa$age_start, ukhsa$age_end, coefs$phi_S,
                                   age_spline_gamma)
+
+    ## time-varying rate of reporting SF
+    pars$q_F_t <- seq(model_day("2014-01-01"), model_day("2020-01-01"))
+    pars$q_F <- seq(pars$q_F_2014, pars$q_F_2020,
+                    length.out = length(pars$q_F_t))
 
     model_parameters(pars, demographic_pars = demographic_pars)
   }

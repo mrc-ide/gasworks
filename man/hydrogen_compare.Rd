@@ -13,7 +13,8 @@ rows corresponding to average daily pharyngitis rate per 100,000,
 weekly number of scarlet fever cases and weekly number of iGAS cases.}
 
 \item{observed}{Observed data. This will be a list with elements
-\code{daily_pharyngitis_rate}, \code{scarlet_fever_inc} and \code{igas_inc}}
+\code{daily_pharyngitis_rate}, \code{daily_scarlet_fever_rate}, \code{scarlet_fever_cases}
+and \code{igas_inc}}
 
 \item{pars}{A list of parameters, as created by \code{\link[=model_parameters]{model_parameters()}}}
 }
@@ -27,9 +28,12 @@ conforms to the mcstate interface.
 }
 \examples{
 state <- rbind(daily_gas_pharyngitis_rate = 10:15,
-               scarlet_fever_inc = 100:105,
+               daily_scarlet_fever_rate = 0:5,
+               scarlet_fever_cases = 100:105,
                igas_inc = 90:95)
-observed <- list(daily_pharyngitis_rate = 52, scarlet_fever_inc = 103,
+observed <- list(daily_pharyngitis_rate = 13,
+                 daily_scarlet_fever_rate = 3,
+                 scarlet_fever_cases = 103,
                  igas_inc = 93)
 pars <- example_parameters(1)
 hydrogen_compare(state, observed, pars)

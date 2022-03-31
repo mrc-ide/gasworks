@@ -60,7 +60,8 @@ example_gas_parameters <- function(n_group = 1) {
        k_gp = 1,
        k_hpr = 1,
        theta_A = 1,
-       phi_S = rep(0.25, n_group))
+       phi_S = rep(0.25, n_group),
+       q_F = 0.3)
 }
 
 ##' @name example_parameters
@@ -97,7 +98,8 @@ no_gas_parameters <- function(n_group = 1) {
                delta_S = 1,
                delta_F = 1,
                theta_A = 0,
-               phi_S = rep(1, n_group))
+               phi_S = rep(1, n_group),
+               q_F = 0)
 }
 
 ##' @name model_parameters

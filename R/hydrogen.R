@@ -3,7 +3,8 @@
 ##' @return A character vector of the model states that are fitted to data
 ##' @export
 hydrogen_fitted_states <- function() {
-  c("daily_pharyngitis_rate", "scarlet_fever_inc", "igas_inc")
+  c("daily_pharyngitis_rate", "daily_scarlet_fever_rate",
+    "scarlet_fever_cases", "igas_inc")
 }
 
 ##' @name hydrogen_index
@@ -20,9 +21,10 @@ hydrogen_fitted_states <- function() {
 ##' hydrogen_index(mod$info())
 hydrogen_index <- function(info) {
   stopifnot(info$dim$N == 1)
-  run <-  c("daily_gas_pharyngitis_rate", "scarlet_fever_inc", "igas_inc")
+  run <-  c("daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate",
+            "scarlet_fever_cases", "igas_inc")
   save <- c("prev_R", "prev_A", "N", "births_inc", "net_leavers_inc",
-            "infections_inc", "gas_pharyngitis_inc")
+            "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc")
 
   list(run = unlist(info$index[run]),
        state = unlist(info$index[c(run, save)]))
@@ -36,16 +38,20 @@ hydrogen_index <- function(info) {
 ##' rows corresponding to average daily pharyngitis rate per 100,000,
 ##' weekly number of scarlet fever cases and weekly number of iGAS cases.
 ##' @param observed Observed data. This will be a list with elements
-##' `daily_pharyngitis_rate`, `scarlet_fever_inc` and `igas_inc`
+##' `daily_pharyngitis_rate`, `daily_scarlet_fever_rate`, `scarlet_fever_cases`
+##' and `igas_inc`
 ##' @param pars A list of parameters, as created by [model_parameters()]
 ##' @return A vector of log likelihoods, the same length as the number
 ##'   of particles (the number of columns in the modelled state)
 ##' @export
 ##' @examples
 ##' state <- rbind(daily_gas_pharyngitis_rate = 10:15,
-##'                scarlet_fever_inc = 100:105,
+##'                daily_scarlet_fever_rate = 0:5,
+##'                scarlet_fever_cases = 100:105,
 ##'                igas_inc = 90:95)
-##' observed <- list(daily_pharyngitis_rate = 52, scarlet_fever_inc = 103,
+##' observed <- list(daily_pharyngitis_rate = 13,
+##'                  daily_scarlet_fever_rate = 3,
+##'                  scarlet_fever_cases = 103,
 ##'                  igas_inc = 93)
 ##' pars <- example_parameters(1)
 ##' hydrogen_compare(state, observed, pars)
@@ -61,9 +67,12 @@ hydrogen_compare <- function(state, observed, pars) {
   ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate * pars$phi_S,
                             state["daily_gas_pharyngitis_rate", ] * pars$p_T,
                             pars$k_gp)
-  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_inc,
-                                state["scarlet_fever_inc", ],
-                                pars$k_hpr, pars$exp_noise)
+  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_cases,
+                                state["scarlet_fever_cases", ],
+                                pars$k_hpr, pars$exp_noise) +
+    ll_norm(observed$daily_scarlet_fever_rate,
+            state["daily_scarlet_fever_rate", ], pars$k_gp)
+
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
@@ -105,6 +114,12 @@ hydrogen_filter <- function(data, n_particles) {
 hydrogen_create_transform <- function(demographic_pars) {
   transform <- function(pars) {
     pars <- as.list(pars)
+
+    ## time-varying rate of reporting SF
+    pars$q_F_t <- seq(model_day("2014-01-01"), model_day("2020-01-01"))
+    pars$q_F <- seq(pars$q_F_2014, pars$q_F_2020,
+                    length.out = length(pars$q_F_t))
+
     model_parameters(pars, demographic_pars = demographic_pars)
   }
   transform

@@ -9,34 +9,37 @@ test_that("model runs", {
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
-  tmp <- c(1, 4045133, 1373194, 727, 938, 10997, 10996, 1.94454194361955,
-           350.304591836735, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 22159247, 56000001, 0.103989553571429, 0.455696232142857,
-           5928661, 1052289, 775606, 416796, 704, 542, 166, 25665990, 1,
-           4044289, 1372467, 692, 939, 10997, 10997, 1.94454194361955,
-           350.119132653061,
+  tmp <- c(1, 4045133, 1373194, 727, 218, 938, 10997, 10996,
+           1.94454194361955, 350.304591836735, 0.185459183673469, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22159247, 56000001,
+           0.103989553571429, 0.455696232142857, 5928661, 1052289, 775606,
+           416796, 704, 542, 166, 25665990, 1, 4044289, 1372467, 692, 208,
+           939, 10997, 10997, 1.94454194361955, 350.119132653061,
+           0.176530612244898,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22160502,
            5.6e+07, 0.104027892857143, 0.455671839285714, 5930566, 1051231,
            775591, 415890, 736, 513, 147, 25664824, 1, 4047132, 1371527,
-           678, 1016, 10997, 10997, 1.94454194361955, 349.879336734694,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22156462,
-           5.6e+07, 0.104074125, 0.455662464285714, 5933201, 1054026, 775298,
-           416302, 704, 519, 139, 25663349, 1, 4047245, 1373647, 698, 926,
-           10997, 10996, 1.94454194361955, 350.420153061224, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157315, 56000001,
-           0.104017946428571, 0.455688285714286, 5930844, 1052602, 776369,
-           416513, 710, 513, 157, 25664978, 1, 4045950, 1373480, 680, 939,
-           10997, 10996, 1.94454194361955, 350.377551020408, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734, 56000001,
+           678, 203, 1016, 10997, 10997, 1.94454194361955, 349.879336734694,
+           0.172959183673469, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 22156462, 5.6e+07, 0.104074125, 0.455662464285714,
+           5933201, 1054026, 775298, 416302, 704, 519, 139, 25663349, 1,
+           4047245, 1373647, 698, 209, 926, 10997, 10996, 1.94454194361955,
+           350.420153061224, 0.178061224489796, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157315, 56000001, 0.104017946428571,
+           0.455688285714286, 5930844, 1052602, 776369, 416513, 710, 513,
+           157, 25664978, 1, 4045950, 1373480, 680, 204, 939, 10997, 10996,
+           1.94454194361955, 350.377551020408, 0.173469387755102, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734, 56000001,
            0.104008053571429, 0.455698464285714, 5928868, 1053003, 775962,
            416807, 677, 501, 151, 25666298)
   nms <- c("time", "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc",
-           "igas_inc", "births_inc", "net_leavers_inc", "beta_t",
-           "daily_gas_pharyngitis_rate",
+           "scarlet_fever_cases", "igas_inc", "births_inc", "net_leavers_inc",
+           "beta_t", "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate",
            "daily_gas_pharyngitis_rate_04", "daily_gas_pharyngitis_rate_05_14",
            "daily_gas_pharyngitis_rate_15_44",
            "daily_gas_pharyngitis_rate_45_64",
-           "daily_gas_pharyngitis_rate_65_74", "daily_gas_pharyngitis_rate_75",
+           "daily_gas_pharyngitis_rate_65_74",
+           "daily_gas_pharyngitis_rate_75",
            "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14",
            "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64",
            "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75",
@@ -295,6 +298,10 @@ test_that("incidence time series output correctly", {
                rowSums(y["gas_pharyngitis_inc", , ]))
   expect_equal(y["S1", , 2] + y["S2", , 5], y["gas_pharyngitis_inc", , 2])
 
+  ## check scarlet_fever_cases is calculated correctly
+  expect_equal(y["scarlet_fever_cases", , ],
+               round(pars$q_F * y["scarlet_fever_inc", , ]))
+
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
   expect_true(all(y["N", , ] == pars$N0))
@@ -304,6 +311,24 @@ test_that("incidence time series output correctly", {
 
   expect_equal(y["daily_gas_pharyngitis_rate", , ] * 7 / 1e5 * y["N", , ],
     y["gas_pharyngitis_inc", , ])
+  expect_equal(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
+               y["scarlet_fever_inc", , ])
+})
+
+
+test_that("can vary probabillilty of reporting over time", {
+  pars <- example_parameters()
+  pars$q_F <- seq(0.3, 0.6, length.out = 7)
+
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- lapply(seq(0, 7), mod$simulate)
+  y <- mcstate::array_bind(arrays = y)
+  rownames(y) <- names(model_index())
+
+  ## check scarlet_fever_cases is calculated correctly
+  ## include adjustment for rounding conventions (0.5 -> up vs 0.5 -> even)
+  expect_equal(t(y["scarlet_fever_cases", , ]),
+               floor(c(0, pars$q_F) * t(y["scarlet_fever_inc", , ]) + 0.5))
 })
 
 

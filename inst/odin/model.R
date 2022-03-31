@@ -10,6 +10,9 @@ n_group <- user(1)
 ## supported by odin (it could be made to support this).
 alpha_t <- if (as.integer(step) >= length(alpha))
   alpha[length(alpha)] else alpha[step + 1]
+## Probability of reporting a scarlet fever case (time-varying)
+q_F_t <- if (as.integer(step) >= length(q_F))
+  q_F[length(q_F)] else q_F[step + 1]
 
 ## Core equations for transitions between compartments:
 update(U[])    <- U[i]    + dem_U[i]    + gas_U[i]
@@ -59,6 +62,7 @@ scarlet_fever_inc_by_group[] <- (
 # output all-group incidence flows
 update(gas_pharyngitis_inc) <- sum(gas_pharyngitis_inc_by_group[])
 update(scarlet_fever_inc) <- sum(scarlet_fever_inc_by_group[])
+update(scarlet_fever_cases) <- round(sum(scarlet_fever_inc_by_group[]) * q_F_t)
 update(igas_inc) <- (
   if (step %% steps_per_week == 0) sum(n_I[]) else igas_inc + sum(n_I[]))
 
@@ -66,6 +70,8 @@ update(igas_inc) <- (
  w[] <- N[i] / 1e5 * 7
 update(daily_gas_pharyngitis_rate) <-
   sum(gas_pharyngitis_inc_by_group[]) / sum(w[])
+update(daily_scarlet_fever_rate) <-
+  sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## When using the age-structured model (helium) output incidence rates for age
 ## groups used by UK GP surveillance:
@@ -232,11 +238,13 @@ initial(prev_R[]) <- sum(R0[i, ]) /
 initial(infections_inc) <- 0
 initial(gas_pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
+initial(scarlet_fever_cases) <- 0
 initial(igas_inc) <- 0
 initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
 initial(daily_gas_pharyngitis_rate) <- 0
+initial(daily_scarlet_fever_rate) <- 0
 
 initial(daily_gas_pharyngitis_rate_04)   <-  0
 initial(daily_gas_pharyngitis_rate_05_14) <- 0
@@ -296,6 +304,9 @@ alpha[]  <- user() # time-varying number of births
 dim(alpha) <- user()
 omega[] <- user() # rate of population exit, can be negative
 r_age <- user(0)   # rate of aging - determined by group size
+
+q_F[] <- user() # time-varying probability of reporting a scarlet fever case
+dim(q_F) <- user()
 
 ## Object dimensions
 
