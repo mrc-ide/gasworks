@@ -70,6 +70,8 @@ update(igas_inc) <- (
  w[] <- N[i] / 1e5 * 7
 update(daily_gas_pharyngitis_rate) <-
   sum(gas_pharyngitis_inc_by_group[]) / sum(w[])
+update(daily_scarlet_fever_rate) <-
+  sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## When using the age-structured model (helium) output incidence rates for age
 ## groups used by UK GP surveillance:
@@ -242,6 +244,7 @@ initial(births_inc) <- 0
 initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
 initial(daily_gas_pharyngitis_rate) <- 0
+initial(daily_scarlet_fever_rate) <- 0
 
 initial(daily_gas_pharyngitis_rate_04)   <-  0
 initial(daily_gas_pharyngitis_rate_05_14) <- 0
