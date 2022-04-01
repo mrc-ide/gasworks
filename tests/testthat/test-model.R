@@ -10,36 +10,38 @@ test_that("model runs", {
   expect_true(all(y >= 0))
 
   tmp <- c(1, 4045133, 1373194, 727, 218, 938, 10997, 10996,
-           1.94454194361955, 350.304591836735, 0.185459183673469, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22159247, 56000001,
-           0.103989553571429, 0.455696232142857, 5928661, 1052289, 775606,
-           416796, 704, 542, 166, 25665990, 1, 4044289, 1372467, 692, 208,
-           939, 10997, 10997, 1.94454194361955, 350.119132653061,
-           0.176530612244898,
+           1.94454194361955, 350.304591836735, 0.185459183673469, 0.25,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 22159247, 56000001, 0.103989553571429, 0.455696232142857,
+           5928661, 1052289, 775606, 416796, 704, 542, 166, 25665990, 1,
+           4044289, 1372467, 692, 208, 939, 10997, 10997, 1.94454194361955,
+           350.119132653061, 0.176530612244898, 0.25, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22160502,
            5.6e+07, 0.104027892857143, 0.455671839285714, 5930566, 1051231,
            775591, 415890, 736, 513, 147, 25664824, 1, 4047132, 1371527,
            678, 203, 1016, 10997, 10997, 1.94454194361955, 349.879336734694,
-           0.172959183673469, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 22156462, 5.6e+07, 0.104074125, 0.455662464285714,
-           5933201, 1054026, 775298, 416302, 704, 519, 139, 25663349, 1,
-           4047245, 1373647, 698, 209, 926, 10997, 10996, 1.94454194361955,
-           350.420153061224, 0.178061224489796, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157315, 56000001, 0.104017946428571,
-           0.455688285714286, 5930844, 1052602, 776369, 416513, 710, 513,
-           157, 25664978, 1, 4045950, 1373480, 680, 204, 939, 10997, 10996,
-           1.94454194361955, 350.377551020408, 0.173469387755102, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734, 56000001,
-           0.104008053571429, 0.455698464285714, 5928868, 1053003, 775962,
-           416807, 677, 501, 151, 25666298)
-  nms <- c("time", "infections_inc", "gas_pharyngitis_inc", "scarlet_fever_inc",
-           "scarlet_fever_cases", "igas_inc", "births_inc", "net_leavers_inc",
-           "beta_t", "daily_gas_pharyngitis_rate", "daily_scarlet_fever_rate",
-           "daily_gas_pharyngitis_rate_04", "daily_gas_pharyngitis_rate_05_14",
+           0.172959183673469, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22156462, 5.6e+07, 0.104074125,
+           0.455662464285714, 5933201, 1054026, 775298, 416302, 704, 519,
+           139, 25663349, 1, 4047245, 1373647, 698, 209, 926, 10997, 10996,
+           1.94454194361955, 350.420153061224, 0.178061224489796, 0.25,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 22157315, 56000001, 0.104017946428571, 0.455688285714286,
+           5930844, 1052602, 776369, 416513, 710, 513, 157, 25664978, 1,
+           4045950, 1373480, 680, 204, 939, 10997, 10996, 1.94454194361955,
+           350.377551020408, 0.173469387755102, 0.25, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734,
+           56000001, 0.104008053571429, 0.455698464285714, 5928868, 1053003,
+           775962, 416807, 677, 501, 151, 25666298)
+  nms <- c("time", "infections_inc", "gas_pharyngitis_inc",
+           "scarlet_fever_inc", "scarlet_fever_cases", "igas_inc", "births_inc",
+           "net_leavers_inc", "beta_t", "daily_gas_pharyngitis_rate",
+           "daily_scarlet_fever_rate",
+           "etiologic_fraction", "daily_gas_pharyngitis_rate_04",
+           "daily_gas_pharyngitis_rate_05_14",
            "daily_gas_pharyngitis_rate_15_44",
            "daily_gas_pharyngitis_rate_45_64",
-           "daily_gas_pharyngitis_rate_65_74",
-           "daily_gas_pharyngitis_rate_75",
+           "daily_gas_pharyngitis_rate_65_74", "daily_gas_pharyngitis_rate_75",
            "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14",
            "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64",
            "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75",
@@ -47,8 +49,12 @@ test_that("model runs", {
            "scarlet_fever_inc_15_44",
            "scarlet_fever_inc_45_64", "scarlet_fever_inc_65_74",
            "scarlet_fever_inc_75",
-           "U", "N", "prev_A", "prev_R", "A", "E", "S1", "S2", "P",
-           "F1", "F2", "R")
+           "etiologic_fraction_04", "etiologic_fraction_05_14",
+           "etiologic_fraction_15_44",
+           "etiologic_fraction_45_64", "etiologic_fraction_65_74",
+           "etiologic_fraction_75",
+           "U", "N", "prev_A", "prev_R", "A", "E", "S1", "S2", "P", "F1",
+           "F2", "R")
   expect_equal(y, array(tmp, dim = c(length(nms), 5L, 1L),
                         dimnames = list(nms, NULL, NULL)))
 })
@@ -315,8 +321,22 @@ test_that("incidence time series output correctly", {
                y["scarlet_fever_inc", , ])
 })
 
+test_that("etiologic_fraction outputs_correctly", {
+  pars <- example_parameters()
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- mod$simulate(7)
+  rownames(y) <- names(model_index())
+  expect_equal(y["etiologic_fraction", , ], rep(pars$phi_S, 5))
 
-test_that("can vary probabillilty of reporting over time", {
+  pars <- example_parameters(16)
+  mod <- model$new(pars, 0, 5, seed = 1L)
+  y <- mod$simulate(7)
+  rownames(y) <- names(unlist(mod$info()$index))
+
+  expect_true(all(y[grep("^etio", rownames(y)), , ] == pars$phi_S[1]))
+})
+
+test_that("can vary probabililty of reporting over time", {
   pars <- example_parameters()
   pars$q_F <- seq(0.3, 0.6, length.out = 7)
 
@@ -431,7 +451,7 @@ test_that("aging works", {
     expect_equivalent(y[startsWith(nms, nm), 1, ], diag(pars$n_group) * N0)
     ## nothing going on in other compartments
 
-    expect_equal(sum(y[grep(paste0("^N|time|prev|", nm), nms,
+    expect_equal(sum(y[grep(paste0("^N|time|prev|etio|", nm), nms,
                             invert = TRUE), , ]), 0)
   }
 
