@@ -46,7 +46,7 @@ example_helium_parameters <- function() {
 ##' @export
 helium_fitted_states <- function() {
   groups <- helium_age_groups()
-  c("scarlet_fever_cases", "igas_inc",
+  c("scarlet_fever_cases", "igas_inc", "daily_pharyngitis_rate",
     paste0("daily_pharyngitis_rate_", names(groups$idx_ukhsa)),
     paste0("daily_scarlet_fever_rate_", names(groups$idx_ukhsa)))
 }
