@@ -27,7 +27,7 @@ Compare observed and modelled data from the hydrogen model. This
 conforms to the mcstate interface.
 }
 \examples{
-state <- rbind(daily_gas_pharyngitis_rate = 10:15,
+state <- rbind(daily_pharyngitis_rate = 10:15,
                daily_scarlet_fever_rate = 0:5,
                scarlet_fever_cases = 100:105,
                igas_inc = 90:95)
