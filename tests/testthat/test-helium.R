@@ -86,6 +86,15 @@ test_that("helium_compare", {
     expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
   }
 
+  # fits use aggregate data when pharyngitis by age is all NA
+  expect_equal(
+  helium_compare(state, pars = pars,
+    replace(observed, grep("daily_pharyngitis_rate_", names(observed)), NA)),
+  helium_compare(state, pars = pars,
+    replace(observed, grep("daily_pharyngitis_rate", names(observed)), NA)) +
+    ll_norm(observed$daily_pharyngitis_rate * state["etiologic_fraction", ],
+            state["daily_gas_pharyngitis_rate", ], pars$k_gp))
+
   # NA data returns 0
   expect_equal(helium_compare(state, replace(observed, seq_along(observed), NA),
                               pars), rep(0, ncol(state)))
