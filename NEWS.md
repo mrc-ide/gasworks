@@ -1,3 +1,7 @@
+# gasworks 0.3.3
+
+* fit to pharyingitis rates
+
 # gasworks 0.3.2
 
 * update helium and hydrogen compare to fit to GP scarlet fever incidence,
