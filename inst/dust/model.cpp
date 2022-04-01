@@ -749,12 +749,6 @@ public:
     for (int i = 1; i <= shared->dim_U; ++i) {
       state_next[29 + i - 1] = U[i - 1] + internal.dem_U[i - 1] + internal.gas_U[i - 1];
     }
-    state_next[11] = ((shared->n_group == 16 ? internal.gas_pharyngitis_inc_by_group[0] / (real_type) internal.w[0] : 0));
-    state_next[12] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
-    state_next[13] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
-    state_next[14] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
-    state_next[15] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
-    state_next[16] = ((shared->n_group == 16 ? internal.gas_pharyngitis_inc_by_group[15] / (real_type) internal.w[15] : 0));
     state_next[2] = odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 0, shared->dim_gas_pharyngitis_inc_by_group);
     state_next[1] = ((fmodr<real_type>(step, shared->steps_per_week) == 0 ? odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA) : infections_inc + odin_sum1<real_type>(internal.n_UE.data(), 0, shared->dim_n_UE) + odin_sum1<real_type>(internal.n_UA.data(), 0, shared->dim_n_UA)));
     for (int i = 1; i <= shared->dim_A_1; ++i) {
@@ -763,6 +757,12 @@ public:
       }
     }
     state_next[9] = odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 0, shared->dim_pharyngitis_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
+    state_next[11] = ((shared->n_group == 16 ? internal.pharyngitis_inc_by_group[0] / (real_type) internal.w[0] : 0));
+    state_next[12] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 1, 3) / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
+    state_next[13] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 3, 9) / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));
+    state_next[14] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 9, 13) / (real_type) odin_sum1<real_type>(internal.w.data(), 9, 13) : 0));
+    state_next[15] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.pharyngitis_inc_by_group.data(), 13, 15) / (real_type) odin_sum1<real_type>(internal.w.data(), 13, 15) : 0));
+    state_next[16] = ((shared->n_group == 16 ? internal.pharyngitis_inc_by_group[15] / (real_type) internal.w[15] : 0));
   }
 private:
   std::shared_ptr<const shared_type> shared;

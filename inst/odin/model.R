@@ -80,22 +80,22 @@ update(daily_scarlet_fever_rate) <- sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## Output daily GAS pharyngitis rates by group
 update(daily_pharyngitis_rate_04) <- (
-  if (n_group == 16) gas_pharyngitis_inc_by_group[1] / w[1]
+  if (n_group == 16) pharyngitis_inc_by_group[1] / w[1]
   else 0)
 update(daily_pharyngitis_rate_05_14) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[2:3]) / sum(w[2:3])
+  if (n_group == 16) sum(pharyngitis_inc_by_group[2:3]) / sum(w[2:3])
   else 0)
 update(daily_pharyngitis_rate_15_44) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[4:9]) / sum(w[4:9])
+  if (n_group == 16) sum(pharyngitis_inc_by_group[4:9]) / sum(w[4:9])
   else 0)
 update(daily_pharyngitis_rate_45_64) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[10:13]) / sum(w[10:13])
+  if (n_group == 16) sum(pharyngitis_inc_by_group[10:13]) / sum(w[10:13])
   else 0)
 update(daily_pharyngitis_rate_65_74) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[14:15]) / sum(w[14:15])
+  if (n_group == 16) sum(pharyngitis_inc_by_group[14:15]) / sum(w[14:15])
   else 0)
 update(daily_pharyngitis_rate_75) <- (
-  if (n_group == 16) gas_pharyngitis_inc_by_group[16] / w[16]
+  if (n_group == 16) pharyngitis_inc_by_group[16] / w[16]
   else 0)
 
 ## Output daily scarlet fever rates by group
