@@ -770,7 +770,7 @@ public:
     for (int i = 1; i <= shared->dim_U; ++i) {
       state_next[36 + i - 1] = U[i - 1] + internal.dem_U[i - 1] + internal.gas_U[i - 1];
     }
-    state_next[9] = odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 0, shared->dim_gas_pharyngitis_inc_by_group) / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
+    state_next[9] = odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 0, shared->dim_gas_pharyngitis_inc_by_group) * shared->p_T / (real_type) odin_sum1<real_type>(internal.w.data(), 0, shared->dim_w);
     state_next[12] = ((shared->n_group == 16 ? internal.gas_pharyngitis_inc_by_group[0] * shared->p_T / (real_type) internal.w[0] : 0));
     state_next[13] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 1, 3) * shared->p_T / (real_type) odin_sum1<real_type>(internal.w.data(), 1, 3) : 0));
     state_next[14] = ((shared->n_group == 16 ? odin_sum1<real_type>(internal.gas_pharyngitis_inc_by_group.data(), 3, 9) * shared->p_T / (real_type) odin_sum1<real_type>(internal.w.data(), 3, 9) : 0));

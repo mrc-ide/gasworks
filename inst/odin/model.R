@@ -69,7 +69,7 @@ update(igas_inc) <- (
 ## Output daily incidence rate per 100,000 population
  w[] <- N[i] / 1e5 * 7
 update(daily_gas_pharyngitis_rate) <-
-sum(gas_pharyngitis_inc_by_group[]) / sum(w[])
+sum(gas_pharyngitis_inc_by_group[]) * p_T / sum(w[])
 update(daily_scarlet_fever_rate) <-
   sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
