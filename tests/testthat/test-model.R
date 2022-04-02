@@ -294,6 +294,7 @@ test_that("incidence time series output correctly", {
   pars$alpha <- 0
   pars$delta_F <- Inf
   pars$delta_S <- Inf
+  pars$p_T <- 0.1
   mod <- model$new(pars, 0, 5, seed = 1L)
   y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
   y <- mcstate::array_bind(arrays = y)
@@ -316,7 +317,7 @@ test_that("incidence time series output correctly", {
   ## multiply by population size
 
   expect_equal(y["daily_gas_pharyngitis_rate", , ] * 7 / 1e5 * y["N", , ],
-    y["gas_pharyngitis_inc", , ])
+    y["gas_pharyngitis_inc", , ] * pars$p_T)
   expect_equal(y["daily_scarlet_fever_rate", , ] * 7 / 1e5 * y["N", , ],
                y["scarlet_fever_inc", , ])
 })
@@ -358,6 +359,7 @@ test_that("rates are calculated correctly when n_group == 16", {
   pars$alpha <- 0
   pars$delta_F <- Inf
   pars$delta_S <- Inf
+  pars$p_T <- 0.1
   pars$prev_A <- pars$prev_A <- seq(0.1, 0.2, length.out = 16)
   ip <- initial_parameters(pars)
   pars[names(ip)] <- ip
@@ -387,7 +389,7 @@ test_that("rates are calculated correctly when n_group == 16", {
   ## multiply by population size
 
   expect_equivalent(y["daily_gas_pharyngitis_rate", , ] * 7 / 1e5 * colSums(N),
-    y["gas_pharyngitis_inc", , ])
+    y["gas_pharyngitis_inc", , ] * pars$p_T)
 
   age <- helium_age_groups()$age_start
   N_04   <- colSums(N[age < 5, , , drop = FALSE])
@@ -401,23 +403,29 @@ test_that("rates are calculated correctly when n_group == 16", {
   expect_equivalent(N_04 + N_5_14 + N_15_44 + N_45_64 + N_65_74 + N_75,
                     colSums(N))
 
-  expect_equivalent(
+  expect_equivalent(y["gas_pharyngitis_inc", , ] * pars$p_T,
     (y["daily_gas_pharyngitis_rate_04", , ] * N_04 +
        y["daily_gas_pharyngitis_rate_05_14", , ] * N_5_14 +
        y["daily_gas_pharyngitis_rate_15_44", , ] * N_15_44 +
        y["daily_gas_pharyngitis_rate_45_64", , ] * N_45_64 +
        y["daily_gas_pharyngitis_rate_65_74", , ] * N_65_74 +
-       y["daily_gas_pharyngitis_rate_75", , ] * N_75) * 7 / 1e5,
-    y["gas_pharyngitis_inc", , ])
+       y["daily_gas_pharyngitis_rate_75", , ] * N_75) * 7 / 1e5)
 
-  expect_equivalent(
+  expect_equivalent(y["scarlet_fever_inc", , ],
     (y["daily_scarlet_fever_rate_04", , ] * N_04 +
        y["daily_scarlet_fever_rate_05_14", , ] * N_5_14 +
        y["daily_scarlet_fever_rate_15_44", , ] * N_15_44 +
        y["daily_scarlet_fever_rate_45_64", , ] * N_45_64 +
        y["daily_scarlet_fever_rate_65_74", , ] * N_65_74 +
-       y["daily_scarlet_fever_rate_75", , ] * N_75) * 7 / 1e5,
-      y["scarlet_fever_inc", , ])
+       y["daily_scarlet_fever_rate_75", , ] * N_75) * 7 / 1e5)
+
+  expect_equivalent(y["scarlet_fever_inc", , ],
+       y["scarlet_fever_inc_04", , ] +
+       y["scarlet_fever_inc_05_14", , ] +
+       y["scarlet_fever_inc_15_44", , ] +
+       y["scarlet_fever_inc_45_64", , ] +
+       y["scarlet_fever_inc_65_74", , ] +
+       y["scarlet_fever_inc_75", , ])
 
 })
 
