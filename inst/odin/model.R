@@ -69,7 +69,7 @@ update(igas_inc) <- (
 ## Output daily incidence rate per 100,000 population
  w[] <- N[i] / 1e5 * 7
 update(daily_gas_pharyngitis_rate) <-
-  sum(gas_pharyngitis_inc_by_group[]) / sum(w[])
+sum(gas_pharyngitis_inc_by_group[]) * p_T / sum(w[])
 update(daily_scarlet_fever_rate) <-
   sum(scarlet_fever_inc_by_group[]) / sum(w[])
 
@@ -80,22 +80,28 @@ update(daily_scarlet_fever_rate) <-
 
 ## Output daily GAS pharyngitis rates by group
 update(daily_gas_pharyngitis_rate_04) <- (
-  if (n_group == 16) gas_pharyngitis_inc_by_group[1] / w[1]
+  if (n_group == 16)
+    gas_pharyngitis_inc_by_group[1] * p_T / w[1]
   else 0)
 update(daily_gas_pharyngitis_rate_05_14) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[2:3]) / sum(w[2:3])
+  if (n_group == 16)
+    sum(gas_pharyngitis_inc_by_group[2:3]) * p_T / sum(w[2:3])
   else 0)
 update(daily_gas_pharyngitis_rate_15_44) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[4:9]) / sum(w[4:9])
+  if (n_group == 16)
+    sum(gas_pharyngitis_inc_by_group[4:9]) * p_T / sum(w[4:9])
   else 0)
 update(daily_gas_pharyngitis_rate_45_64) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[10:13]) / sum(w[10:13])
+  if (n_group == 16)
+    sum(gas_pharyngitis_inc_by_group[10:13]) * p_T / sum(w[10:13])
   else 0)
 update(daily_gas_pharyngitis_rate_65_74) <- (
-  if (n_group == 16) sum(gas_pharyngitis_inc_by_group[14:15]) / sum(w[14:15])
+  if (n_group == 16)
+    sum(gas_pharyngitis_inc_by_group[14:15]) * p_T / sum(w[14:15])
   else 0)
 update(daily_gas_pharyngitis_rate_75) <- (
-  if (n_group == 16) gas_pharyngitis_inc_by_group[16] / w[16]
+  if (n_group == 16)
+    gas_pharyngitis_inc_by_group[16] * p_T / w[16]
   else 0)
 
 ## Output daily scarlet fever rates by group
@@ -131,6 +137,25 @@ update(scarlet_fever_inc_65_74) <- (
   if (n_group == 16) sum(scarlet_fever_inc_by_group[14:15]) else 0)
 update(scarlet_fever_inc_75) <- (
   if (n_group == 16) scarlet_fever_inc_by_group[16] else 0)
+
+# weight phi_S by population size
+weighted_phi_S[] <- phi_S[i] * N[i]
+
+update(etiologic_fraction) <- sum(weighted_phi_S[]) / sum(N[])
+
+## Output etiologic fraction by age group
+update(etiologic_fraction_04) <- (
+  if (n_group == 16) weighted_phi_S[1] / N[1] else 0)
+update(etiologic_fraction_05_14) <- (
+  if (n_group == 16) sum(weighted_phi_S[2:3]) / sum(N[2:3]) else 0)
+update(etiologic_fraction_15_44) <- (
+  if (n_group == 16) sum(weighted_phi_S[4:9]) / sum(N[4:9]) else 0)
+update(etiologic_fraction_45_64) <- (
+  if (n_group == 16) sum(weighted_phi_S[10:13]) / sum(N[10:13]) else 0)
+update(etiologic_fraction_65_74) <- (
+  if (n_group == 16) sum(weighted_phi_S[14:15]) / sum(N[14:15]) else 0)
+update(etiologic_fraction_75) <- (
+  if (n_group == 16) weighted_phi_S[16] / N[16] else 0)
 
 ## Force of infection
 pi <- 3.14159265358979
@@ -245,6 +270,7 @@ initial(net_leavers_inc) <- 0
 initial(beta_t) <- 0
 initial(daily_gas_pharyngitis_rate) <- 0
 initial(daily_scarlet_fever_rate) <- 0
+initial(etiologic_fraction) <- 0
 
 initial(daily_gas_pharyngitis_rate_04)   <-  0
 initial(daily_gas_pharyngitis_rate_05_14) <- 0
@@ -267,6 +293,13 @@ initial(scarlet_fever_inc_45_64) <- 0
 initial(scarlet_fever_inc_65_74) <- 0
 initial(scarlet_fever_inc_75)    <- 0
 
+initial(etiologic_fraction_04)    <- 0
+initial(etiologic_fraction_05_14) <- 0
+initial(etiologic_fraction_15_44) <- 0
+initial(etiologic_fraction_45_64) <- 0
+initial(etiologic_fraction_65_74) <- 0
+initial(etiologic_fraction_75)    <- 0
+
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
 U0[] <- user()
@@ -286,6 +319,7 @@ p_S <- user() # probability of pharyngitis symptoms after infection
 p_R <- user() # probability of immunity after carriage
 p_I <- user() # probability of invasive disease after infection
 p_F <- user() # probability of scarlet fever after pharyngitis
+p_T <- user() # probability of seeking treatment for pharyngitis
 delta_A <- user() # mean duration of carriage
 delta_E <- user() # mean duration of incubation period
 delta_S <- user() # mean duration of pharyngitis symptoms
@@ -308,12 +342,15 @@ r_age <- user(0)   # rate of aging - determined by group size
 q_F[] <- user() # time-varying probability of reporting a scarlet fever case
 dim(q_F) <- user()
 
+phi_S[] <- user() # proportion of pharyngitis caused by GAS
+
 ## Object dimensions
 
 dim(m)      <- c(n_group, n_group)
 dim(lambda) <- c(n_group, n_group)
 dim(foi)   <- n_group
 dim(omega) <- n_group
+dim(phi_S) <- n_group
 
 dim(U)  <- n_group
 dim(A)  <- c(n_group, k_A)
@@ -403,3 +440,4 @@ dim(n_RU) <- n_group
 dim(w) <- n_group
 dim(gas_pharyngitis_inc_by_group) <- n_group
 dim(scarlet_fever_inc_by_group)   <- n_group
+dim(weighted_phi_S)   <- n_group

@@ -13,7 +13,7 @@ rows corresponding to average daily pharyngitis rate per 100,000,
 weekly number of scarlet fever cases and weekly number of iGAS cases.}
 
 \item{observed}{Observed data. This will be a list with elements:
-\code{scarlet_fever_cases}, \code{igas_inc},
+\code{scarlet_fever_cases}, \code{igas_inc}, \code{daily_pharyngitis_rate},
 \code{daily_pharyngitis_rate_04}, \code{daily_pharyngitis_rate_05_14},
 \code{daily_pharyngitis_rate_15_44}, \code{daily_pharyngitis_rate_45_64},
 \code{daily_pharyngitis_rate_65_74}, \code{daily_pharyngitis_rate_75},

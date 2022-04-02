@@ -14,6 +14,13 @@ test_that("helium_index", {
 
   expect_equal(names(idx), c("run", "state"))
   state_nms <- c("scarlet_fever_cases", "igas_inc",
+                 "daily_gas_pharyngitis_rate", "etiologic_fraction",
+                 "etiologic_fraction_04",
+                 "etiologic_fraction_05_14",
+                 "etiologic_fraction_15_44",
+                 "etiologic_fraction_45_64",
+                 "etiologic_fraction_65_74",
+                 "etiologic_fraction_75",
                  "daily_gas_pharyngitis_rate_04",
                  "daily_gas_pharyngitis_rate_05_14",
                  "daily_gas_pharyngitis_rate_15_44",
@@ -46,7 +53,8 @@ test_that("helium_compare", {
   groups <- helium_age_groups()
 
   sf_rate <- full_state[grep("daily_sca", rownames(full_state)), 3]
-  pharyngitis_rate <- state[grep("^daily_gas", rownames(state)), 3] / pars$phi_S
+  phi_S <- state[grep("^etio", rownames(state)), 3]
+  pharyngitis_rate <- state[grep("^daily_gas", rownames(state)), 3] / phi_S
   names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
 
   observed <- as.list(c(state[c("scarlet_fever_cases", "igas_inc"), 3],
@@ -77,6 +85,15 @@ test_that("helium_compare", {
     y <- helium_compare(tmp, observed, pars)
     expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
   }
+
+  # fits use aggregate data when pharyngitis by age is all NA
+  expect_equal(
+  helium_compare(state, pars = pars,
+    replace(observed, grep("daily_pharyngitis_rate_", names(observed)), NA)),
+  helium_compare(state, pars = pars,
+    replace(observed, grep("daily_pharyngitis_rate", names(observed)), NA)) +
+    ll_norm(observed$daily_pharyngitis_rate * state["etiologic_fraction", ],
+            state["daily_gas_pharyngitis_rate", ], pars$k_gp))
 
   # NA data returns 0
   expect_equal(helium_compare(state, replace(observed, seq_along(observed), NA),

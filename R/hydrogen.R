@@ -63,20 +63,20 @@ hydrogen_compare <- function(state, observed, pars) {
     stop("missing or misnamed data")
   }
 
-
   ll_pharyngitis <- ll_norm(observed$daily_pharyngitis_rate * pars$phi_S,
-                            state["daily_gas_pharyngitis_rate", ] * pars$p_T,
-                            pars$k_gp)
-  ll_scarlet_fever <- ll_nbinom(observed$scarlet_fever_cases,
-                                state["scarlet_fever_cases", ],
-                                pars$k_hpr, pars$exp_noise) +
-    ll_norm(observed$daily_scarlet_fever_rate,
-            state["daily_scarlet_fever_rate", ], pars$k_gp)
+                            state["daily_gas_pharyngitis_rate", ], pars$k_gp)
+
+  ll_sf_cases <- ll_nbinom(observed$scarlet_fever_cases,
+                           state["scarlet_fever_cases", ],
+                           pars$k_hpr, pars$exp_noise)
+
+  ll_sf_rate <- ll_norm(observed$daily_scarlet_fever_rate,
+                        state["daily_scarlet_fever_rate", ], pars$k_gp)
 
   ll_igas <- ll_nbinom(observed$igas_inc, state["igas_inc", ],
                        pars$k_hpr, pars$exp_noise)
 
-  ll_pharyngitis + ll_scarlet_fever + ll_igas
+  ll_pharyngitis + ll_sf_cases + ll_sf_rate + ll_igas
 }
 
 ##' @title Prepare particle filter data for the hydrogen model

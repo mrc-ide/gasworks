@@ -1,3 +1,8 @@
+# gasworks 0.3.3
+
+* helium_compare: use total daily pharyngitis rate when age-disaggregated unavaliable
+* outputt UKHSA-aggregated etiologic fraction from model
+
 # gasworks 0.3.2
 
 * update helium and hydrogen compare to fit to GP scarlet fever incidence,
