@@ -24,6 +24,139 @@ template <typename T>
 __host__ __device__ T odin_max(T x, T y) {
   return x > y ? x : y;
 }
+template <typename real_type, typename rng_state_type>
+__host__ __device__
+real_type ll_nbinom(real_type data, real_type model, real_type kappa,
+                    real_type exp_noise,
+                    rng_state_type& rng_state) {
+  if (std::isnan(data)) {
+    return 0;
+  }
+  real_type mu = model +
+    dust::random::exponential<real_type>(rng_state, exp_noise);
+  return dust::density::negative_binomial_mu(data, kappa, mu, true);
+}
+
+template <typename real_type>
+__host__ __device__
+real_type ll_norm(real_type data, real_type model, real_type sd) {
+  if (std::isnan(data)) {
+    return 0;
+  }
+  return dust::density::normal(data, model, sd, true);
+}
+
+// [[odin.dust::compare_data(scarlet_fever_cases            = real_type)]]
+// [[odin.dust::compare_data(igas_inc                       = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_04    = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_05_14 = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_15_44 = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_45_64 = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_65_74 = real_type)]]
+// [[odin.dust::compare_data(daily_scarlet_fever_rate_75    = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate         = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_04      = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_05_14   = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_15_44   = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_45_64   = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_65_74   = real_type)]]
+// [[odin.dust::compare_data(daily_pharyngitis_rate_75      = real_type)]]
+// [[odin.dust::compare_function]]
+template <typename T>
+typename T::real_type
+compare(const typename T::real_type * state,
+        const typename T::data_type& data,
+        const typename T::internal_type internal,
+        std::shared_ptr<const typename T::shared_type> shared,
+        typename T::rng_state_type& rng_state) {
+  typedef typename T::real_type real_type;
+
+  const size_t n_group = shared->n_group;
+
+  const real_type ll_sf_cases = ll_nbinom(data.scarlet_fever_cases,
+                                          state[4],
+                                          shared->k_hpr, shared->exp_noise,
+                                          rng_state);
+  const real_type ll_igas = ll_nbinom(data.igas_inc, state[5],
+                                      shared->k_hpr, shared->exp_noise,
+                                      rng_state);
+
+  // Scarlet fever daily rate (always disaggregated)
+  const real_type obs_daily_scarlet_fever_rate[] =
+    { data.daily_scarlet_fever_rate_04,
+      data.daily_scarlet_fever_rate_05_14,
+      data.daily_scarlet_fever_rate_15_44,
+      data.daily_scarlet_fever_rate_45_64,
+      data.daily_scarlet_fever_rate_65_74,
+      data.daily_scarlet_fever_rate_75
+    };
+  const real_type mod_daily_scarlet_fever_rate[] =
+    { state[18],
+      state[19],
+      state[20],
+      state[21],
+      state[22],
+      state[23]
+    };
+  real_type ll_sf_rate = 0.0;
+  for (size_t i = 0; i < n_group; ++i) {
+    ll_sf_rate += ll_norm(obs_daily_scarlet_fever_rate[i],
+                          mod_daily_scarlet_fever_rate[i],
+                          shared->k_gp);
+  }
+
+  // NOTE: better to arrange the data so we only need to look to see
+  // if the aggregated value is better; requires tweaks to your data
+  // processing function.
+  const bool ll_pharyngitis_aggregated =
+    std::isnan(data.daily_pharyngitis_rate_04) &&
+    std::isnan(data.daily_pharyngitis_rate_05_14) &&
+    std::isnan(data.daily_pharyngitis_rate_15_44) &&
+    std::isnan(data.daily_pharyngitis_rate_45_64) &&
+    std::isnan(data.daily_pharyngitis_rate_65_74) &&
+    std::isnan(data.daily_pharyngitis_rate_75);
+
+  real_type ll_pharyngitis = 0.0;
+
+  if (ll_pharyngitis_aggregated) {
+    ll_pharyngitis = ll_norm(data.daily_pharyngitis_rate *
+                             state[11],
+                             state[9],
+                             shared->k_gp);
+  } else {
+    const real_type obs_daily_pharyngitis_rate[] =
+      { data.daily_pharyngitis_rate_04,
+        data.daily_pharyngitis_rate_05_14,
+        data.daily_pharyngitis_rate_15_44,
+        data.daily_pharyngitis_rate_45_64,
+        data.daily_pharyngitis_rate_65_74,
+        data.daily_pharyngitis_rate_75
+      };
+    const real_type mod_daily_gas_pharyngitis_rate[] =
+      { state[12],
+        state[13],
+        state[14],
+        state[15],
+        state[16],
+        state[17]
+      };
+    const real_type phi_S[] =
+      { state[30],
+        state[31],
+        state[32],
+        state[33],
+        state[34],
+        state[35]
+      };
+    for (size_t i = 0; i < n_group; ++i) {
+      ll_pharyngitis += ll_norm(obs_daily_pharyngitis_rate[i] * phi_S[i],
+                                mod_daily_gas_pharyngitis_rate[i],
+                                shared->k_gp);
+    }
+  }
+
+  return ll_pharyngitis + ll_sf_rate + ll_sf_cases + ll_igas;
+}
 // [[dust::class(model)]]
 // [[dust::param(A0, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(E0, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
@@ -40,12 +173,15 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(delta_P, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(delta_R, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(delta_S, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(exp_noise, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_A, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_E, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_F, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_P, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_R, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(k_S, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(k_gp, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(k_hpr, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(m, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(omega, has_default = FALSE, default_value = NULL, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(p_F, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
@@ -65,7 +201,23 @@ class model {
 public:
   using real_type = double;
   using rng_state_type = dust::random::generator<real_type>;
-  using data_type = dust::no_data;
+  struct __align__(16) data_type {
+    real_type scarlet_fever_cases;
+    real_type igas_inc;
+    real_type daily_scarlet_fever_rate_04;
+    real_type daily_scarlet_fever_rate_05_14;
+    real_type daily_scarlet_fever_rate_15_44;
+    real_type daily_scarlet_fever_rate_45_64;
+    real_type daily_scarlet_fever_rate_65_74;
+    real_type daily_scarlet_fever_rate_75;
+    real_type daily_pharyngitis_rate;
+    real_type daily_pharyngitis_rate_04;
+    real_type daily_pharyngitis_rate_05_14;
+    real_type daily_pharyngitis_rate_15_44;
+    real_type daily_pharyngitis_rate_45_64;
+    real_type daily_pharyngitis_rate_65_74;
+    real_type daily_pharyngitis_rate_75;
+  };
   struct shared_type {
     std::vector<real_type> A0;
     std::vector<real_type> E0;
@@ -256,6 +408,7 @@ public:
     int dim_w;
     int dim_weighted_phi_S;
     real_type dt;
+    real_type exp_noise;
     std::vector<real_type> initial_A;
     std::vector<real_type> initial_E;
     std::vector<real_type> initial_F;
@@ -308,6 +461,8 @@ public:
     int k_P;
     int k_R;
     int k_S;
+    real_type k_gp;
+    real_type k_hpr;
     std::vector<real_type> m;
     int n_group;
     int offset_variable_A;
@@ -785,6 +940,9 @@ public:
       }
     }
   }
+  real_type compare_data(const real_type * state, const data_type& data, rng_state_type& rng_state) {
+    return compare<model>(state, data, internal, shared, rng_state);
+  }
 private:
   std::shared_ptr<const shared_type> shared;
   internal_type internal;
@@ -1066,12 +1224,15 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->delta_P = NA_REAL;
   shared->delta_R = NA_REAL;
   shared->delta_S = NA_REAL;
+  shared->exp_noise = NA_REAL;
   shared->k_A = NA_INTEGER;
   shared->k_E = NA_INTEGER;
   shared->k_F = NA_INTEGER;
   shared->k_P = NA_INTEGER;
   shared->k_R = NA_INTEGER;
   shared->k_S = NA_INTEGER;
+  shared->k_gp = NA_REAL;
+  shared->k_hpr = NA_REAL;
   shared->p_F = NA_REAL;
   shared->p_I = NA_REAL;
   shared->p_R = NA_REAL;
@@ -1093,12 +1254,15 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->delta_P = user_get_scalar<real_type>(user, "delta_P", shared->delta_P, NA_REAL, NA_REAL);
   shared->delta_R = user_get_scalar<real_type>(user, "delta_R", shared->delta_R, NA_REAL, NA_REAL);
   shared->delta_S = user_get_scalar<real_type>(user, "delta_S", shared->delta_S, NA_REAL, NA_REAL);
+  shared->exp_noise = user_get_scalar<real_type>(user, "exp_noise", shared->exp_noise, NA_REAL, NA_REAL);
   shared->k_A = user_get_scalar<int>(user, "k_A", shared->k_A, NA_INTEGER, NA_INTEGER);
   shared->k_E = user_get_scalar<int>(user, "k_E", shared->k_E, NA_INTEGER, NA_INTEGER);
   shared->k_F = user_get_scalar<int>(user, "k_F", shared->k_F, NA_INTEGER, NA_INTEGER);
   shared->k_P = user_get_scalar<int>(user, "k_P", shared->k_P, NA_INTEGER, NA_INTEGER);
   shared->k_R = user_get_scalar<int>(user, "k_R", shared->k_R, NA_INTEGER, NA_INTEGER);
   shared->k_S = user_get_scalar<int>(user, "k_S", shared->k_S, NA_INTEGER, NA_INTEGER);
+  shared->k_gp = user_get_scalar<real_type>(user, "k_gp", shared->k_gp, NA_REAL, NA_REAL);
+  shared->k_hpr = user_get_scalar<real_type>(user, "k_hpr", shared->k_hpr, NA_REAL, NA_REAL);
   shared->n_group = user_get_scalar<int>(user, "n_group", shared->n_group, NA_INTEGER, NA_INTEGER);
   shared->p_F = user_get_scalar<real_type>(user, "p_F", shared->p_F, NA_REAL, NA_REAL);
   shared->p_I = user_get_scalar<real_type>(user, "p_I", shared->p_I, NA_REAL, NA_REAL);
@@ -1545,5 +1709,26 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
            "dim"_nm = dim,
            "len"_nm = len,
            "index"_nm = index});
+}
+template <>
+model::data_type dust_data<model>(cpp11::list data) {
+  using real_type = model::real_type;
+  return model::data_type{
+      cpp11::as_cpp<real_type>(data["scarlet_fever_cases"]),
+      cpp11::as_cpp<real_type>(data["igas_inc"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_04"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_05_14"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_15_44"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_45_64"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_65_74"]),
+      cpp11::as_cpp<real_type>(data["daily_scarlet_fever_rate_75"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_04"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_05_14"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_15_44"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_45_64"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_65_74"]),
+      cpp11::as_cpp<real_type>(data["daily_pharyngitis_rate_75"])
+    };
 }
 }

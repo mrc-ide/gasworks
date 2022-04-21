@@ -441,3 +441,9 @@ dim(w) <- n_group
 dim(gas_pharyngitis_inc_by_group) <- n_group
 dim(scarlet_fever_inc_by_group)   <- n_group
 dim(weighted_phi_S)   <- n_group
+
+## Support a compiled compare function
+config(compare) <- "model_compare.cpp"
+exp_noise <- user() # ignore.unused
+k_gp      <- user() # ignore.unused
+k_hpr     <- user() # ignore.unused
