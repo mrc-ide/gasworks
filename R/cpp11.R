@@ -52,8 +52,8 @@ dust_cpu_model_set_rng_state <- function(ptr, rng_state) {
   .Call(`_gasworks_dust_cpu_model_set_rng_state`, ptr, rng_state)
 }
 
-dust_cpu_model_set_data <- function(ptr, data) {
-  .Call(`_gasworks_dust_cpu_model_set_data`, ptr, data)
+dust_cpu_model_set_data <- function(ptr, data, shared) {
+  .Call(`_gasworks_dust_cpu_model_set_data`, ptr, data, shared)
 }
 
 dust_cpu_model_compare_data <- function(ptr) {
