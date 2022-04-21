@@ -45,7 +45,7 @@ compare(const typename T::real_type * state,
         typename T::rng_state_type& rng_state) {
   typedef typename T::real_type real_type;
 
-  const size_t n_group = odin(n_group);
+  const size_t n_age_group = 6;
 
   const real_type ll_sf_cases = ll_nbinom(data.scarlet_fever_cases,
                                           odin(scarlet_fever_cases),
@@ -73,7 +73,7 @@ compare(const typename T::real_type * state,
       odin(daily_scarlet_fever_rate_75)
     };
   real_type ll_sf_rate = 0.0;
-  for (size_t i = 0; i < n_group; ++i) {
+  for (size_t i = 0; i < n_age_group; ++i) {
     ll_sf_rate += ll_norm(obs_daily_scarlet_fever_rate[i],
                           mod_daily_scarlet_fever_rate[i],
                           odin(k_gp));
@@ -122,7 +122,7 @@ compare(const typename T::real_type * state,
         odin(etiologic_fraction_65_74),
         odin(etiologic_fraction_75)
       };
-    for (size_t i = 0; i < n_group; ++i) {
+    for (size_t i = 0; i < n_age_group; ++i) {
       ll_pharyngitis += ll_norm(obs_daily_pharyngitis_rate[i] * phi_S[i],
                                 mod_daily_gas_pharyngitis_rate[i],
                                 odin(k_gp));
