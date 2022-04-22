@@ -162,14 +162,16 @@ helium_prepare_data <- function(data) {
 ##' `asymptomatic_carriage` each containing a data.frame with entries
 ##' `age_start`, `age_end`, `N` and `n`.
 ##' @param n_particles The number of particles to simulate
+##' @param compiled_compare Use a compiled compare function for the filter?
 ##' @return a particle filter for the helium model
 ##' @export
-helium_filter <- function(data, constant_data, n_particles) {
-
+helium_filter <- function(data, constant_data, n_particles,
+                          compiled_compare = FALSE) {
   data <- helium_prepare_data(data)
   constant_ll <- create_constant_log_likelihood(constant_data)
+  compare <- if (compiled_compare) NULL else helium_compare
   mcstate::particle_filter$new(data, model, n_particles,
-                               compare = helium_compare,
+                               compare = compare,
                                index = helium_index,
                                constant_log_likelihood = constant_ll)
 }

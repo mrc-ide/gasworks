@@ -189,6 +189,15 @@ test_that("helium_filter", {
   pars <- example_helium_parameters()
   set.seed(1)
   filter$run(transform(pars))
+
+  ## Check compiled filter runs - hard to test values here because the
+  ## variance is large with this set of parameters.
+  filter_compiled <- helium_filter(data, constant_data, 3, TRUE)
+  expect_null(filter_compiled$inputs()$compare)
+  filter_compiled$run(transform(pars))
+
+  expect_true(is.function(filter$.__enclos_env__$private$compare))
+  expect_null(filter_compiled$.__enclos_env__$private$compare)
 })
 
 
