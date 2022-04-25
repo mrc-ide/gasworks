@@ -93,7 +93,7 @@ test_that("helium_compare", {
                           sum(state[nms, 3]))
 
     y <- helium_compare(tmp, observed, pars)
-    expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
+    expect_equivalent(max(y), y[x == 1], tolerance = 1 / sqrt(pars$exp_noise))
   }
 
   # fits use aggregate data when pharyngitis by age is all NA
