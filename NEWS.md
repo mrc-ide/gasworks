@@ -1,4 +1,4 @@
-# gasworks 0.3.4
+# gasworks 0.3.5
 
 * Compiled compare function allowing running on a GPU
 
