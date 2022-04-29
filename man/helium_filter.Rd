@@ -4,7 +4,7 @@
 \alias{helium_filter}
 \title{Create particle filter for helium model}
 \usage{
-helium_filter(data, constant_data, n_particles)
+helium_filter(data, constant_data, n_particles, compiled_compare = FALSE)
 }
 \arguments{
 \item{data}{The data set to be used for the particle filter,
@@ -16,6 +16,8 @@ along with the data used in \code{\link[=helium_compare]{helium_compare()}}.}
 \code{age_start}, \code{age_end}, \code{N} and \code{n}.}
 
 \item{n_particles}{The number of particles to simulate}
+
+\item{compiled_compare}{Use a compiled compare function for the filter?}
 }
 \value{
 a particle filter for the helium model

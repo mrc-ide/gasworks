@@ -134,6 +134,9 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   pars$k_F <- 2
   pars$k_R <- 1
 
+  pars$k_gp <- 1
+  pars$k_hpr <- 1
+
   # convert duration in days to duration in weeks
   for (i in grep("^delta_", names(pars))) {
     pars[[i]] <- pars[[i]] * pars$dt

@@ -1,3 +1,7 @@
+# gasworks 0.3.5
+
+* Compiled compare function allowing running on a GPU
+
 # gasworks 0.3.3
 
 * helium_compare: use total daily pharyngitis rate when age-disaggregated unavaliable

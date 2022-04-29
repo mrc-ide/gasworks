@@ -58,7 +58,16 @@ test_that("helium_compare", {
   names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
 
   observed <- as.list(c(state[c("scarlet_fever_cases", "igas_inc"), 3],
-                      sf_rate, pharyngitis_rate))
+                        sf_rate, pharyngitis_rate))
+
+  compare_compiled <- function(state, observed, pars, mod) {
+    idx <- helium_index(mod$info())$run
+    state_full <- mod$state()
+    state_full[idx, ] <- state
+    mod$update_state(pars = pars, state = state_full)
+    mod$set_data(list(list(mod$step(), observed)))
+    mod$compare_data()
+  }
 
   set.seed(1)
   ll <- helium_compare(state, observed, pars)
@@ -67,6 +76,7 @@ test_that("helium_compare", {
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
   expect_equal(ll, c(-24.813554694153, -33.7484013304405, -24.0115119493748,
                      -25.1792899314225, -24.2923960810031))
+  expect_equal(compare_compiled(state, observed, pars, mod), ll)
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
@@ -83,21 +93,29 @@ test_that("helium_compare", {
                           sum(state[nms, 3]))
 
     y <- helium_compare(tmp, observed, pars)
-    expect_equivalent(max(y), y[x == 1], tol = 1 / sqrt(pars$exp_noise))
+    expect_equivalent(max(y), y[x == 1], tolerance = 1 / sqrt(pars$exp_noise))
   }
 
   # fits use aggregate data when pharyngitis by age is all NA
+  observed_agg <-
+    replace(observed, grep("daily_pharyngitis_rate_", names(observed)), NA)
+  observed_none <-
+    replace(observed, grep("daily_pharyngitis_rate", names(observed)), NA)
   expect_equal(
-  helium_compare(state, pars = pars,
-    replace(observed, grep("daily_pharyngitis_rate_", names(observed)), NA)),
-  helium_compare(state, pars = pars,
-    replace(observed, grep("daily_pharyngitis_rate", names(observed)), NA)) +
+    helium_compare(state, observed_agg, pars),
+    helium_compare(state, observed_none, pars) +
     ll_norm(observed$daily_pharyngitis_rate * state["etiologic_fraction", ],
             state["daily_gas_pharyngitis_rate", ], pars$k_gp))
+  expect_equal(
+    helium_compare(state, observed_agg, pars),
+    compare_compiled(state, observed_agg, pars, mod))
 
   # NA data returns 0
-  expect_equal(helium_compare(state, replace(observed, seq_along(observed), NA),
-                              pars), rep(0, ncol(state)))
+  observed_empty <- replace(observed, seq_along(observed), NA)
+  expect_equal(helium_compare(state, observed_empty, pars),
+               rep(0, ncol(state)))
+  expect_equal(compare_compiled(state, observed_empty, pars, mod),
+               rep(0, ncol(state)))
   expect_error(helium_compare(state, unname(observed), pars),
                "missing or misnamed data")
 
@@ -171,6 +189,15 @@ test_that("helium_filter", {
   pars <- example_helium_parameters()
   set.seed(1)
   filter$run(transform(pars))
+
+  ## Check compiled filter runs - hard to test values here because the
+  ## variance is large with this set of parameters.
+  filter_compiled <- helium_filter(data, constant_data, 3, TRUE)
+  expect_null(filter_compiled$inputs()$compare)
+  filter_compiled$run(transform(pars))
+
+  expect_true(is.function(filter$.__enclos_env__$private$compare))
+  expect_null(filter_compiled$.__enclos_env__$private$compare)
 })
 
 

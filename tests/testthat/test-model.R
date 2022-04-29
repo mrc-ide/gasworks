@@ -274,8 +274,8 @@ test_that("the transmission rate is calculated correctly", {
   expect_true(as.numeric(max_date[1] - model_date(pars$t_s)) %% 365 <= 7)
   # beta does not vary by particle
   expect_equal(colMeans(beta), beta[1, ])
-  expect_equal(max(beta), pars$beta * (1 + pars$sigma), tol = 1e-4)
-  expect_equal(min(beta), pars$beta * (1 - pars$sigma), tol = 1e-4)
+  expect_equal(max(beta), pars$beta * (1 + pars$sigma), tolerance = 1e-4)
+  expect_equal(min(beta), pars$beta * (1 - pars$sigma), tolerance = 1e-4)
 
   pars$sigma <- 0
   mod <- model$new(pars, 0, 5, seed = 1L)
@@ -375,9 +375,9 @@ test_that("rates are calculated correctly when n_group == 16", {
                rowSums(y["gas_pharyngitis_inc", , ]))
   expect_equal(colSums(y[grep("^S", nms), , 2]), y["gas_pharyngitis_inc", , 2])
   expect_equivalent(pars$prev_A,
-               y[grep("^prev_A", nms), 1, 1], tol = 1e-6)
+               y[grep("^prev_A", nms), 1, 1], tolerance = 1e-6)
   expect_equivalent((1 - pars$prev_A) * pars$prev_R,
-                    y[grep("^prev_R", nms), 1, 1], tol = 1e-6)
+                    y[grep("^prev_R", nms), 1, 1], tolerance = 1e-6)
 
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
