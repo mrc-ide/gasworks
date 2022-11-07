@@ -65,7 +65,7 @@ test_that("helium_compare", {
     state_full <- mod$state()
     state_full[idx, ] <- state
     mod$update_state(pars = pars, state = state_full)
-    mod$set_data(list(list(mod$step(), observed)))
+    mod$set_data(list(list(mod$time(), observed)))
     mod$compare_data()
   }
 
