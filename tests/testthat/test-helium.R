@@ -170,7 +170,7 @@ test_that("helium_filter", {
                      daily_scarlet_fever_rate_65_74 = 10:15,
                      daily_scarlet_fever_rate_75 = 11:16)
   x <- helium_prepare_data(data)
-  expect_true(all(diff(x$step_start) == 7))
+  expect_true(all(diff(x$time_start) == 7))
 
   df <- data.frame(age_start = 0, age_end = 5, N = 1e3, n = 1e2)
   constant_data <- list(etiologic_fraction = df, asymptomatic_carriage = df)

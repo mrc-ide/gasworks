@@ -146,7 +146,7 @@ helium_compare <- function(state, observed, pars) {
 ##' @param data The data set to be used for the particle filter,
 ##' This is essentially a [data.frame()] with at least columns `model_week`,
 ##' along with the data used in [helium_compare()].
-##' @return A a [data.frame()] with columns `step_start`, `step_end`,
+##' @return A a [data.frame()] with columns `time_start`, `time_end`,
 ##' along with the data used in [helium_compare()].
 ##' @importFrom mcstate particle_filter_data
 helium_prepare_data <- function(data) {

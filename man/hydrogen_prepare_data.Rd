@@ -12,7 +12,7 @@ This is essentially a \code{\link[=data.frame]{data.frame()}} with at least colu
 along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.}
 }
 \value{
-A a \code{\link[=data.frame]{data.frame()}} with columns \code{step_start}, \code{step_end},
+A a \code{\link[=data.frame]{data.frame()}} with columns \code{time_start}, \code{time_end},
 along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.
 }
 \description{
