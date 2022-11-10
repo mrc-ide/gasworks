@@ -26,9 +26,9 @@ Suggests:
     lubridate
 Remotes:
     mrc-ide/odin,
-    mrc-ide/dust@mrc-3502,
-    mrc-ide/odin.dust@mrc-3770,
-    mrc-ide/mcstate@mrc-3769
+    mrc-ide/dust,
+    mrc-ide/odin.dust,
+    mrc-ide/mcstate
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 SystemRequirements: C++11
