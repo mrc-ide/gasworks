@@ -77,7 +77,7 @@ test_that("hydrogen_filter", {
                      scarlet_fever_cases = 100:105,
                      igas_inc = 90:95)
   x <- hydrogen_prepare_data(data)
-  expect_true(all(diff(x$step_start) == 7))
+  expect_true(all(diff(x$time_start) == 7))
 
   filter <- hydrogen_filter(data, 3)
   expect_equal(filter$n_particles, 3)

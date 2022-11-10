@@ -8,32 +8,32 @@ dust_model_gpu_info <- function() {
   .Call(`_gasworks_dust_model_gpu_info`)
 }
 
-dust_cpu_model_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_gasworks_dust_cpu_model_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
+dust_cpu_model_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
+  .Call(`_gasworks_dust_cpu_model_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
 }
 
-dust_cpu_model_run <- function(ptr, step_end) {
-  .Call(`_gasworks_dust_cpu_model_run`, ptr, step_end)
+dust_cpu_model_run <- function(ptr, time_end) {
+  .Call(`_gasworks_dust_cpu_model_run`, ptr, time_end)
 }
 
-dust_cpu_model_simulate <- function(ptr, step_end) {
-  .Call(`_gasworks_dust_cpu_model_simulate`, ptr, step_end)
+dust_cpu_model_simulate <- function(ptr, time_end) {
+  .Call(`_gasworks_dust_cpu_model_simulate`, ptr, time_end)
 }
 
 dust_cpu_model_set_index <- function(ptr, r_index) {
   .Call(`_gasworks_dust_cpu_model_set_index`, ptr, r_index)
 }
 
-dust_cpu_model_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_gasworks_dust_cpu_model_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
+dust_cpu_model_update_state <- function(ptr, r_pars, r_state, r_time, r_set_initial_state) {
+  .Call(`_gasworks_dust_cpu_model_update_state`, ptr, r_pars, r_state, r_time, r_set_initial_state)
 }
 
 dust_cpu_model_state <- function(ptr, r_index) {
   .Call(`_gasworks_dust_cpu_model_state`, ptr, r_index)
 }
 
-dust_cpu_model_step <- function(ptr) {
-  .Call(`_gasworks_dust_cpu_model_step`, ptr)
+dust_cpu_model_time <- function(ptr) {
+  .Call(`_gasworks_dust_cpu_model_time`, ptr)
 }
 
 dust_cpu_model_reorder <- function(ptr, r_index) {
@@ -60,8 +60,8 @@ dust_cpu_model_compare_data <- function(ptr) {
   .Call(`_gasworks_dust_cpu_model_compare_data`, ptr)
 }
 
-dust_cpu_model_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_gasworks_dust_cpu_model_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
+dust_cpu_model_filter <- function(ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood) {
+  .Call(`_gasworks_dust_cpu_model_filter`, ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood)
 }
 
 dust_cpu_model_set_n_threads <- function(ptr, n_threads) {
