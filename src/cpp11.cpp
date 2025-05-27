@@ -6,13 +6,6 @@
 #include <R_ext/Visibility.h>
 
 // model.cpp
-cpp11::sexp dust_model_capabilities();
-extern "C" SEXP _gasworks_dust_model_capabilities() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(dust_model_capabilities());
-  END_CPP11
-}
-// model.cpp
 cpp11::sexp dust_model_gpu_info();
 extern "C" SEXP _gasworks_dust_model_gpu_info() {
   BEGIN_CPP11
@@ -20,17 +13,24 @@ extern "C" SEXP _gasworks_dust_model_gpu_info() {
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_alloc(cpp11::list r_pars, bool pars_multi, size_t time, cpp11::sexp r_n_particles, size_t n_threads, cpp11::sexp r_seed, bool deterministic, cpp11::sexp gpu_config);
-extern "C" SEXP _gasworks_dust_cpu_model_alloc(SEXP r_pars, SEXP pars_multi, SEXP time, SEXP r_n_particles, SEXP n_threads, SEXP r_seed, SEXP deterministic, SEXP gpu_config) {
+SEXP dust_cpu_model_alloc(cpp11::list r_pars, bool pars_multi, cpp11::sexp r_time, cpp11::sexp r_n_particles, int n_threads, cpp11::sexp r_seed, bool deterministic, cpp11::sexp gpu_config, cpp11::sexp ode_control);
+extern "C" SEXP _gasworks_dust_cpu_model_alloc(SEXP r_pars, SEXP pars_multi, SEXP r_time, SEXP r_n_particles, SEXP n_threads, SEXP r_seed, SEXP deterministic, SEXP gpu_config, SEXP ode_control) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_alloc(cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(r_pars), cpp11::as_cpp<cpp11::decay_t<bool>>(pars_multi), cpp11::as_cpp<cpp11::decay_t<size_t>>(time), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_n_particles), cpp11::as_cpp<cpp11::decay_t<size_t>>(n_threads), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_seed), cpp11::as_cpp<cpp11::decay_t<bool>>(deterministic), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(gpu_config)));
+    return cpp11::as_sexp(dust_cpu_model_alloc(cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(r_pars), cpp11::as_cpp<cpp11::decay_t<bool>>(pars_multi), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_time), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_n_particles), cpp11::as_cpp<cpp11::decay_t<int>>(n_threads), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_seed), cpp11::as_cpp<cpp11::decay_t<bool>>(deterministic), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(gpu_config), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(ode_control)));
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_run(SEXP ptr, size_t time_end);
-extern "C" SEXP _gasworks_dust_cpu_model_run(SEXP ptr, SEXP time_end) {
+cpp11::sexp dust_cpu_model_capabilities();
+extern "C" SEXP _gasworks_dust_cpu_model_capabilities() {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_run(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<size_t>>(time_end)));
+    return cpp11::as_sexp(dust_cpu_model_capabilities());
+  END_CPP11
+}
+// model.cpp
+SEXP dust_cpu_model_run(SEXP ptr, cpp11::sexp r_time_end);
+extern "C" SEXP _gasworks_dust_cpu_model_run(SEXP ptr, SEXP r_time_end) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_model_run(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_time_end)));
   END_CPP11
 }
 // model.cpp
@@ -41,6 +41,13 @@ extern "C" SEXP _gasworks_dust_cpu_model_simulate(SEXP ptr, SEXP time_end) {
   END_CPP11
 }
 // model.cpp
+SEXP dust_cpu_model_run_adjoint(SEXP ptr);
+extern "C" SEXP _gasworks_dust_cpu_model_run_adjoint(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_model_run_adjoint(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// model.cpp
 SEXP dust_cpu_model_set_index(SEXP ptr, cpp11::sexp r_index);
 extern "C" SEXP _gasworks_dust_cpu_model_set_index(SEXP ptr, SEXP r_index) {
   BEGIN_CPP11
@@ -48,10 +55,10 @@ extern "C" SEXP _gasworks_dust_cpu_model_set_index(SEXP ptr, SEXP r_index) {
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_time, SEXP r_set_initial_state);
-extern "C" SEXP _gasworks_dust_cpu_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_time, SEXP r_set_initial_state) {
+SEXP dust_cpu_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_time, SEXP r_set_initial_state, SEXP index, SEXP reset_step_size);
+extern "C" SEXP _gasworks_dust_cpu_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_time, SEXP r_set_initial_state, SEXP index, SEXP reset_step_size) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_update_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_pars), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_state), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_time), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_set_initial_state)));
+    return cpp11::as_sexp(dust_cpu_model_update_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_pars), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_state), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_time), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_set_initial_state), cpp11::as_cpp<cpp11::decay_t<SEXP>>(index), cpp11::as_cpp<cpp11::decay_t<SEXP>>(reset_step_size)));
   END_CPP11
 }
 // model.cpp
@@ -62,7 +69,7 @@ extern "C" SEXP _gasworks_dust_cpu_model_state(SEXP ptr, SEXP r_index) {
   END_CPP11
 }
 // model.cpp
-size_t dust_cpu_model_time(SEXP ptr);
+SEXP dust_cpu_model_time(SEXP ptr);
 extern "C" SEXP _gasworks_dust_cpu_model_time(SEXP ptr) {
   BEGIN_CPP11
     return cpp11::as_sexp(dust_cpu_model_time(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
@@ -133,27 +140,45 @@ extern "C" SEXP _gasworks_dust_cpu_model_n_state(SEXP ptr) {
     return cpp11::as_sexp(dust_cpu_model_n_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
+// model.cpp
+void dust_cpu_model_set_stochastic_schedule(SEXP ptr, SEXP time);
+extern "C" SEXP _gasworks_dust_cpu_model_set_stochastic_schedule(SEXP ptr, SEXP time) {
+  BEGIN_CPP11
+    dust_cpu_model_set_stochastic_schedule(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(time));
+    return R_NilValue;
+  END_CPP11
+}
+// model.cpp
+SEXP dust_cpu_model_ode_statistics(SEXP ptr);
+extern "C" SEXP _gasworks_dust_cpu_model_ode_statistics(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_model_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_gasworks_dust_cpu_model_alloc",         (DL_FUNC) &_gasworks_dust_cpu_model_alloc,         8},
-    {"_gasworks_dust_cpu_model_compare_data",  (DL_FUNC) &_gasworks_dust_cpu_model_compare_data,  1},
-    {"_gasworks_dust_cpu_model_filter",        (DL_FUNC) &_gasworks_dust_cpu_model_filter,        5},
-    {"_gasworks_dust_cpu_model_n_state",       (DL_FUNC) &_gasworks_dust_cpu_model_n_state,       1},
-    {"_gasworks_dust_cpu_model_reorder",       (DL_FUNC) &_gasworks_dust_cpu_model_reorder,       2},
-    {"_gasworks_dust_cpu_model_resample",      (DL_FUNC) &_gasworks_dust_cpu_model_resample,      2},
-    {"_gasworks_dust_cpu_model_rng_state",     (DL_FUNC) &_gasworks_dust_cpu_model_rng_state,     3},
-    {"_gasworks_dust_cpu_model_run",           (DL_FUNC) &_gasworks_dust_cpu_model_run,           2},
-    {"_gasworks_dust_cpu_model_set_data",      (DL_FUNC) &_gasworks_dust_cpu_model_set_data,      3},
-    {"_gasworks_dust_cpu_model_set_index",     (DL_FUNC) &_gasworks_dust_cpu_model_set_index,     2},
-    {"_gasworks_dust_cpu_model_set_n_threads", (DL_FUNC) &_gasworks_dust_cpu_model_set_n_threads, 2},
-    {"_gasworks_dust_cpu_model_set_rng_state", (DL_FUNC) &_gasworks_dust_cpu_model_set_rng_state, 2},
-    {"_gasworks_dust_cpu_model_simulate",      (DL_FUNC) &_gasworks_dust_cpu_model_simulate,      2},
-    {"_gasworks_dust_cpu_model_state",         (DL_FUNC) &_gasworks_dust_cpu_model_state,         2},
-    {"_gasworks_dust_cpu_model_time",          (DL_FUNC) &_gasworks_dust_cpu_model_time,          1},
-    {"_gasworks_dust_cpu_model_update_state",  (DL_FUNC) &_gasworks_dust_cpu_model_update_state,  5},
-    {"_gasworks_dust_model_capabilities",      (DL_FUNC) &_gasworks_dust_model_capabilities,      0},
-    {"_gasworks_dust_model_gpu_info",          (DL_FUNC) &_gasworks_dust_model_gpu_info,          0},
+    {"_gasworks_dust_cpu_model_alloc",                   (DL_FUNC) &_gasworks_dust_cpu_model_alloc,                   9},
+    {"_gasworks_dust_cpu_model_capabilities",            (DL_FUNC) &_gasworks_dust_cpu_model_capabilities,            0},
+    {"_gasworks_dust_cpu_model_compare_data",            (DL_FUNC) &_gasworks_dust_cpu_model_compare_data,            1},
+    {"_gasworks_dust_cpu_model_filter",                  (DL_FUNC) &_gasworks_dust_cpu_model_filter,                  5},
+    {"_gasworks_dust_cpu_model_n_state",                 (DL_FUNC) &_gasworks_dust_cpu_model_n_state,                 1},
+    {"_gasworks_dust_cpu_model_ode_statistics",          (DL_FUNC) &_gasworks_dust_cpu_model_ode_statistics,          1},
+    {"_gasworks_dust_cpu_model_reorder",                 (DL_FUNC) &_gasworks_dust_cpu_model_reorder,                 2},
+    {"_gasworks_dust_cpu_model_resample",                (DL_FUNC) &_gasworks_dust_cpu_model_resample,                2},
+    {"_gasworks_dust_cpu_model_rng_state",               (DL_FUNC) &_gasworks_dust_cpu_model_rng_state,               3},
+    {"_gasworks_dust_cpu_model_run",                     (DL_FUNC) &_gasworks_dust_cpu_model_run,                     2},
+    {"_gasworks_dust_cpu_model_run_adjoint",             (DL_FUNC) &_gasworks_dust_cpu_model_run_adjoint,             1},
+    {"_gasworks_dust_cpu_model_set_data",                (DL_FUNC) &_gasworks_dust_cpu_model_set_data,                3},
+    {"_gasworks_dust_cpu_model_set_index",               (DL_FUNC) &_gasworks_dust_cpu_model_set_index,               2},
+    {"_gasworks_dust_cpu_model_set_n_threads",           (DL_FUNC) &_gasworks_dust_cpu_model_set_n_threads,           2},
+    {"_gasworks_dust_cpu_model_set_rng_state",           (DL_FUNC) &_gasworks_dust_cpu_model_set_rng_state,           2},
+    {"_gasworks_dust_cpu_model_set_stochastic_schedule", (DL_FUNC) &_gasworks_dust_cpu_model_set_stochastic_schedule, 2},
+    {"_gasworks_dust_cpu_model_simulate",                (DL_FUNC) &_gasworks_dust_cpu_model_simulate,                2},
+    {"_gasworks_dust_cpu_model_state",                   (DL_FUNC) &_gasworks_dust_cpu_model_state,                   2},
+    {"_gasworks_dust_cpu_model_time",                    (DL_FUNC) &_gasworks_dust_cpu_model_time,                    1},
+    {"_gasworks_dust_cpu_model_update_state",            (DL_FUNC) &_gasworks_dust_cpu_model_update_state,            7},
+    {"_gasworks_dust_model_gpu_info",                    (DL_FUNC) &_gasworks_dust_model_gpu_info,                    0},
     {NULL, NULL, 0}
 };
 }
