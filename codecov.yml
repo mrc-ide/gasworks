@@ -1,5 +1,17 @@
-codecov:
-  token: 1386104f-b27c-45d1-917f-806e95cf37a6
+comment: false
+
+coverage:
+  status:
+    project:
+      default:
+        target: 100%
+        threshold: 0%
+    patch:
+      default:
+        target: 100%
+        threshold: 0%
 
 ignore:
--   R/dust.R
+  - "R/cpp11.R"
+  - "R/dust.R"
+  - "src"

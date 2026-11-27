@@ -1,5 +1,5 @@
 ^gasworks\.Rproj$
-^\.Rproj\.user$^orig
+^\.Rproj\.user$
 ^Makefile$
 ^api\.md$
 ^docker$
@@ -22,3 +22,4 @@
 ^doc$
 ^_pkgdown\.yml$
 ^pkgdown$
+^cobertura\.xml$

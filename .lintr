@@ -1,8 +1,12 @@
-linters: with_defaults(
+linters: linters_with_defaults(
+    indentation_linter = NULL,
     object_length_linter = NULL,
     object_name_linter = NULL,
-    object_usage_linter = NULL,
-    todo_comment_linter = NULL,
-    cyclocomp_linter = NULL
+    object_usage_linter = NULL
     )
-exclusions: list("R/cpp11.R", "R/dust.R", "tests/testthat.R")
+exclusions: list(
+    "R/cpp11.R",
+    "R/dust.R",
+    "inst/odin",
+    "tests/testthat.R"
+    )
