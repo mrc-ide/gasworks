@@ -218,8 +218,15 @@ test_that("helium_constant_likelihood", {
   expect_equal(likelihood$parameters, nms)
 
   x <- packer$pack(pars)
-  expect_equal(monty::monty_model_density(likelihood, x),
-               create_constant_log_likelihood(constant_data)(pars))
+  expected <- create_constant_log_likelihood(constant_data)(pars)
+  expect_equal(monty::monty_model_density(likelihood, x), expected)
+
+  ## does not depend on the calling environment
+  make <- function() {
+    data <- constant_data
+    helium_constant_likelihood(data, packer)
+  }
+  expect_equal(monty::monty_model_density(make(), x), expected)
 
   ## can be combined with the filter and a prior to give a posterior
   filter <- helium_filter(example_helium_data(), 3, deterministic = TRUE)

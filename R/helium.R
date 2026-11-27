@@ -176,6 +176,7 @@ helium_filter <- function(data, n_particles, n_threads = 1, seed = NULL,
 ##' added to the model returned by [dust2::dust_likelihood_monty()]
 ##' @export
 helium_constant_likelihood <- function(constant_data, packer) {
+  force(packer)
   constant_log_likelihood <- create_constant_log_likelihood(constant_data)
   density <- function(x) {
     constant_log_likelihood(packer$unpack(x))
@@ -186,6 +187,7 @@ helium_constant_likelihood <- function(constant_data, packer) {
 
 ##' @importFrom stats dbinom
 create_constant_log_likelihood <- function(data) {
+  force(data)
 
   constant_log_likelihood <- function(pars) {
 
