@@ -7,10 +7,10 @@
 hydrogen_compare(state, observed, pars)
 }
 \arguments{
-\item{state}{State vector for the end of the current week. This is
-assumed to be filtered following \code{\link[=hydrogen_index]{hydrogen_index()}} so contains
-rows corresponding to average daily pharyngitis rate per 100,000,
-weekly number of scarlet fever cases and weekly number of iGAS cases.}
+\item{state}{A matrix of model states at the end of the current week,
+with one column per particle and rows named
+\code{daily_gas_pharyngitis_rate}, \code{daily_scarlet_fever_rate},
+\code{scarlet_fever_cases} and \code{igas_inc}.}
 
 \item{observed}{Observed data. This will be a list with elements
 \code{daily_pharyngitis_rate}, \code{daily_scarlet_fever_rate}, \code{scarlet_fever_cases}
@@ -23,8 +23,9 @@ A vector of log likelihoods, the same length as the number
 of particles (the number of columns in the modelled state)
 }
 \description{
-Compare observed and modelled data from the hydrogen model. This
-conforms to the mcstate interface.
+Compare observed and modelled data from the hydrogen model. This is a
+reference implementation in R of the comparison that is compiled into
+the \link{model}, which is what is used by \code{\link[=hydrogen_filter]{hydrogen_filter()}}.
 }
 \examples{
 state <- rbind(daily_gas_pharyngitis_rate = 10:15,

@@ -1,34 +1,35 @@
 Package: gasworks
 Title: Models of Group-A Streptococcus (GAS) Transmission
-Version: 0.3.6
+Version: 0.4.0
 Authors@R: 
     person(given = "Lilith",
            family = "Whittles",
            role = c("aut", "cre"),
            email = "l.whittles@imperial.ac.uk")
 Description: Models of Group A Streptococcus (GAS) Transmission.
-Depends: R (>= 3.0.2)
+Depends: R (>= 4.1.0)
 License: MIT + file LICENSE
+URL: https://github.com/mrc-ide/gasworks
+BugReports: https://github.com/mrc-ide/gasworks/issues
 Encoding: UTF-8
-LazyData: true
 Language: en-GB
 Imports: 
-    dust (>= 0.12.0),
-    mcstate (>= 0.9.12),
-    extraDistr
+    dust2 (>= 0.3.28),
+    extraDistr,
+    monty (>= 0.4.14),
+    stats
 LinkingTo:
     cpp11,
-    dust (>= 0.11.26)
+    dust2,
+    monty
 Suggests:
-    testthat,
-    odin (>= 1.1.12),
-    odin.dust (>= 0.2.26),
-    lubridate
+    lubridate,
+    odin2 (>= 0.3.47),
+    testthat
 Remotes:
-    mrc-ide/odin,
-    mrc-ide/dust,
-    mrc-ide/odin.dust,
-    mrc-ide/mcstate
+    mrc-ide/dust2,
+    mrc-ide/monty,
+    mrc-ide/odin2
+Additional_repositories: https://mrc-ide.r-universe.dev
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
-SystemRequirements: C++11
+RoxygenNote: 7.3.3

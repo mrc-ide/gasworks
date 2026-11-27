@@ -68,7 +68,7 @@ assert_strictly_increasing <- function(x, len = length(x),
 assert_unit_interval <- function(x, len = length(x),
                                  name = deparse(substitute(x))) {
   force(name)
-  if (any(x < 0) | any(x > 1)) {
+  if (any(x < 0) || any(x > 1)) {
     stop(sprintf("'%s' must be between 0 and 1", name), call. = FALSE)
   }
   assert_length(x, len, name)

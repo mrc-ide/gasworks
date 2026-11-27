@@ -118,7 +118,6 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   demographic_pars <- demographic_pars %||% demographic_parameters(n_group)
   pars <- c(demographic_pars, gas_pars)
 
-  pars$dt <- 1 / 7 # Data is weekly, model steps are daily
   pars$exp_noise <- 1e6 # exponential noise parameter for observation dist
 
   # add fixed model parameters (i.e. not fitted)
@@ -137,11 +136,6 @@ model_parameters <- function(gas_pars, initial_pars = NULL,
   ## observation parameters; defaults are used only where not supplied
   pars$k_gp <- pars$k_gp %||% 1
   pars$k_hpr <- pars$k_hpr %||% 1
-
-  # convert duration in days to duration in weeks
-  for (i in grep("^delta_", names(pars))) {
-    pars[[i]] <- pars[[i]] * pars$dt
-  }
 
   initial_pars <- initial_pars %||% initial_parameters(pars)
   pars <- c(pars, initial_pars)

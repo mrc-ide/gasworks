@@ -1,18 +1,17 @@
-## Definition of the time-step and output as "time"
-steps_per_week <- 7
-dt <- 1 / steps_per_week
-initial(time) <- 0
-update(time) <- (step + 1) * dt
+## Stochastic model of group A Streptococcus transmission.
+##
+## Time and durations are measured in days. Transmission and demographic rates
+## are given per week (as in the data, which are weekly), so we convert the time
+## step into weeks here:
+dt_week <- dt / 7
 # i: number of age groups, j: number of Erlang compartments
-n_group <- user(1)
+n_group <- parameter(1, type = "integer", constant = TRUE)
 
-## What we really want is min(step + 1, length(alpha_t)) but that's not
-## supported by odin (it could be made to support this).
-alpha_t <- if (as.integer(step) >= length(alpha))
-  alpha[length(alpha)] else alpha[step + 1]
+## Daily time-varying inputs; values are held at their last entry after the
+## end of the series
+alpha_t <- alpha[min(as.integer(time) + 1, length(alpha))]
 ## Probability of reporting a scarlet fever case (time-varying)
-q_F_t <- if (as.integer(step) >= length(q_F))
-  q_F[length(q_F)] else q_F[step + 1]
+q_F_t <- q_F[min(as.integer(time) + 1, length(q_F))]
 
 ## Core equations for transitions between compartments:
 update(U[])    <- U[i]    + dem_U[i]    + gas_U[i]
@@ -35,43 +34,30 @@ update(prev_A[]) <- sum(A[i, ]) / N[i]
 update(prev_R[]) <- sum(R[i, ]) / N[i]
 
 ## Output incidence flows:
-update(births_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_xU[])
-  else births_inc + sum(n_xU[])
-  )
+update(births_inc) <- births_inc + sum(n_xU[])
 
-update(net_leavers_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_Nx[])
-  else net_leavers_inc + sum(n_Nx[])
-  )
+update(net_leavers_inc) <- net_leavers_inc + sum(n_Nx[])
 
-update(infections_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_UE[]) + sum(n_UA[])
-  else infections_inc + sum(n_UE[]) + sum(n_UA[])
-  )
+update(infections_inc) <- infections_inc + sum(n_UE[]) + sum(n_UA[])
 
-gas_pharyngitis_inc_by_group[] <- (
-  if (step %% steps_per_week == 0) n_ES[i]
-  else gas_pharyngitis_inc_by_group[i] + n_ES[i]
-  )
+new_gas_pharyngitis_inc_by_group[] <- gas_pharyngitis_inc_by_group[i] + n_ES[i]
+update(gas_pharyngitis_inc_by_group[]) <- new_gas_pharyngitis_inc_by_group[i]
 
-scarlet_fever_inc_by_group[] <- (
-  if (step %% steps_per_week == 0) n_PF[i]
-  else scarlet_fever_inc_by_group[i] + n_PF[i])
+new_scarlet_fever_inc_by_group[] <- scarlet_fever_inc_by_group[i] + n_PF[i]
+update(scarlet_fever_inc_by_group[]) <- new_scarlet_fever_inc_by_group[i]
 
 # output all-group incidence flows
-update(gas_pharyngitis_inc) <- sum(gas_pharyngitis_inc_by_group[])
-update(scarlet_fever_inc) <- sum(scarlet_fever_inc_by_group[])
-update(scarlet_fever_cases) <- round(sum(scarlet_fever_inc_by_group[]) * q_F_t)
-update(igas_inc) <- (
-  if (step %% steps_per_week == 0) sum(n_I[]) else igas_inc + sum(n_I[]))
+update(gas_pharyngitis_inc) <- sum(new_gas_pharyngitis_inc_by_group[])
+update(scarlet_fever_inc) <- sum(new_scarlet_fever_inc_by_group[])
+update(scarlet_fever_cases) <- round(sum(new_scarlet_fever_inc_by_group[]) * q_F_t)
+update(igas_inc) <- igas_inc + sum(n_I[])
 
 ## Output daily incidence rate per 100,000 population
  w[] <- N[i] / 1e5 * 7
 update(daily_gas_pharyngitis_rate) <-
-sum(gas_pharyngitis_inc_by_group[]) * p_T / sum(w[])
+sum(new_gas_pharyngitis_inc_by_group[]) * p_T / sum(w[])
 update(daily_scarlet_fever_rate) <-
-  sum(scarlet_fever_inc_by_group[]) / sum(w[])
+  sum(new_scarlet_fever_inc_by_group[]) / sum(w[])
 
 ## When using the age-structured model (helium) output incidence rates for age
 ## groups used by UK GP surveillance:
@@ -81,62 +67,62 @@ update(daily_scarlet_fever_rate) <-
 ## Output daily GAS pharyngitis rates by group
 update(daily_gas_pharyngitis_rate_04) <- (
   if (n_group == 16)
-    gas_pharyngitis_inc_by_group[1] * p_T / w[1]
+    new_gas_pharyngitis_inc_by_group[1] * p_T / w[1]
   else 0)
 update(daily_gas_pharyngitis_rate_05_14) <- (
   if (n_group == 16)
-    sum(gas_pharyngitis_inc_by_group[2:3]) * p_T / sum(w[2:3])
+    sum(new_gas_pharyngitis_inc_by_group[2:3]) * p_T / sum(w[2:3])
   else 0)
 update(daily_gas_pharyngitis_rate_15_44) <- (
   if (n_group == 16)
-    sum(gas_pharyngitis_inc_by_group[4:9]) * p_T / sum(w[4:9])
+    sum(new_gas_pharyngitis_inc_by_group[4:9]) * p_T / sum(w[4:9])
   else 0)
 update(daily_gas_pharyngitis_rate_45_64) <- (
   if (n_group == 16)
-    sum(gas_pharyngitis_inc_by_group[10:13]) * p_T / sum(w[10:13])
+    sum(new_gas_pharyngitis_inc_by_group[10:13]) * p_T / sum(w[10:13])
   else 0)
 update(daily_gas_pharyngitis_rate_65_74) <- (
   if (n_group == 16)
-    sum(gas_pharyngitis_inc_by_group[14:15]) * p_T / sum(w[14:15])
+    sum(new_gas_pharyngitis_inc_by_group[14:15]) * p_T / sum(w[14:15])
   else 0)
 update(daily_gas_pharyngitis_rate_75) <- (
   if (n_group == 16)
-    gas_pharyngitis_inc_by_group[16] * p_T / w[16]
+    new_gas_pharyngitis_inc_by_group[16] * p_T / w[16]
   else 0)
 
 ## Output daily scarlet fever rates by group
 update(daily_scarlet_fever_rate_04) <- (
-  if (n_group == 16) scarlet_fever_inc_by_group[1] / w[1]
+  if (n_group == 16) new_scarlet_fever_inc_by_group[1] / w[1]
   else 0)
 update(daily_scarlet_fever_rate_05_14) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[2:3]) / sum(w[2:3])
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[2:3]) / sum(w[2:3])
   else 0)
 update(daily_scarlet_fever_rate_15_44) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[4:9]) / sum(w[4:9])
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[4:9]) / sum(w[4:9])
   else 0)
 update(daily_scarlet_fever_rate_45_64) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[10:13]) / sum(w[10:13])
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[10:13]) / sum(w[10:13])
   else 0)
 update(daily_scarlet_fever_rate_65_74) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[14:15]) / sum(w[14:15])
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[14:15]) / sum(w[14:15])
   else 0)
 update(daily_scarlet_fever_rate_75) <- (
-  if (n_group == 16) scarlet_fever_inc_by_group[16] / w[16]
+  if (n_group == 16) new_scarlet_fever_inc_by_group[16] / w[16]
   else 0)
 
 ## Output weekly scarlet fever cases by group
 update(scarlet_fever_inc_04) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[1]) else 0)
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[1]) else 0)
 update(scarlet_fever_inc_05_14) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[2:3]) else 0)
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[2:3]) else 0)
 update(scarlet_fever_inc_15_44) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[4:9]) else 0)
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[4:9]) else 0)
 update(scarlet_fever_inc_45_64) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[10:13]) else 0)
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[10:13]) else 0)
 update(scarlet_fever_inc_65_74) <- (
-  if (n_group == 16) sum(scarlet_fever_inc_by_group[14:15]) else 0)
+  if (n_group == 16) sum(new_scarlet_fever_inc_by_group[14:15]) else 0)
 update(scarlet_fever_inc_75) <- (
-  if (n_group == 16) scarlet_fever_inc_by_group[16] else 0)
+  if (n_group == 16) new_scarlet_fever_inc_by_group[16] else 0)
 
 # weight phi_S by population size
 weighted_phi_S[] <- phi_S[i] * N[i]
@@ -158,13 +144,15 @@ update(etiologic_fraction_75) <- (
   if (n_group == 16) weighted_phi_S[16] / N[16] else 0)
 
 ## Force of infection
-pi <- 3.14159265358979
-update(beta_t) <- beta * (1 + sigma * cos(2 * pi * (t0 + step - t_s) / 365.25))
-lambda[, ] <- beta_t * m[i, j] *
-  (sum(A[j, ]) * theta_A + sum(S[j, ]) + sum(P[j, ])) / N[j]
+update(beta_t) <- beta * (1 + sigma * cos(2 * pi * (t0 + time - t_s) / 365.25))
+## (there is no transmission from an age group with no population)
+lambda[, ] <- if (N[j] > 0) beta_t * m[i, j] *
+  (sum(A[j, ]) * theta_A + sum(S[j, ]) + sum(P[j, ])) / N[j] else 0
 foi[] <- sum(lambda[i, ])
 
-## Total rates of transmission out of each (sub)compartment
+## Total rates of transmission out of each (sub)compartment. The force of
+## infection is a rate per week; durations (delta) are in days, so the rates
+## of progression are per day.
 r_U[]  <- foi[i]
 r_A[]  <- k_A / delta_A
 r_E[]  <- k_E / delta_E
@@ -176,19 +164,19 @@ r_R[]  <- k_R / delta_R
 r_I[]  <- foi[i] * p_I
 
 ## Calculate number of births
-n_xU[1] <- round(alpha_t * dt)
+n_xU[1] <- round(alpha_t * dt_week)
 
 ## Calculate net number of leavers from each compartment - deterministic
 ## note that this can be negative when there is a net population increase due
 ## to immigration > emigration + death. entrants are distributed across disease
 ## states in proportion to the general population.
-n_Ux[]   <- round(U[i] * omega[i] * dt)
-n_Ax[, ] <- round(A[i, j] * omega[i] * dt)
-n_Ex[, ] <- round(E[i, j] * omega[i] * dt)
-n_Sx[, ] <- round(S[i, j] * omega[i] * dt)
-n_Px[, ] <- round(P[i, j] * omega[i] * dt)
-n_Fx[, ] <- round(F[i, j] * omega[i] * dt)
-n_Rx[, ] <- round(R[i, j] * omega[i] * dt)
+n_Ux[]   <- round(U[i] * omega[i] * dt_week)
+n_Ax[, ] <- round(A[i, j] * omega[i] * dt_week)
+n_Ex[, ] <- round(E[i, j] * omega[i] * dt_week)
+n_Sx[, ] <- round(S[i, j] * omega[i] * dt_week)
+n_Px[, ] <- round(P[i, j] * omega[i] * dt_week)
+n_Fx[, ] <- round(F[i, j] * omega[i] * dt_week)
+n_Rx[, ] <- round(R[i, j] * omega[i] * dt_week)
 
 ## calculate net aging
 n_Ui[] <- (if (i > 1) U[i - 1] else 0) - (if (i < n_group) U[i] else 0)
@@ -200,33 +188,33 @@ n_Fi[, ] <- (if (i > 1) F[i - 1, j] else 0) - (if (i < n_group) F[i, j] else 0)
 n_Ri[, ] <- (if (i > 1) R[i - 1, j] else 0) - (if (i < n_group) R[i, j] else 0)
 
 ## Calculate all demographic changes
-dem_U[]   <- n_xU[i] + round(n_Ui[i] * r_age * dt) - n_Ux[i]
-dem_A[, ] <- round(n_Ai[i, j] * r_age * dt) - n_Ax[i, j]
-dem_E[, ] <- round(n_Ei[i, j] * r_age * dt) - n_Ex[i, j]
-dem_S[, ] <- round(n_Si[i, j] * r_age * dt) - n_Sx[i, j]
-dem_P[, ] <- round(n_Pi[i, j] * r_age * dt) - n_Px[i, j]
-dem_F[, ] <- round(n_Fi[i, j] * r_age * dt) - n_Fx[i, j]
-dem_R[, ] <- round(n_Ri[i, j] * r_age * dt) - n_Rx[i, j]
+dem_U[]   <- n_xU[i] + round(n_Ui[i] * r_age * dt_week) - n_Ux[i]
+dem_A[, ] <- round(n_Ai[i, j] * r_age * dt_week) - n_Ax[i, j]
+dem_E[, ] <- round(n_Ei[i, j] * r_age * dt_week) - n_Ex[i, j]
+dem_S[, ] <- round(n_Si[i, j] * r_age * dt_week) - n_Sx[i, j]
+dem_P[, ] <- round(n_Pi[i, j] * r_age * dt_week) - n_Px[i, j]
+dem_F[, ] <- round(n_Fi[i, j] * r_age * dt_week) - n_Fx[i, j]
+dem_R[, ] <- round(n_Ri[i, j] * r_age * dt_week) - n_Rx[i, j]
 
 ## Draws from binomial distributions for numbers leaving each compartment
 ## all demographic transitions are done first
-n_U[]   <- rbinom(U[i]    + dem_U[i],    1 - exp(-r_U[i] * dt))
-n_A[, ] <- rbinom(A[i, j] + dem_A[i, j], 1 - exp(-r_A[i] * dt))
-n_E[, ] <- rbinom(E[i, j] + dem_E[i, j], 1 - exp(-r_E[i] * dt))
-n_S[, ] <- rbinom(S[i, j] + dem_S[i, j], 1 - exp(-r_S[i] * dt))
-n_P[, ] <- rbinom(P[i, j] + dem_P[i, j], 1 - exp(-r_P[i] * dt))
-n_F[, ] <- rbinom(F[i, j] + dem_F[i, j], 1 - exp(-r_F[i] * dt))
-n_R[, ] <- rbinom(R[i, j] + dem_R[i, j], 1 - exp(-r_R[i] * dt))
+n_U[] <- Binomial(U[i] + dem_U[i], 1 - exp(-r_U[i] * dt_week))
+n_A[, ] <- Binomial(A[i, j] + dem_A[i, j], 1 - exp(-r_A[i] * dt))
+n_E[, ] <- Binomial(E[i, j] + dem_E[i, j], 1 - exp(-r_E[i] * dt))
+n_S[, ] <- Binomial(S[i, j] + dem_S[i, j], 1 - exp(-r_S[i] * dt))
+n_P[, ] <- Binomial(P[i, j] + dem_P[i, j], 1 - exp(-r_P[i] * dt))
+n_F[, ] <- Binomial(F[i, j] + dem_F[i, j], 1 - exp(-r_F[i] * dt))
+n_R[, ] <- Binomial(R[i, j] + dem_R[i, j], 1 - exp(-r_R[i] * dt))
 
 # Number developing iGAS, applies to whole population
-n_I[] <- rbinom(N[i] + dem_N[i], 1 - exp(-r_I[i] * dt))
+n_I[] <- Binomial(N[i] + dem_N[i], 1 - exp(-r_I[i] * dt_week))
 
 ## Draw the numbers of transitions between compartments
-n_UE[] <- rbinom(n_U[i], p_S)
+n_UE[] <- Binomial(n_U[i], p_S)
 n_UA[] <- n_U[i] - n_UE[i]
-n_AR[] <- rbinom(n_A[i, k_A], p_R)
+n_AR[] <- Binomial(n_A[i, k_A], p_R)
 n_AU[] <- n_A[i, k_A] - n_AR[i]
-n_EP[] <- rbinom(n_E[i, k_E], p_F)
+n_EP[] <- Binomial(n_E[i, k_E], p_F)
 n_ES[] <- n_E[i, k_E] - n_EP[i]
 n_SR[] <- n_S[i, k_S]
 n_PF[] <- n_P[i, k_P]
@@ -260,13 +248,15 @@ initial(prev_R[]) <- sum(R0[i, ]) /
   (U0[i] + sum(A0[i, ]) + sum(E0[i, ]) + sum(S0[i, ]) + sum(P0[i, ]) +
      sum(F0[i, ]) + sum(R0[i, ]))
 
-initial(infections_inc) <- 0
+initial(gas_pharyngitis_inc_by_group[], zero_every = 7) <- 0
+initial(scarlet_fever_inc_by_group[], zero_every = 7) <- 0
+initial(infections_inc, zero_every = 7) <- 0
 initial(gas_pharyngitis_inc) <- 0
 initial(scarlet_fever_inc) <- 0
 initial(scarlet_fever_cases) <- 0
-initial(igas_inc) <- 0
-initial(births_inc) <- 0
-initial(net_leavers_inc) <- 0
+initial(igas_inc, zero_every = 7) <- 0
+initial(births_inc, zero_every = 7) <- 0
+initial(net_leavers_inc, zero_every = 7) <- 0
 initial(beta_t) <- 0
 initial(daily_gas_pharyngitis_rate) <- 0
 initial(daily_scarlet_fever_rate) <- 0
@@ -302,47 +292,47 @@ initial(etiologic_fraction_75)    <- 0
 
 ## User defined parameters - default in parentheses:
 ## Initial number in each state
-U0[] <- user()
-A0[, ] <- user()
-E0[, ] <- user()
-S0[, ] <- user()
-P0[, ] <- user()
-F0[, ] <- user()
-R0[, ] <- user()
+U0 <- parameter()
+A0 <- parameter()
+E0 <- parameter()
+S0 <- parameter()
+P0 <- parameter()
+F0 <- parameter()
+R0 <- parameter()
 
-beta <- user() # rate of transmission
-m[, ] <- user()
-sigma <- user() # amplitude of seasonal effect
-t0 <- user(0)  # day of model initialisation
-t_s <- user() # day of peak seasonal transmission
-p_S <- user() # probability of pharyngitis symptoms after infection
-p_R <- user() # probability of immunity after carriage
-p_I <- user() # probability of invasive disease after infection
-p_F <- user() # probability of scarlet fever after pharyngitis
-p_T <- user() # probability of seeking treatment for pharyngitis
-delta_A <- user() # mean duration of carriage
-delta_E <- user() # mean duration of incubation period
-delta_S <- user() # mean duration of pharyngitis symptoms
-delta_P <- user() # mean duration from pharyngitis to scarlet fever rash
-delta_F <- user() # mean duration of scarlet fever rash
-delta_R <- user() # mean duration of natural immunity
-k_A <- user() # number of sub-compartments for carriage
-k_E <- user() # number of sub-compartments for incubation period
-k_S <- user() # number of sub-compartments for pharyngitis symptoms
-k_P <- user() # number of sub-compartments for pre-scarlet fever
-k_F <- user() # number of sub-compartments for scarlet fever rash
-k_R <- user() # number of sub-compartments for natural immunity
-theta_A <- user() # infectiousness of carriers relative to symptomatics
+beta <- parameter()
+m <- parameter()
+sigma <- parameter()
+t0 <- parameter(0) # day of model initialisation
+t_s <- parameter()
+p_S <- parameter()
+p_R <- parameter()
+p_I <- parameter()
+p_F <- parameter()
+p_T <- parameter()
+delta_A <- parameter()
+delta_E <- parameter()
+delta_S <- parameter()
+delta_P <- parameter()
+delta_F <- parameter()
+delta_R <- parameter()
+k_A <- parameter(type = "integer", constant = TRUE)
+k_E <- parameter(type = "integer", constant = TRUE)
+k_S <- parameter(type = "integer", constant = TRUE)
+k_P <- parameter(type = "integer", constant = TRUE)
+k_F <- parameter(type = "integer", constant = TRUE)
+k_R <- parameter(type = "integer", constant = TRUE)
+theta_A <- parameter()
 
-alpha[]  <- user() # time-varying number of births
-dim(alpha) <- user()
-omega[] <- user() # rate of population exit, can be negative
-r_age <- user(0)   # rate of aging - determined by group size
+alpha <- parameter() # time-varying number of births
+dim(alpha) <- parameter(rank = 1)
+omega <- parameter()
+r_age <- parameter(0) # rate of aging - determined by group size
 
-q_F[] <- user() # time-varying probability of reporting a scarlet fever case
-dim(q_F) <- user()
+q_F <- parameter()
+dim(q_F) <- parameter(rank = 1)
 
-phi_S[] <- user() # proportion of pharyngitis caused by GAS
+phi_S <- parameter()
 
 ## Object dimensions
 
@@ -439,11 +429,82 @@ dim(n_RU) <- n_group
 
 dim(w) <- n_group
 dim(gas_pharyngitis_inc_by_group) <- n_group
-dim(scarlet_fever_inc_by_group)   <- n_group
+dim(new_gas_pharyngitis_inc_by_group) <- n_group
+dim(scarlet_fever_inc_by_group) <- n_group
+dim(new_scarlet_fever_inc_by_group) <- n_group
 dim(weighted_phi_S)   <- n_group
 
-## Support a compiled compare function
-config(compare) <- "model_compare.cpp"
-exp_noise <- user() # ignore.unused
-k_gp      <- user() # ignore.unused
-k_hpr     <- user() # ignore.unused
+## Comparison to data
+##
+## Data are weekly. Any missing observation is skipped, so that the same
+## comparison serves both the single-group (hydrogen) and age-structured
+## (helium) models: the former supplies the all-age scarlet fever rate, the
+## latter supplies rates by UKHSA age group.
+exp_noise <- parameter(1e6) # rate of exponential noise added to case counts
+k_gp <- parameter() # standard deviation of GP surveillance rates
+k_hpr <- parameter() # overdispersion of notified cases
+
+## Notified scarlet fever and iGAS cases
+obs_scarlet_fever_cases <- data()
+obs_igas_inc <- data()
+noise_scarlet_fever_cases <- Exponential(rate = exp_noise)
+noise_igas_inc <- Exponential(rate = exp_noise)
+obs_scarlet_fever_cases ~ NegativeBinomial(
+  size = 1 / k_hpr, mu = scarlet_fever_cases + noise_scarlet_fever_cases)
+obs_igas_inc ~ NegativeBinomial(
+  size = 1 / k_hpr, mu = igas_inc + noise_igas_inc)
+
+## GP consultation rates for scarlet fever
+obs_daily_scarlet_fever_rate <- data()
+obs_daily_scarlet_fever_rate ~ Normal(daily_scarlet_fever_rate, k_gp)
+obs_daily_scarlet_fever_rate_04 <- data()
+obs_daily_scarlet_fever_rate_05_14 <- data()
+obs_daily_scarlet_fever_rate_15_44 <- data()
+obs_daily_scarlet_fever_rate_45_64 <- data()
+obs_daily_scarlet_fever_rate_65_74 <- data()
+obs_daily_scarlet_fever_rate_75 <- data()
+obs_daily_scarlet_fever_rate_04 ~
+  Normal(daily_scarlet_fever_rate_04, k_gp)
+obs_daily_scarlet_fever_rate_05_14 ~
+  Normal(daily_scarlet_fever_rate_05_14, k_gp)
+obs_daily_scarlet_fever_rate_15_44 ~
+  Normal(daily_scarlet_fever_rate_15_44, k_gp)
+obs_daily_scarlet_fever_rate_45_64 ~
+  Normal(daily_scarlet_fever_rate_45_64, k_gp)
+obs_daily_scarlet_fever_rate_65_74 ~
+  Normal(daily_scarlet_fever_rate_65_74, k_gp)
+obs_daily_scarlet_fever_rate_75 ~
+  Normal(daily_scarlet_fever_rate_75, k_gp)
+
+## GP consultation rates for pharyngitis (all causes). The observed rate is
+## scaled by the etiologic fraction and compared with the modelled rate of GAS
+## pharyngitis, i.e. obs * etiologic_fraction ~ Normal(modelled, k_gp); this is
+## written in terms of the observation as odin requires data on the left.
+obs_daily_pharyngitis_rate <- data()
+obs_daily_pharyngitis_rate ~ Normal(
+  obs_daily_pharyngitis_rate + daily_gas_pharyngitis_rate -
+    obs_daily_pharyngitis_rate * etiologic_fraction, k_gp)
+obs_daily_pharyngitis_rate_04 <- data()
+obs_daily_pharyngitis_rate_05_14 <- data()
+obs_daily_pharyngitis_rate_15_44 <- data()
+obs_daily_pharyngitis_rate_45_64 <- data()
+obs_daily_pharyngitis_rate_65_74 <- data()
+obs_daily_pharyngitis_rate_75 <- data()
+obs_daily_pharyngitis_rate_04 ~ Normal(
+  obs_daily_pharyngitis_rate_04 + daily_gas_pharyngitis_rate_04 -
+    obs_daily_pharyngitis_rate_04 * etiologic_fraction_04, k_gp)
+obs_daily_pharyngitis_rate_05_14 ~ Normal(
+  obs_daily_pharyngitis_rate_05_14 + daily_gas_pharyngitis_rate_05_14 -
+    obs_daily_pharyngitis_rate_05_14 * etiologic_fraction_05_14, k_gp)
+obs_daily_pharyngitis_rate_15_44 ~ Normal(
+  obs_daily_pharyngitis_rate_15_44 + daily_gas_pharyngitis_rate_15_44 -
+    obs_daily_pharyngitis_rate_15_44 * etiologic_fraction_15_44, k_gp)
+obs_daily_pharyngitis_rate_45_64 ~ Normal(
+  obs_daily_pharyngitis_rate_45_64 + daily_gas_pharyngitis_rate_45_64 -
+    obs_daily_pharyngitis_rate_45_64 * etiologic_fraction_45_64, k_gp)
+obs_daily_pharyngitis_rate_65_74 ~ Normal(
+  obs_daily_pharyngitis_rate_65_74 + daily_gas_pharyngitis_rate_65_74 -
+    obs_daily_pharyngitis_rate_65_74 * etiologic_fraction_65_74, k_gp)
+obs_daily_pharyngitis_rate_75 ~ Normal(
+  obs_daily_pharyngitis_rate_75 + daily_gas_pharyngitis_rate_75 -
+    obs_daily_pharyngitis_rate_75 * etiologic_fraction_75, k_gp)

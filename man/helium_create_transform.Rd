@@ -11,7 +11,8 @@ helium_create_transform(demographic_pars)
 \code{N0}, \code{alpha}, \code{omega}, \code{m}, \code{r_age} to be loaded into the transform}
 }
 \value{
-A transform function for use in \code{\link[mcstate:pmcmc]{mcstate::pmcmc()}}
+A function that converts a list of fitted parameters into the
+list of parameters required by the \link{model}
 }
 \description{
 Create transform function for helium model

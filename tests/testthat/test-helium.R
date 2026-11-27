@@ -7,52 +7,33 @@ test_that("helium age groups are parametrised correctly", {
   expect_equivalent(unlist(groups$idx_ukhsa), seq_len(groups$n_group))
 })
 
-test_that("helium_index", {
-  p <- example_parameters(16)
-  mod <- model$new(p, 0, 10)
-  idx <- helium_index(mod$info())
+test_that("helium_saved_states", {
+  nms <- helium_saved_states()
+  expect_equal(nms, unique(nms))
 
-  expect_equal(names(idx), c("run", "state"))
-  state_nms <- c("scarlet_fever_cases", "igas_inc",
-                 "daily_gas_pharyngitis_rate", "etiologic_fraction",
-                 "etiologic_fraction_04",
-                 "etiologic_fraction_05_14",
-                 "etiologic_fraction_15_44",
-                 "etiologic_fraction_45_64",
-                 "etiologic_fraction_65_74",
-                 "etiologic_fraction_75",
-                 "daily_gas_pharyngitis_rate_04",
-                 "daily_gas_pharyngitis_rate_05_14",
-                 "daily_gas_pharyngitis_rate_15_44",
-                 "daily_gas_pharyngitis_rate_45_64",
-                 "daily_gas_pharyngitis_rate_65_74",
-                 "daily_gas_pharyngitis_rate_75",
-                 "daily_scarlet_fever_rate_04",
-                 "daily_scarlet_fever_rate_05_14",
-                 "daily_scarlet_fever_rate_15_44",
-                 "daily_scarlet_fever_rate_45_64",
-                 "daily_scarlet_fever_rate_65_74",
-                 "daily_scarlet_fever_rate_75")
-  expect_equal(names(idx$run), state_nms)
-  expect_true(all(state_nms %in% names(idx$state)))
+  ## all are states of the model
+  sys <- dust2::dust_system_create(model, example_parameters(16))
+  expect_true(all(nms %in% names(dust2::dust_unpack_index(sys))))
 
-  # check can only use on helium model
-  mod <- model$new(example_parameters(2), 0, 10)
-  expect_error(helium_index(mod$info()))
+  ## includes the modelled equivalent of everything we fit to
+  fitted <- sub("pharyngitis", "gas_pharyngitis", helium_fitted_states())
+  expect_true(all(fitted %in% nms))
 })
 
 test_that("helium_compare", {
   transform <- helium_create_transform(NULL)
   pars <- transform(example_helium_parameters())
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  info <- mod$info()
+  sys <- system_at_week(pars)
+  full_state <- system_state(sys)
+  groups <- names(helium_age_groups()$idx_ukhsa)
+  nms <- c("scarlet_fever_cases", "igas_inc", "daily_gas_pharyngitis_rate",
+           "etiologic_fraction",
+           paste0("etiologic_fraction_", groups),
+           paste0("daily_gas_pharyngitis_rate_", groups),
+           paste0("daily_scarlet_fever_rate_", groups))
+  state <- full_state[nms, ]
 
-  full_state <- mod$run(7)
-  rownames(full_state) <- names(unlist(info$index))
-  state <- full_state[helium_index(info)$run, ]
-  groups <- helium_age_groups()
-
-  sf_rate <- full_state[grep("daily_sca", rownames(full_state)), 3]
+  sf_rate <- state[grep("daily_sca", rownames(state)), 3]
   phi_S <- state[grep("^etio", rownames(state)), 3]
   pharyngitis_rate <- state[grep("^daily_gas", rownames(state)), 3] / phi_S
   names(pharyngitis_rate) <- gsub("gas_", "", names(pharyngitis_rate))
@@ -60,23 +41,20 @@ test_that("helium_compare", {
   observed <- as.list(c(state[c("scarlet_fever_cases", "igas_inc"), 3],
                         sf_rate, pharyngitis_rate))
 
-  compare_compiled <- function(state, observed, pars, mod) {
-    idx <- helium_index(mod$info())$run
-    state_full <- mod$state()
-    state_full[idx, ] <- state
-    mod$update_state(pars = pars, state = state_full)
-    mod$set_data(list(list(mod$time(), observed)))
-    mod$compare_data()
-  }
+  ## The R and compiled versions draw their (tiny) exponential noise from
+  ## different random number streams
+  tolerance <- 1e-5
 
-  set.seed(1)
   ll <- helium_compare(state, observed, pars)
 
   expect_equal(length(ll), ncol(state))
   expect_true(all(ll > helium_compare(state * 5, observed, pars)))
-  expect_equal(ll, c(-24.813554694153, -33.7484013304405, -24.0115119493748,
-                     -25.1792899314225, -24.2923960810031))
-  expect_equal(compare_compiled(state, observed, pars, mod), ll)
+  expect_equal(compare_compiled(sys, observed, helium_prepare_data), ll,
+               tolerance = tolerance)
+  expect_equal(
+    compare_compiled(sys, observed, helium_prepare_data, state * 5),
+    helium_compare(state * 5, observed, pars), tolerance = tolerance)
+  compare_compiled(sys, observed, helium_prepare_data, state)
 
   # check loglikelihood is maximised at data point in univariate sensitivity
   # analysis
@@ -87,13 +65,9 @@ test_that("helium_compare", {
     tmp <- matrix(state[, 3], nrow = nrow(state), ncol = 101,
                   dimnames = list(rownames(state), NULL))
     tmp[i, ] <- tmp[i, ] * x
-    # rebase so that scarlet fever cases sum to same number
-    nms <- grep("scarlet_fever_inc_", rownames(tmp), value = TRUE)
-    tmp[nms, ] <- round(t(t(tmp[nms, ]) / colSums(tmp[nms, ])) *
-                          sum(state[nms, 3]))
 
     y <- helium_compare(tmp, observed, pars)
-    expect_equivalent(max(y), y[x == 1], tolerance = 1 / sqrt(pars$exp_noise))
+    expect_equal(max(y), y[x == 1], tolerance = 1 / sqrt(pars$exp_noise))
   }
 
   # fits use aggregate data when pharyngitis by age is all NA
@@ -105,16 +79,20 @@ test_that("helium_compare", {
     helium_compare(state, observed_agg, pars),
     helium_compare(state, observed_none, pars) +
     ll_norm(observed$daily_pharyngitis_rate * state["etiologic_fraction", ],
-            state["daily_gas_pharyngitis_rate", ], pars$k_gp))
+            state["daily_gas_pharyngitis_rate", ], pars$k_gp),
+    tolerance = tolerance)
   expect_equal(
-    helium_compare(state, observed_agg, pars),
-    compare_compiled(state, observed_agg, pars, mod))
+    compare_compiled(sys, observed_agg, helium_prepare_data),
+    helium_compare(state, observed_agg, pars), tolerance = tolerance)
+  expect_equal(
+    compare_compiled(sys, observed_none, helium_prepare_data),
+    helium_compare(state, observed_none, pars), tolerance = tolerance)
 
   # NA data returns 0
   observed_empty <- replace(observed, seq_along(observed), NA)
   expect_equal(helium_compare(state, observed_empty, pars),
                rep(0, ncol(state)))
-  expect_equal(compare_compiled(state, observed_empty, pars, mod),
+  expect_equal(compare_compiled(sys, observed_empty, helium_prepare_data),
                rep(0, ncol(state)))
   expect_error(helium_compare(state, unname(observed), pars),
                "missing or misnamed data")
@@ -151,55 +129,107 @@ test_that("create_constant_log_likelihood", {
   }
 })
 
-test_that("helium_filter", {
-  data <- data.frame(model_week = 1:6,
-                     daily_pharyngitis_rate = 10:15,
-                     daily_scarlet_fever_rate = 1:6,
-                     scarlet_fever_cases = 100:105,
-                     igas_inc = 90:95,
-                     daily_pharyngitis_rate_04 = 0:5,
-                     daily_pharyngitis_rate_05_14 = 1:6,
-                     daily_pharyngitis_rate_15_44 = 2:7,
-                     daily_pharyngitis_rate_45_64 = 3:8,
-                     daily_pharyngitis_rate_65_74 = 4:9,
-                     daily_pharyngitis_rate_75 = 5:10,
-                     daily_scarlet_fever_rate_04 = 6:11,
-                     daily_scarlet_fever_rate_05_14 = 7:12,
-                     daily_scarlet_fever_rate_15_44 = 8:13,
-                     daily_scarlet_fever_rate_45_64 = 9:14,
-                     daily_scarlet_fever_rate_65_74 = 10:15,
-                     daily_scarlet_fever_rate_75 = 11:16)
+example_helium_data <- function() {
+  data.frame(model_week = 1:6,
+             daily_pharyngitis_rate = 10:15,
+             daily_scarlet_fever_rate = 1:6,
+             scarlet_fever_cases = 100:105,
+             igas_inc = 90:95,
+             daily_pharyngitis_rate_04 = c(0:4, NA),
+             daily_pharyngitis_rate_05_14 = c(1:5, NA),
+             daily_pharyngitis_rate_15_44 = c(2:6, NA),
+             daily_pharyngitis_rate_45_64 = c(3:7, NA),
+             daily_pharyngitis_rate_65_74 = c(4:8, NA),
+             daily_pharyngitis_rate_75 = c(5:9, NA),
+             daily_scarlet_fever_rate_04 = 6:11,
+             daily_scarlet_fever_rate_05_14 = 7:12,
+             daily_scarlet_fever_rate_15_44 = 8:13,
+             daily_scarlet_fever_rate_45_64 = 9:14,
+             daily_scarlet_fever_rate_65_74 = 10:15,
+             daily_scarlet_fever_rate_75 = 11:16)
+}
+
+test_that("helium_prepare_data", {
+  data <- example_helium_data()
   x <- helium_prepare_data(data)
-  expect_true(all(diff(x$time_start) == 7))
+  expect_s3_class(x, "dust_filter_data")
+  expect_equal(x$time, data$model_week * 7)
+  expect_equal(names(x), c("time", paste0("obs_", model_data_names())))
 
-  df <- data.frame(age_start = 0, age_end = 5, N = 1e3, n = 1e2)
-  constant_data <- list(etiologic_fraction = df, asymptomatic_carriage = df)
-  constant_ll <- create_constant_log_likelihood(constant_data)
+  ## the all-age scarlet fever rate is not fitted in the helium model
+  expect_true(all(is.na(x$obs_daily_scarlet_fever_rate)))
+  ## the all-age pharyngitis rate is only used where there is none by age
+  expect_equal(x$obs_daily_pharyngitis_rate, c(rep(NA, 5), 15))
+  expect_equal(x$obs_daily_pharyngitis_rate_75, c(5:9, NA))
+  expect_equal(x$obs_igas_inc, data$igas_inc)
 
-  filter <- helium_filter(data, constant_data, 3)
-  expect_equal(filter$n_particles, 3)
-  expect_equal(filter$inputs()$compare, helium_compare)
-  expect_equal(filter$inputs()$index, helium_index)
-  expect_equal(filter$inputs()$data, x)
-  expect_equal(filter$inputs()$constant_log_likelihood, constant_ll)
-
-
-  ## check filter runs
-  transform <- helium_create_transform(NULL)
-  pars <- example_helium_parameters()
-  set.seed(1)
-  filter$run(transform(pars))
-
-  ## Check compiled filter runs - hard to test values here because the
-  ## variance is large with this set of parameters.
-  filter_compiled <- helium_filter(data, constant_data, 3, TRUE)
-  expect_null(filter_compiled$inputs()$compare)
-  filter_compiled$run(transform(pars))
-
-  expect_true(is.function(filter$.__enclos_env__$private$compare))
-  expect_null(filter_compiled$.__enclos_env__$private$compare)
+  expect_error(helium_prepare_data(data[names(data) != "igas_inc"]),
+               "missing or misnamed data: igas_inc")
+  expect_error(helium_prepare_data(data[names(data) != "model_week"]),
+               "missing or misnamed data: model_week")
 })
 
+test_that("helium_filter", {
+  data <- example_helium_data()
+  transform <- helium_create_transform(NULL)
+  pars <- transform(example_helium_parameters())
+
+  filter <- helium_filter(data, 3, seed = 1L)
+  expect_s3_class(filter, "dust_likelihood")
+  expect_false(filter$deterministic)
+  expect_equal(filter$n_particles, 3)
+  ll <- dust2::dust_likelihood_run(filter, pars)
+  expect_true(is.finite(ll))
+
+  ## same seed gives same result, different seed does not
+  filter2 <- helium_filter(data, 3, seed = 1L)
+  expect_identical(dust2::dust_likelihood_run(filter2, pars), ll)
+  filter3 <- helium_filter(data, 3, seed = 2L)
+  expect_false(dust2::dust_likelihood_run(filter3, pars) == ll)
+
+  ## deterministic likelihood is the sum of the comparison over the data
+  unfilter <- helium_filter(data, 3, deterministic = TRUE)
+  expect_true(unfilter$deterministic)
+  ll_det <- dust2::dust_likelihood_run(unfilter, pars)
+  expect_identical(dust2::dust_likelihood_run(unfilter, pars), ll_det)
+
+  x <- helium_prepare_data(data)
+  sys <- dust2::dust_system_create(model, pars, deterministic = TRUE)
+  dust2::dust_system_set_state_initial(sys)
+  expected <- 0
+  for (i in seq_len(nrow(x))) {
+    dust2::dust_system_run_to_time(sys, x$time[[i]])
+    expected <- expected + dust2::dust_system_compare_data(
+      sys, as.list(x[i, names(x) != "time"]))
+  }
+  expect_equal(ll_det, expected)
+})
+
+test_that("helium_constant_likelihood", {
+  df <- data.frame(age_start = c(0, 5), age_end = c(4, 9), N = 1e3, n = 1e2)
+  constant_data <- list(etiologic_fraction = df, asymptomatic_carriage = df)
+  pars <- example_helium_parameters()
+  nms <- grep("^b[0-9]_|^q_F_", names(pars), value = TRUE)
+  packer <- helium_packer(nms, NULL,
+                          fixed = pars[setdiff(names(pars), c(nms, "q_F"))])
+
+  likelihood <- helium_constant_likelihood(constant_data, packer)
+  expect_s3_class(likelihood, "monty_model")
+  expect_equal(likelihood$parameters, nms)
+
+  x <- packer$pack(pars)
+  expect_equal(monty::monty_model_density(likelihood, x),
+               create_constant_log_likelihood(constant_data)(pars))
+
+  ## can be combined with the filter and a prior to give a posterior
+  filter <- helium_filter(example_helium_data(), 3, deterministic = TRUE)
+  ll <- dust2::dust_likelihood_monty(filter, packer)
+  posterior <- ll + likelihood
+  expect_equal(
+    monty::monty_model_density(posterior, x),
+    dust2::dust_likelihood_run(filter, packer$unpack(x)) +
+      monty::monty_model_density(likelihood, x))
+})
 
 test_that("helium_create_transform", {
   n_group <- helium_age_groups()$n_group
@@ -214,4 +244,48 @@ test_that("helium_create_transform", {
 
   expect_equal(names(pars), unique(names(pars)))
   expect_equal(pars[names(dem_pars)], dem_pars)
+})
+
+test_that("helium_packer", {
+  n_group <- helium_age_groups()$n_group
+  dem_pars <- list(N0 = seq_len(n_group) * 100,
+                   alpha = 1,
+                   omega = seq(0.1, 0.3, length.out = n_group),
+                   r_age = 2,
+                   m = matrix(0, n_group, n_group))
+  transform <- helium_create_transform(dem_pars)
+  gas_pars <- example_helium_parameters()
+  nms <- c("beta", "sigma", "b0_phi_S", "k_gp", "k_hpr", "delta_A")
+  fixed <- gas_pars[setdiff(names(gas_pars), c(nms, "q_F"))]
+
+  packer <- helium_packer(nms, dem_pars, fixed)
+  expect_equal(packer$names(), nms)
+
+  x <- c(1, 0.5, 6, 0.7, 0.2, 20)
+  pars <- packer$unpack(x)
+  expected <- transform(c(setNames(as.list(x), nms), fixed))
+  expect_mapequal(pars, expected)
+
+  ## fitted values reach the model unchanged
+  expect_equal(unlist(pars[nms]), setNames(x, nms))
+  expect_equal(packer$pack(pars), x)
+
+  ## and the result can be used to run the model
+  y <- model_simulate(pars, 7)
+  expect_true(all(y >= 0))
+})
+
+test_that("packer errors if the transform changes a fitted parameter", {
+  transform <- function(pars) {
+    pars$a <- pars$a * 2
+    pars$c <- 1
+    pars
+  }
+  packer <- create_packer(c("a", "b"), transform)
+  expect_error(packer$unpack(c(1, 2)),
+               "transform must not change the value of: a")
+
+  packer <- create_packer(c("a", "b"), function(pars) c(pars, list(c = 1)),
+                          fixed = list(d = 4))
+  expect_equal(packer$unpack(c(1, 2)), list(a = 1, b = 2, d = 4, c = 1))
 })
