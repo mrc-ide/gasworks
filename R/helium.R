@@ -220,6 +220,9 @@ helium_get_spline_coefficients <- function(name, pars, prefix = "b") {
 ##' list of parameters required by the [model]
 ##' @export
 helium_create_transform <- function(demographic_pars) {
+  ## evaluate now, so that the transform does not depend on the calling
+  ## environment (e.g. when it is sent to another process)
+  force(demographic_pars)
 
   transform <- function(pars) {
     pars <- as.list(pars)

@@ -135,6 +135,7 @@ create_filter <- function(data, n_particles, n_threads, seed, deterministic) {
 ## Create a packer that converts a vector of fitted parameters into the list
 ## of parameters required by the model, via a transform function
 create_packer <- function(names, transform, fixed = NULL) {
+  force(transform)
   process <- function(pars) {
     ret <- transform(pars)
     changed <- vapply(names(pars),

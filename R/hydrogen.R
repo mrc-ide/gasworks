@@ -110,6 +110,9 @@ hydrogen_filter <- function(data, n_particles, n_threads = 1, seed = NULL,
 ##' list of parameters required by the [model]
 ##' @export
 hydrogen_create_transform <- function(demographic_pars) {
+  ## evaluate now, so that the transform does not depend on the calling
+  ## environment (e.g. when it is sent to another process)
+  force(demographic_pars)
   transform <- function(pars) {
     pars <- as.list(pars)
 

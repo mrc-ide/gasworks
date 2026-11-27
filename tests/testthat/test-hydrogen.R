@@ -175,3 +175,28 @@ test_that("hydrogen_packer", {
   expect_equal(monty::monty_model_density(likelihood, x),
                dust2::dust_likelihood_run(filter, pars))
 })
+
+test_that("transforms do not depend on the calling environment", {
+  ## as is needed to run chains in parallel in other processes
+  dem_pars <- demographic_parameters(1)
+  gas_pars <- example_gas_parameters()
+  gas_pars$q_F <- NULL
+  gas_pars$q_F_2014 <- 0.3
+  gas_pars$q_F_2020 <- 0.6
+  transform <- hydrogen_create_transform(dem_pars)
+  packer <- hydrogen_packer(names(gas_pars)[lengths(gas_pars) == 1], dem_pars)
+  expected <- transform(gas_pars)
+  rm(dem_pars)
+  expect_identical(transform(gas_pars), expected)
+  expect_mapequal(packer$unpack(unlist(gas_pars)), expected)
+
+  dem_pars <- demographic_parameters(16)
+  gas_pars <- example_helium_parameters()
+  gas_pars$q_F <- NULL
+  transform <- helium_create_transform(dem_pars)
+  packer <- helium_packer(names(gas_pars)[lengths(gas_pars) == 1], dem_pars,
+                          fixed = gas_pars[lengths(gas_pars) > 1])
+  expected <- transform(gas_pars)
+  rm(dem_pars)
+  expect_identical(transform(gas_pars), expected)
+})
