@@ -1,0 +1,4 @@
+#!/usr/bin/env Rscript
+## Regenerate the dust2 code for the model in inst/odin; run this from the
+## package root after any change to inst/odin/model.R
+odin2::odin_package(".")

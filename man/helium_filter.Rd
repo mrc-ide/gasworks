@@ -4,23 +4,34 @@
 \alias{helium_filter}
 \title{Create particle filter for helium model}
 \usage{
-helium_filter(data, constant_data, n_particles, compiled_compare = FALSE)
+helium_filter(
+  data,
+  n_particles,
+  n_threads = 1,
+  seed = NULL,
+  deterministic = FALSE
+)
 }
 \arguments{
 \item{data}{The data set to be used for the particle filter,
 This is essentially a \code{\link[=data.frame]{data.frame()}} with at least columns \code{model_week},
 along with the data used in \code{\link[=helium_compare]{helium_compare()}}.}
 
-\item{constant_data}{a list with entries \code{etiologic_fraction} and
-\code{asymptomatic_carriage} each containing a data.frame with entries
-\code{age_start}, \code{age_end}, \code{N} and \code{n}.}
-
 \item{n_particles}{The number of particles to simulate}
 
-\item{compiled_compare}{Use a compiled compare function for the filter?}
+\item{n_threads}{The number of threads to use}
+
+\item{seed}{The random number seed, see \code{\link[dust2:dust_filter_create]{dust2::dust_filter_create()}}}
+
+\item{deterministic}{Logical, indicating if a deterministic likelihood
+should be created with \code{\link[dust2:dust_unfilter_create]{dust2::dust_unfilter_create()}}, in which case
+\code{n_particles} and \code{seed} are ignored}
 }
 \value{
-a particle filter for the helium model
+a particle filter for the helium model, which can be run with
+\code{\link[dust2:dust_likelihood_run]{dust2::dust_likelihood_run()}}. Note that this does not include the
+likelihood of the time-invariant data, see
+\code{\link[=helium_constant_likelihood]{helium_constant_likelihood()}}.
 }
 \description{
 Create particle filter for helium model

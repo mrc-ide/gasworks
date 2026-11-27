@@ -1,70 +1,43 @@
 
 test_that("model runs", {
   pars <- example_parameters()
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   # check that states sum to N
   expect_equal(colSums(y[model_compartments(), , ]), y["N", , ])
   expect_true(all(y >= 0))
 
-  tmp <- c(1, 4045133, 1373194, 727, 218, 938, 10997, 10996,
-           1.94454194361955, 350.304591836735, 0.185459183673469, 0.25,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 22159247, 56000001, 0.103989553571429, 0.455696232142857,
-           5928661, 1052289, 775606, 416796, 704, 542, 166, 25665990, 1,
-           4044289, 1372467, 692, 208, 939, 10997, 10997, 1.94454194361955,
-           350.119132653061, 0.176530612244898, 0.25, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22160502,
-           5.6e+07, 0.104027892857143, 0.455671839285714, 5930566, 1051231,
-           775591, 415890, 736, 513, 147, 25664824, 1, 4047132, 1371527,
-           678, 203, 1016, 10997, 10997, 1.94454194361955, 349.879336734694,
-           0.172959183673469, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22156462, 5.6e+07, 0.104074125,
-           0.455662464285714, 5933201, 1054026, 775298, 416302, 704, 519,
-           139, 25663349, 1, 4047245, 1373647, 698, 209, 926, 10997, 10996,
-           1.94454194361955, 350.420153061224, 0.178061224489796, 0.25,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 22157315, 56000001, 0.104017946428571, 0.455688285714286,
-           5930844, 1052602, 776369, 416513, 710, 513, 157, 25664978, 1,
-           4045950, 1373480, 680, 204, 939, 10997, 10996, 1.94454194361955,
-           350.377551020408, 0.173469387755102, 0.25, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22157734,
-           56000001, 0.104008053571429, 0.455698464285714, 5928868, 1053003,
-           775962, 416807, 677, 501, 151, 25666298)
-  nms <- c("time", "infections_inc", "gas_pharyngitis_inc",
-           "scarlet_fever_inc", "scarlet_fever_cases", "igas_inc", "births_inc",
-           "net_leavers_inc", "beta_t", "daily_gas_pharyngitis_rate",
-           "daily_scarlet_fever_rate",
-           "etiologic_fraction", "daily_gas_pharyngitis_rate_04",
-           "daily_gas_pharyngitis_rate_05_14",
-           "daily_gas_pharyngitis_rate_15_44",
-           "daily_gas_pharyngitis_rate_45_64",
-           "daily_gas_pharyngitis_rate_65_74", "daily_gas_pharyngitis_rate_75",
-           "daily_scarlet_fever_rate_04", "daily_scarlet_fever_rate_05_14",
-           "daily_scarlet_fever_rate_15_44", "daily_scarlet_fever_rate_45_64",
-           "daily_scarlet_fever_rate_65_74", "daily_scarlet_fever_rate_75",
-           "scarlet_fever_inc_04", "scarlet_fever_inc_05_14",
-           "scarlet_fever_inc_15_44",
-           "scarlet_fever_inc_45_64", "scarlet_fever_inc_65_74",
-           "scarlet_fever_inc_75",
-           "etiologic_fraction_04", "etiologic_fraction_05_14",
-           "etiologic_fraction_15_44",
-           "etiologic_fraction_45_64", "etiologic_fraction_65_74",
-           "etiologic_fraction_75",
-           "U", "N", "prev_A", "prev_R", "A", "E", "S1", "S2", "P", "F1",
-           "F2", "R")
-  expect_equal(y, array(tmp, dim = c(length(nms), 5L, 1L),
-                        dimnames = list(nms, NULL, NULL)))
+  ## one row per state, one column per particle
+  expect_equal(dim(y), c(length(model_index()), 5, 1))
+  expect_equal(rownames(y), names(model_index()))
+
+  ## particles differ, but are reproducible given the seed
+  expect_false(all(y[, 1, ] == y[, 2, ]))
+  expect_identical(model_simulate(pars, 7, n_particles = 5, seed = 1L), y)
+  expect_false(identical(model_simulate(pars, 7, n_particles = 5, seed = 2L),
+                         y))
+
+  ## age-specific outputs are only produced by the helium model
+  expect_true(all(y[grep("_[0-9]+(_[0-9]+)?$", rownames(y)), , ] == 0))
+})
+
+test_that("deterministic model is close to mean of stochastic model", {
+  pars <- example_parameters()
+  times <- seq(0, 28, by = 7)
+  y_det <- model_simulate(pars, times, deterministic = TRUE)
+  y <- model_simulate(pars, times, n_particles = 200, seed = 1L, n_threads = 2)
+
+  expect_identical(model_simulate(pars, times, deterministic = TRUE), y_det)
+  nms <- c("U", "A", "R", "N", "infections_inc", "gas_pharyngitis_inc",
+           "igas_inc")
+  expect_equal(apply(y[nms, , ], c(1, 3), mean), y_det[nms, 1, ],
+               tolerance = 0.01)
 })
 
 test_that("there are no infections when beta is 0", {
   pars <- example_parameters()
   pars$beta <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
 
   expect_true(all(y["E", , ] == 0))
@@ -84,9 +57,7 @@ test_that("there are no infections when beta is 0", {
 test_that("there are no infections when theta_A is 0", {
   pars <- example_parameters()
   pars$theta_A <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["E", , ] == 0))
   expect_true(all(y["S1", , ] == 0))
@@ -106,9 +77,7 @@ test_that("there are no infections when theta_A is 0", {
 test_that("there are no infections when A0 = 0", {
   pars <- example_parameters()
   pars$A0[] <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["E", , ] == 0))
   expect_true(all(y["S1", , ] == 0))
@@ -129,9 +98,7 @@ test_that("there are no infections when A0 = 0", {
 test_that("there are no symptomatic infections when p_S = 0", {
   pars <- example_parameters()
   pars$p_S <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["E", , ] == 0))
   expect_true(all(y["S1", , ] == 0))
@@ -151,9 +118,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
   pars$p_S <- 1
   pars$E0[] <- pars$A0
   pars$A0[] <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["A", , ] == 0))
   expect_true(all(y["S1", , ] > 0))
@@ -171,9 +136,7 @@ test_that("there are no asymptomatic infections when p_S = 1", {
 test_that("there is no iGAS when p_I = 0", {
   pars <- example_parameters()
   pars$p_I <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["A", , ] > 0))
   expect_true(all(y["S1", , ] > 0))
@@ -191,9 +154,7 @@ test_that("there is no iGAS when p_I = 0", {
 test_that("there is no scarlet fever when p_F = 0", {
   pars <- example_parameters()
   pars$p_F <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["A", , ] > 0))
   expect_true(all(y["S1", , ] > 0))
@@ -213,9 +174,7 @@ test_that("there is no scarlet fever when p_F = 0", {
 test_that("there is no pharyngitis when p_F = 1", {
   pars <- example_parameters()
   pars$p_F <- 1
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["A", , ] > 0))
   expect_true(all(y["S1", , ] == 0))
@@ -237,9 +196,7 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
   pars$p_S <- 0
   pars$p_R <- 0
   pars$R0[] <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y["A", , ] > 0))
   expect_true(all(y["S1", , ] == 0))
@@ -260,11 +217,8 @@ test_that("there is no immunity when p_S = 0 and p_R = 0", {
 
 test_that("the transmission rate is calculated correctly", {
   pars <- example_parameters()
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, 365 * 5, 7), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(model_index())
-  time <- y["time", 1, -1]
+  y <- model_simulate(pars, seq(0, 365 * 5, 7), n_particles = 5, seed = 1L)
+  time <- seq(0, 365 * 5, 7)[-1] / 7
   beta <- y["beta_t", , -1]
 
   max_date <- model_week_date(time[apply(beta, 1, which.max)])
@@ -278,10 +232,7 @@ test_that("the transmission rate is calculated correctly", {
   expect_equal(min(beta), pars$beta * (1 - pars$sigma), tolerance = 1e-4)
 
   pars$sigma <- 0
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, 365 * 5, 7), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, seq(0, 365 * 5, 7), n_particles = 5, seed = 1L)
 
   # when there is no seasonal effect, all beta should be the same
   expect_true(all(y["beta_t", , -1] == pars$beta))
@@ -295,10 +246,8 @@ test_that("incidence time series output correctly", {
   pars$delta_F <- Inf
   pars$delta_S <- Inf
   pars$p_T <- 0.1
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, seq(0, by = 7, length.out = 5),
+                      n_particles = 5, seed = 1L)
   expect_equal(y["F1", , 5] + y["F2", , 5], rowSums(y["scarlet_fever_inc", , ]))
   expect_equal(y["F1", , 2] + y["F2", , 2], y["scarlet_fever_inc", , 2])
   expect_equal(y["S1", , 5] + y["S2", , 5],
@@ -306,8 +255,9 @@ test_that("incidence time series output correctly", {
   expect_equal(y["S1", , 2] + y["S2", , 5], y["gas_pharyngitis_inc", , 2])
 
   ## check scarlet_fever_cases is calculated correctly
+  ## (the model rounds half away from zero, R rounds half to even)
   expect_equal(y["scarlet_fever_cases", , ],
-               round(pars$q_F * y["scarlet_fever_inc", , ]))
+               floor(pars$q_F * y["scarlet_fever_inc", , ] + 0.5))
 
   expect_true(all(y["births_inc", , ] == 0))
   expect_true(all(y["net_leavers_inc", , ] == 0))
@@ -324,15 +274,11 @@ test_that("incidence time series output correctly", {
 
 test_that("etiologic_fraction outputs_correctly", {
   pars <- example_parameters()
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
   expect_equal(y["etiologic_fraction", , ], rep(pars$phi_S, 5))
 
   pars <- example_parameters(16)
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- mod$simulate(7)
-  rownames(y) <- names(unlist(mod$info()$index))
+  y <- model_simulate(pars, 7, n_particles = 5, seed = 1L)
 
   expect_true(all(y[grep("^etio", rownames(y)), , ] == pars$phi_S[1]))
 })
@@ -341,10 +287,7 @@ test_that("can vary probabililty of reporting over time", {
   pars <- example_parameters()
   pars$q_F <- seq(0.3, 0.6, length.out = 7)
 
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, 7), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, seq(0, 7), n_particles = 5, seed = 1L)
 
   ## check scarlet_fever_cases is calculated correctly
   ## include adjustment for rounding conventions (0.5 -> up vs 0.5 -> even)
@@ -363,10 +306,9 @@ test_that("rates are calculated correctly when n_group == 16", {
   pars$prev_A <- pars$prev_A <- seq(0.1, 0.2, length.out = 16)
   ip <- initial_parameters(pars)
   pars[names(ip)] <- ip
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, by = 7, length.out = 5), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  nms <- rownames(y) <-  names(unlist(mod$info()$index))
+  y <- model_simulate(pars, seq(0, by = 7, length.out = 5),
+                      n_particles = 5, seed = 1L)
+  nms <- rownames(y)
 
   expect_equal(colSums(y[grep("^F", nms), , 5]),
                rowSums(y["scarlet_fever_inc", , ]))
@@ -432,7 +374,7 @@ test_that("rates are calculated correctly when n_group == 16", {
 test_that("aging works", {
   pars <- model_parameters(no_gas_parameters(10))
   pars$alpha <- pars$omega[] <- 0
-  pars$r_age <- 1 / pars$dt # everyone ages a group per week
+  pars$r_age <- 7 # everyone ages a group per day
   pars[grep("delta", names(pars))] <- Inf # no movement between compartments
   pars[grep("^k_", names(pars))] <- 1 # all exponential
   init <- initial_parameters(pars)
@@ -443,10 +385,8 @@ test_that("aging works", {
 
     pars[[paste0(nm, 0)]][1] <- N0 <- 1e4 # everyone initially in group 1
     # run model
-    mod <- model$new(pars, 0, 2, seed = 1L)
-    y <- lapply(seq(0, 9), mod$simulate)
-    y <- mcstate::array_bind(arrays = y, along = 3L)
-    rownames(y) <- nms <- names(unlist(mod$info()$index))
+    y <- model_simulate(pars, seq(0, 9), n_particles = 2, seed = 1L)
+    nms <- rownames(y)
 
     # check no-one moves compartments
     expect_equivalent(y[startsWith(nms, nm), , ], y[grep("^N", nms), , ])
@@ -475,19 +415,21 @@ test_that("aging does not affect model dynamics", {
   pars$omega[] <- pars_a$omega[] <- 0
 
   f <- function(pars) {
-    mod <- model$new(pars, 0, 5, seed = 1L)
-    y <- lapply(seq(0, 9), mod$simulate)
-    y <- mcstate::array_bind(arrays = y, along = 3L)
-    mod$transform_variables(y)
+    simulate_unpacked(pars, seq(0, 9))
   }
 
   y <- f(pars)
   y_a <- f(pars_a)
 
+  ## total over age groups and sub-compartments, by particle and time
+  total <- function(x) {
+    n <- length(dim(x))
+    if (n == 2) x else apply(x, c(n - 1, n), sum)
+  }
+
   absdiff <- function(state) {
-    x <- y[[state]]
-    z <- apply(y_a[[state]], seq(2, length(dim(y_a[[state]]))), sum)
-    dim(z) <- c(1, dim(z))
+    x <- total(y[[state]])
+    z <- total(y_a[[state]])
     max(abs(x - z) / x, na.rm = TRUE)
   }
 
@@ -513,10 +455,8 @@ test_that("time-varying births works", {
   pars <- model_parameters(no_gas_parameters(1))
   pars$alpha <- rep(seq_len(52), each = 7) * 7
 
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, length(pars$alpha), 7), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(model_index())
+  y <- model_simulate(pars, seq(0, length(pars$alpha), 7),
+                      n_particles = 5, seed = 1L)
 
   expect_equal(y["births_inc", 1, ], seq(0, 364, 7))
 
@@ -538,10 +478,7 @@ test_that("can vary erlang compartments", {
   init_pars <- initial_parameters(pars)
   pars[names(init_pars)] <- init_pars
 
-  mod <- model$new(pars, 0, 5, seed = 1L)
-  y <- lapply(seq(0, 52, 7), mod$simulate)
-  y <- mcstate::array_bind(arrays = y)
-  rownames(y) <- names(unlist(mod$info()$index))
+  y <- model_simulate(pars, seq(0, 52, 7), n_particles = 5, seed = 1L)
 
   expect_equal(length(grep("^S", rownames(y))), pars$k_S)
   expect_equal(length(grep("^A", rownames(y))), pars$k_A)

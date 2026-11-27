@@ -12,8 +12,10 @@ This is essentially a \code{\link[=data.frame]{data.frame()}} with at least colu
 along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.}
 }
 \value{
-A a \code{\link[=data.frame]{data.frame()}} with columns \code{time_start}, \code{time_end},
-along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.
+A \code{dust_filter_data} \code{\link[=data.frame]{data.frame()}} with a column \code{time} (in
+days), and one column for each data stream known to the \link{model}, prefixed
+with \code{obs_}. Data streams that the hydrogen model is not fitted to are
+set to \code{NA}.
 }
 \description{
 Prepare particle filter data for the hydrogen model

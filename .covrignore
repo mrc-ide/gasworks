@@ -1,4 +1,3 @@
 R/cpp11.R
 R/dust.R
-src/cpp11.cpp
-src/model.cpp
+src/

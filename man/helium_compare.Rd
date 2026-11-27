@@ -7,10 +7,9 @@
 helium_compare(state, observed, pars)
 }
 \arguments{
-\item{state}{State vector for the end of the current week. This is
-assumed to be filtered following \code{\link[=helium_index]{helium_index()}} so contains
-rows corresponding to average daily pharyngitis rate per 100,000,
-weekly number of scarlet fever cases and weekly number of iGAS cases.}
+\item{state}{A matrix of model states at the end of the current week,
+with one column per particle and rows named after (at least) the fitted
+states in \code{\link[=helium_saved_states]{helium_saved_states()}}.}
 
 \item{observed}{Observed data. This will be a list with elements:
 \code{scarlet_fever_cases}, \code{igas_inc}, \code{daily_pharyngitis_rate},
@@ -28,6 +27,7 @@ A vector of log likelihoods, the same length as the number
 of particles (the number of columns in the modelled state)
 }
 \description{
-Compare observed and modelled data from the helium model. This
-conforms to the mcstate interface.
+Compare observed and modelled data from the helium model. This is a
+reference implementation in R of the comparison that is compiled into
+the \link{model}, which is what is used by \code{\link[=helium_filter]{helium_filter()}}.
 }

@@ -2,9 +2,24 @@
 % Please edit documentation in R/model.R
 \name{model}
 \alias{model}
-\title{Stochastic model of GAS
-This is an odin.dust model.}
+\title{Stochastic model of GAS}
 \description{
-Stochastic model of GAS
-This is an odin.dust model.
+A \code{dust2} system generator for the stochastic compartmental
+model of group A Streptococcus transmission, compiled from the odin code
+in \code{inst/odin/model.R}.
+
+The model runs in discrete time. Time and durations are measured in days,
+and the default time step is one day; transmission and demographic rates
+are given per week. Flows such as \code{igas_inc} accumulate over each week,
+and are reset every seven days. The model includes a comparison to weekly
+surveillance data, so it can be used with \code{\link[dust2:dust_filter_create]{dust2::dust_filter_create()}}.
+
+Use \code{\link[=model_parameters]{model_parameters()}} to create a suitable list of parameters.
+}
+\examples{
+pars <- example_parameters()
+sys <- dust2::dust_system_create(model, pars, n_particles = 5)
+dust2::dust_system_set_state_initial(sys)
+y <- dust2::dust_system_simulate(sys, c(0, 7, 14))
+dust2::dust_unpack_state(sys, y)$igas_inc
 }

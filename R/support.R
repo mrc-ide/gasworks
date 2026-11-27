@@ -75,16 +75,79 @@ model_compartments <- function() {
 }
 
 ##'@name model_index
-##'@title Named list of model output indices
-##'@description Named list of model output indices
+##'@title Named vector of model state indices
+##'@description Named vector of model state indices
 ##'@param n_group Integer number of age groups
-##'@return Named list of model output indices
+##'@return Named vector of model state indices
 model_index <- function(n_group = 1) {
   pars <- example_parameters(n_group)
-  mod <- model$new(pars, 1, 1)
-  idx <- mod$info()$index
-  ret <- unlist(idx)
-  ret
+  sys <- dust2::dust_system_create(model, pars)
+  unlist(dust2::dust_unpack_index(sys))
+}
+
+## Daily probability that a case of scarlet fever is reported, increasing
+## linearly from the start of 2014 to the start of 2020
+reporting_probability <- function(q_F_2014, q_F_2020) {
+  n <- model_day("2020-01-01") - model_day("2014-01-01") + 1
+  seq(q_F_2014, q_F_2020, length.out = n)
+}
+
+ukhsa_age_group_names <- function() {
+  c("04", "05_14", "15_44", "45_64", "65_74", "75")
+}
+
+## Names of all the data streams that the model can be compared with; in the
+## odin code each of these is prefixed with "obs_"
+model_data_names <- function() {
+  groups <- ukhsa_age_group_names()
+  c("scarlet_fever_cases", "igas_inc",
+    "daily_scarlet_fever_rate",
+    paste0("daily_scarlet_fever_rate_", groups),
+    "daily_pharyngitis_rate",
+    paste0("daily_pharyngitis_rate_", groups))
+}
+
+## Convert weekly data into the form required by the model's comparison
+## function: a time in days and one column for every data stream, with any
+## that are not being fitted set to missing so that they are skipped.
+prepare_data <- function(data, states) {
+  msg <- setdiff(c("model_week", states), names(data))
+  if (length(msg) > 0) {
+    stop("missing or misnamed data: ", paste(msg, collapse = ", "))
+  }
+  ret <- data.frame(time = data$model_week * 7)
+  for (nm in model_data_names()) {
+    ret[[paste0("obs_", nm)]] <-
+      if (nm %in% states) as.numeric(data[[nm]]) else NA_real_
+  }
+  dust2::dust_filter_data(ret, time = "time")
+}
+
+create_filter <- function(data, n_particles, n_threads, seed, deterministic) {
+  if (deterministic) {
+    dust2::dust_unfilter_create(model, 0, data, n_threads = n_threads)
+  } else {
+    dust2::dust_filter_create(model, 0, data, n_particles = n_particles,
+                              n_threads = n_threads, seed = seed)
+  }
+}
+
+## Create a packer that converts a vector of fitted parameters into the list
+## of parameters required by the model, via a transform function
+create_packer <- function(names, transform, fixed = NULL) {
+  force(transform)
+  process <- function(pars) {
+    ret <- transform(pars)
+    changed <- vapply(names(pars),
+                      function(nm) !identical(ret[[nm]], pars[[nm]]),
+                      logical(1))
+    if (any(changed)) {
+      stop("transform must not change the value of: ",
+           paste(names(pars)[changed], collapse = ", "))
+    }
+    ret[setdiff(names(ret), names(pars))]
+  }
+  monty::monty_packer(names, fixed = fixed, process = process)
 }
 
 ##' @importFrom stats dnbinom rexp

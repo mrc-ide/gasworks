@@ -2,7 +2,7 @@
 % Please edit documentation in R/support.R
 \name{model_index}
 \alias{model_index}
-\title{Named list of model output indices}
+\title{Named vector of model state indices}
 \usage{
 model_index(n_group = 1)
 }
@@ -10,8 +10,8 @@ model_index(n_group = 1)
 \item{n_group}{Integer number of age groups}
 }
 \value{
-Named list of model output indices
+Named vector of model state indices
 }
 \description{
-Named list of model output indices
+Named vector of model state indices
 }

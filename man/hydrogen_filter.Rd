@@ -4,7 +4,13 @@
 \alias{hydrogen_filter}
 \title{Create particle filter for hydrogen model}
 \usage{
-hydrogen_filter(data, n_particles)
+hydrogen_filter(
+  data,
+  n_particles,
+  n_threads = 1,
+  seed = NULL,
+  deterministic = FALSE
+)
 }
 \arguments{
 \item{data}{The data set to be used for the particle filter,
@@ -12,9 +18,18 @@ This is essentially a \code{\link[=data.frame]{data.frame()}} with at least colu
 along with the data used in \code{\link[=hydrogen_compare]{hydrogen_compare()}}.}
 
 \item{n_particles}{The number of particles to simulate}
+
+\item{n_threads}{The number of threads to use}
+
+\item{seed}{The random number seed, see \code{\link[dust2:dust_filter_create]{dust2::dust_filter_create()}}}
+
+\item{deterministic}{Logical, indicating if a deterministic likelihood
+should be created with \code{\link[dust2:dust_unfilter_create]{dust2::dust_unfilter_create()}}, in which case
+\code{n_particles} and \code{seed} are ignored}
 }
 \value{
-a particle filter for the hydrogen model
+a particle filter for the hydrogen model, which can be run with
+\code{\link[dust2:dust_likelihood_run]{dust2::dust_likelihood_run()}}
 }
 \description{
 Create particle filter for hydrogen model

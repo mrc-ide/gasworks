@@ -1,3 +1,13 @@
+# gasworks 0.4.0
+
+* Port the model to `odin2` and `dust2`, and the fitting functions to `monty`, replacing `odin.dust`, `dust` and `mcstate`. In deterministic mode the model reproduces the trajectories and likelihood of version 0.3.6.
+* Time is now measured in days (with a default time step of one day) and durations (`delta_*`) are passed to the model in days. Transmission and demographic rates are still given per week.
+* The comparison to data is now written in odin, and is always compiled. `hydrogen_compare()` and `helium_compare()` remain as reference implementations in R.
+* `hydrogen_filter()` and `helium_filter()` return `dust2` filters. The likelihood of the time-invariant data used by the helium model is now created with `helium_constant_likelihood()`.
+* New functions `model_simulate()`, `hydrogen_packer()`, `helium_packer()`, `hydrogen_saved_states()` and `helium_saved_states()`; the last two replace `hydrogen_index()` and `helium_index()`.
+* `model_parameters()` no longer replaces supplied values of `k_gp` and `k_hpr` with 1, which meant that the fitted values were not used in the likelihood.
+* There is no transmission from an age group with no population (previously this gave a force of infection of `NaN`).
+
 # gasworks 0.3.5
 
 * Compiled compare function allowing running on a GPU
