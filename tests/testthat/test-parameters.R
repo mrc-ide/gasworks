@@ -21,3 +21,17 @@ test_that("initial_parameters works as expected", {
   expect_equivalent(init_pars$P0, rep(0, pars$k_P))
   expect_equivalent(init_pars$F0, rep(0, pars$k_F))
 })
+
+test_that("model_parameters keeps supplied observation parameters", {
+  gas_pars <- example_gas_parameters()
+  gas_pars$k_gp <- 0.5
+  gas_pars$k_hpr <- 0.2
+  pars <- model_parameters(gas_pars)
+  expect_equal(pars$k_gp, 0.5)
+  expect_equal(pars$k_hpr, 0.2)
+
+  gas_pars$k_gp <- gas_pars$k_hpr <- NULL
+  pars <- model_parameters(gas_pars)
+  expect_equal(pars$k_gp, 1)
+  expect_equal(pars$k_hpr, 1)
+})
